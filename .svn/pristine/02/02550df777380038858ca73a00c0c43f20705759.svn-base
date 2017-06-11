@@ -1,0 +1,45 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using AntDesigner.AppleGame;
+using AntDesigner.AppleGame.EF;
+using Microsoft.AspNetCore.Http;
+using AntDesigner.AppleGame.interFace;
+
+// For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+
+namespace AntDesigner.AppleGame.Controllers
+{
+    public class MessageController:myController
+    {
+        public MessageController(IStorehouse IStorehouse, IHttpContextAccessor httpContextAccessor) : base(IStorehouse, httpContextAccessor)
+        {
+
+        }
+        public IActionResult messages()
+        {
+          IList<Message> messages=  player.seeMessags();
+            return View("messages", messages);
+        }
+        public IActionResult Index_replayMessage(int messageId)
+        {
+            // Message message = IstoreHouse.getEntityById<Message>(messageId);
+            Message message = player.seeMessags().FirstOrDefault(p => p.id == messageId);
+            return View("replayMessage",message);
+        }
+
+        public IActionResult replayMessage(int messageId,string replayContent)
+        {
+            Message message = player.seeMessags().FirstOrDefault(p => p.id == messageId);
+            player.replyMessage(message, replayContent);
+            IstoreHouse.saveChanges();
+            return Content("replySuccess");
+        }
+       public void setGameDegree()
+        {
+
+        }
+    }
+}

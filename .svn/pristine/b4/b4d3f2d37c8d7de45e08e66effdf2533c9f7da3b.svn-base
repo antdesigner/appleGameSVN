@@ -1,0 +1,14 @@
+﻿using System;
+
+namespace AntDesigner.NetCore.GameCity
+{
+    public interface IGameCityConfig
+    {
+        Func<IJoinGameCityTicket, bool> DCheckTicket { get; set; }
+        INotice INotic { get; set; }
+        bool IsOpening { get; set; }
+        string Name { get; set; }
+        string SecretKey { get; set; }
+        decimal TicketPrice { get; set; }
+    }
+}

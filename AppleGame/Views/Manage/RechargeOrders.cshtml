@@ -1,0 +1,33 @@
+﻿@model IEnumerable<AntDesigner.weiXinPay.PayOrder>
+@{
+    Layout = "~/Views/Shared/_LayoutHaveManue.cshtml";
+}
+<style>
+   td{
+        text-align:center;
+    }
+</style>
+<h2>充值记录</h2>
+<a href="/Manage/Index/">返回</a><br/>
+共 @Model.Count() 个 总金额 @Model.Sum(m=>m.Amount) 成功 @Model.Where(m => m.Success=true ).Count() 个 金额 @Model.Where(m => m.Success = true).Sum(m => m.Amount)
+<div class="table-responsive">
+    <table class="table table-striped">
+        <tr>
+            <th>金额</th>
+            <th>时间</th>
+            <th>状态</th>
+            <th>玩家</th>
+        </tr>
+        @{
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Amount</td>
+                    <td>@item.CreateTime</td>
+                    <td>@(item.Success==true ? "成功":"失败") </td>
+                    <td>@item.WeixinName</td>
+                </tr>
+            }
+        }
+    </table>
+</div>

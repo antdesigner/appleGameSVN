@@ -1,0 +1,36 @@
+﻿@model AntDesigner.GameCityBase.Player
+@{
+    Layout = "~/Views/Shared/_LayoutHaveManue.cshtml";
+}
+<h2>查找玩家</h2>
+<a href="/Manage/Index/">返回</a>
+@using (Html.BeginForm("findPlayer", "Manage", FormMethod.Post))
+{
+
+    if (Model != null)
+    {
+        @:玩家账号 <input type="text" id="weixinName" name="weixinName"/><input type="submit" value="查找" /><br />
+        <input type="hidden" value="@Model.WeixinName" />
+        @:玩家：<label>@Model.WeixinName</label><br />
+            @:注册日期：@Model.CreateTime<br />
+            @:账户余额：@Model.Account.Balance<br />
+            @:累计充值：<br />
+            @:介绍人：@Model.IntroducerWeixinName<br />
+            <input type="button" value="调整余额" onclick="location.href='/Manage/Index_adjustAccount/name?=@Model.WeixinName'" />
+            <input type="button" value="发送消息" onclick="location.href ='/Manage/Index_sendMessageTo/name?=@Model.WeixinName'" />
+            <input type="button" value="账户明细" onclick="location.href='/Manage/accountDetail/name?=@Model.WeixinName'" />
+            <input type="button" value="消息列表" onclick="location.href='/Manage/messages/name?=@Model.WeixinName'" />
+    }
+    else
+    {
+        @using (Html.BeginForm("findPlayer", "Manage", FormMethod.Post))
+        {
+            @:玩家账号 <input type="text" id="weixinName" name="weixinName"/><input type="submit" value="查找" /><br />
+            @:玩家：<label></label><br />
+            @:注册日期：<br />
+            @:账户余额：<br />
+            @:累计充值：<br />
+            @:介绍人：<br />
+            }
+    }
+}

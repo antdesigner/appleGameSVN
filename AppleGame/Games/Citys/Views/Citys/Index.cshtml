@@ -1,0 +1,22 @@
+﻿@using AntDesigner.NetCore.GameCity;
+@model IEnumerable<IGameCity>
+@{
+    Layout = "~/Views/Shared/_LayoutHaveManue.cshtml";
+}
+<h2>游戏城</h2>
+<br />
+<a href="/Manage/Index/">返回</a>
+@{foreach (var gameCity in Model)
+    {
+        @:游戏城Id：@gameCity.Id<br />
+        @:游戏城名称：@gameCity.Name<br />
+        @:城主：@gameCity.ICityManager.WeixinName<br />
+        @:开发：@gameCity.IsOpening<br />
+        @:密码：@gameCity.SecretKey<br />
+        @:房价：@gameCity.TicketPrice<br />
+        @:房间数：@gameCity.Rooms.Count()<br />
+        <a href="/Citys/Citys/ConfigGameCity?gameCityId=@gameCity.Id">修改配置</a>
+        
+<hr />
+    }
+}

@@ -1,0 +1,202 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using AntDesigner.AppleGame.EF;
+using AntDesinger.AppleGame;
+using AntDesigner.AppleGame.interFace;
+using Microsoft.AspNetCore.Http;
+using System.Net;
+using System.IO;
+using System.Text;
+using Newtonsoft.Json;
+using AntDesigner.AppleGame.boxs;
+using System.Collections.ObjectModel;
+using AntDesigner.weiXinPay;
+using WxPayAPI;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http.Authentication;
+// For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+
+namespace AntDesigner.AppleGame.Controllers
+{
+    [Authorize]
+    public class GameController : myController
+    {
+        
+        public GameController(IStorehouse IStorehouse, IHttpContextAccessor httpContextAccessor) : base(IStorehouse, httpContextAccessor)
+        {
+
+        }
+        public IActionResult gameExplain()
+        {
+            return View("gameExplain");
+        }
+        [AllowAnonymous]
+        public IActionResult Index(string state)
+        {
+            if (state !=null && state!="")
+            {
+               
+                Player player_ = ManagePlayer.getOnlyInstance().findPlayerByWeixinName(Game.decryptOpenId(state));
+                if (player_ != null)
+                {
+                    ViewBag.shareId = Game.encryptOpenId(player_.weixinName);
+                }
+            }
+            else
+            {
+                ViewBag.shareId = Game.encryptOpenId(ManagePlayer.getOnlyInstance().weixinName);
+            }
+          
+            return View("Index");
+
+        }
+        [AllowAnonymous]
+        public  IActionResult loginGame(string weixinName, string shareId,[FromServices]ILoginGame Ilogin)
+        {
+           
+            Ilogin.DaddPlayer = IstoreHouse.addEntity<Player>;
+            Ilogin.DgetPlayerByWeixianName = IstoreHouse.getPlayerByweixinName;
+            if (shareId==null || shareId=="")
+            {
+                shareId = Game.encryptOpenId(ManagePlayer.getOnlyInstance().weixinName);
+            }
+            Player player = Ilogin.login(weixinName,Game.decryptOpenId(shareId));
+            if (player != null && base.player != null && base.player.weixinName != player.weixinName)
+            {
+              
+                return View("Index");
+            }
+            IstoreHouse.saveChanges();
+            savePlayerInfoInSession(player);
+            base.loadPlayerInfo();
+            sigin(player);
+
+            StringBuilder url = new StringBuilder();
+            // url.Append("http://www.88v88v.com/Game/loginGame?weixinName=");
+             url.Append(WxPayConfig.SiteName+ "/Game/loginGame?weixinName=");
+            url.Append(player.weixinName);
+             url.Append("&shareId=");
+             url.Append(Game.encryptOpenId(player.introducerWeixinName));
+            ViewBag.wxConfig = new wxConfig(url.ToString());
+            ViewBag.notice = IstoreHouse.getEntitys<Notice>(1).OrderByDescending(p=>p.createTime).FirstOrDefault();
+            ViewBag.manager = ManagePlayer.getOnlyInstance();
+            ViewBag.shareId =Game.encryptOpenId(player.weixinName);
+            ViewBag.accesstoken = WxPayConfig._access_token.access_token;
+            ViewBag.jsToken = WxPayConfig._jsapi_ticket.ticket;
+            return View("gameMain", player);
+        }
+
+        private async void sigin(Player player_)
+        {
+            List<Claim> claims = new List<Claim>();
+            claims.Add(new Claim(ClaimTypes.Name, player_.weixinName, ClaimValueTypes.String));
+            string role = "player";
+            if (player_.id==ManagePlayer.getOnlyInstance().id)
+            {
+                role = "manager";
+            }
+            claims.Add(new Claim(ClaimTypes.Role, role, ClaimValueTypes.String));
+            var userIdentity = new ClaimsIdentity(role);
+            userIdentity.AddClaims(claims);
+            var userPrincipal = new ClaimsPrincipal(userIdentity);
+            await httpContextAccessor.HttpContext.Authentication.SignInAsync("MyCookieMiddlewareInstance", userPrincipal,
+                new AuthenticationProperties
+                {
+                    ExpiresUtc = DateTime.UtcNow.AddMinutes(20),
+                    IsPersistent = false,
+                    AllowRefresh = false
+                });
+
+        }
+
+        public IActionResult logGameAgain()
+        {
+            if (player!=null )
+            {
+                return RedirectToAction("loginGame", new { weixinName = player.weixinName, shareId = Game.encryptOpenId(player.introducerWeixinName) });
+            }
+          
+            return View("Index");
+        }
+        private void savePlayerInfoInSession(Player player)
+        {
+            session.SetInt32("playerId", player.id);
+            session.SetString("playerName", player.weixinName);
+            session.SetInt32("playerAccountId",player.account.id);
+        }
+        public IActionResult getWeixinMessage( )
+        {
+            if (httpContextAccessor.HttpContext.Request.Method.ToUpper()=="POST")
+            {
+               
+            }
+            else if(httpContextAccessor.HttpContext.Request.Method.ToUpper()=="GET")
+            {
+                string signature = httpContextAccessor.HttpContext.Request.Query["signature"];
+                string timestamp = httpContextAccessor.HttpContext.Request.Query["timestamp"];
+                string nonce = httpContextAccessor.HttpContext.Request.Query["nonce"];
+                string echostr = httpContextAccessor.HttpContext.Request.Query["echostr"];
+                if (LoginByWeixin.checkedSignature(timestamp, nonce, signature))
+                {
+                    return Content(echostr);
+                } 
+            }
+            return Content("");
+        }
+        [AllowAnonymous]
+        public IActionResult LoginByWeixin_(string code ,string state, [FromServices]ILoginGame Ilogin)
+        {
+
+                string weixinName_= LoginByWeixin.getOpenId(code);
+                  return RedirectToAction("loginGame" ,new { weixinName=weixinName_,shareId=state});
+            
+        }
+        [HttpPost]
+        public IActionResult getHitBoxs()
+        {
+           
+          StreamReader streamReader = new StreamReader(httpContextAccessor.HttpContext.Request.Body, Encoding.UTF8);
+          string stackeBoxsStr = streamReader.ReadToEnd();
+         List<stakeBox> stakeBoxs= JsonConvert.DeserializeObject<List<stakeBox>>(stackeBoxsStr);
+
+            if (player.account.balance*10< stakeBoxs.Sum(p => p.stake))
+            {
+                return null;
+            }
+
+            boxsManager boxsManager = new boxsManager();
+            Collection<Box> winningBoxs= boxsManager.winningResult(stakeBoxs);
+            try
+            {
+                IstoreHouse.saveChanges();
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                foreach (var entry in ex.Entries)
+                {
+                    if (entry.Entity is Account)
+                    {
+
+                        decimal databaseValue = IstoreHouse.getAccountAsNoTracking(player.account.id).balance;
+                        decimal currentValue = (decimal)entry.Property("balance").CurrentValue;
+                        entry.Property("balance").CurrentValue = currentValue + ((decimal)entry.Property("balance").OriginalValue - databaseValue);
+                        entry.Property("balance").OriginalValue = databaseValue;
+                    }
+                    else
+                    {
+                        throw new NotSupportedException(player.account.id + "账户变更冲突");
+                    }
+                }
+                IstoreHouse.saveChanges();
+            }
+            string hitSakeBoxsJsonarry = Game.SerializeObjectToJson(winningBoxs);
+            return Content(hitSakeBoxsJsonarry);
+        }
+       
+    }
+}

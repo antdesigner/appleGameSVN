@@ -1,0 +1,28 @@
+﻿@model Message
+@{
+    Layout = "~/Views/Shared/_LayoutHaveManue.cshtml";
+}
+<h2>回复消息</h2>
+<script>
+    function replayMessage(messageId,replayContent){
+        $.ajax({
+            url: "/Message/replayMessage/",
+            type: 'post',
+            dataType: "text",
+            data: { messageId: messageId, replayContent: replayContent },
+            success: function () {
+                alert("修改完成");
+            }
+        })
+}
+</script>
+    <span hidden="hidden" id="messageId" name="messageId">@Model.Id</span>
+    @Html.Hidden("abc", Model.Id)
+@{ 
+    int n = @Model.Sender.WeixinName.Length;
+}
+发送者：@Model.Sender.WeixinName.Substring(n-5)
+发送日期：@Model.CreateTime
+消息内容：@Model.Content
+@*回复内容：<input type="text" id="replayContent" value="@Model.replyContent"/>
+<input type="button"  value="确定" onclick="replayMessage(@Model.id,$('#replayContent').val())"/>*@

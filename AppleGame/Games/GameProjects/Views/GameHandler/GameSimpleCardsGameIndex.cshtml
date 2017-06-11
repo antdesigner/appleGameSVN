@@ -1,0 +1,103 @@
+﻿@using AntDesigner.NetCore.GameCity;
+@model IRoom
+@{
+    Layout = "~/Views/Shared/_LayoutGameCityRoom.cshtml";
+}
+@section styles{
+   <style>
+       #opponentPoker, #table, #myPoker{width:100%;display:flex;flex-direction:row;}
+       #opponentPoker,#myPoker{
+          flex:4;
+           background-color:coral
+       }
+       #table{
+           flex:8;
+           flex-direction:column;
+       }
+       #table>div{
+           flex-grow:1;
+           margin:auto;
+           height:40%
+       }
+       #myPoker .hand{
+           display: flex;
+           flex: 1;
+           justify-content: center
+       }
+     .payOut {
+           background-color: rebeccapurple;
+           width: 100%;
+          height:50%;
+       }
+       #handPoker{width:100%}
+    </style>
+}
+<div id="opponentPoker">
+ 
+</div>
+<div id="table">
+    <div class="payOut">
+        <canvas id="opponentPayOutPoker"></canvas>
+    </div>
+    <div class="payOut">
+        <canvas id="payOutPoker"></canvas>
+    </div>
+</div>
+<div id="myPoker">
+    <div class="hand">
+        <canvas id="handPoker"></canvas>
+    </div>
+    <button id="payOut">出牌</button>
+    <button id="getPoker">摸牌</button>
+</div>
+
+@section scripts{
+    <script>
+        function Fresh(gameFace)
+        {
+           
+            //$("#myPoker>.hand>.name").text(gameFace.myPoker.Name);
+            //$("#myPoker>.hand>.color").text(gameFace.myPoker.CardColor);
+            //$("#myPoker>.payOut>.name").text(gameFace.myPayOutPoker.Name + gameFace.myComparePoker.Name);
+            //$("#myPoker>.payOut>.color").text(gameFace.myPayOutPoker.CardColor + gameFace.myComparePoker.CardColor);
+            //$("#opponentPoker>.payOut>.name").text(gameFace.otherPlayersPoker.Name);
+            //$("#opponentPoker>.payOut>.color").text(gameFace.otherPlayersPoker.CardColor);
+            console.debug("after_GameFace");
+
+        }
+        function PlayOutCard()//出牌比较
+        {
+            console.debug("befor_PlayOutCard");
+            var methodInfo = new MethodInfo("PlayerPlayOutOnePoker");
+            var mySeat = InvokeSeverMethod(methodInfo);
+            console.debug("after_PlayOutCard");
+            var canv = $("#handPoker")[0];
+            CleanCanv(canv);
+        }
+        //获得一张牌
+        function GetNewPoker()
+        {
+            console.debug("befor_GetNewPoker");
+            var methodInfo = new MethodInfo("PlayerGetOnePoker");
+            var poker = InvokeSeverMethod(methodInfo);
+            console.debug("after_GetNewPker");
+            var canv = $("#handPoker")[0];
+            PaintOnePoker(canv);
+        }
+        function PaintOnePoker(canv,x,y,Poker)
+        {
+            var context = canv.getContext('2d');
+            var image = new Image();
+            image.src = "/images/Pokers/s.png";
+            context.drawImage(image, 0, 0);
+        }
+        function CleanCanv(canv)
+        {
+            var context = canv.getContext('2d');
+            context.fillStyle = "palegreen"; //设置填充色
+            context.fillRect(0, 0, canv.width, canv.height );
+        }
+        $("#payOut").on("click", PlayOutCard);
+        $("#getPoker").on("click", GetNewPoker);
+</script>
+}

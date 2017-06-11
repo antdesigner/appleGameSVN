@@ -1,0 +1,33 @@
+﻿@using AntDesigner.GameCityBase
+@model IEnumerable<Player>
+@{
+    Layout = "~/Views/Shared/_LayoutHaveManue.cshtml";
+}
+<h2>朋友列表</h2>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>序号</th>
+                <th>朋友代码</th>
+                <th>账户余额</th>
+                <th>加入时间</th>
+
+            </tr>
+        </thead>
+        @{
+            int n = 1;
+            foreach (var player in Model)
+            {
+                <tr>
+                    <td>@n</td>
+                    <td>@player.WeixinName.Substring(player.WeixinName.Length - 5)</td>
+                    <td>@player.Account.Balance</td>
+                    <td>@player.CreateTime</td>
+                </tr>
+                n++;
+            }
+
+        }
+    </table>
+</div>

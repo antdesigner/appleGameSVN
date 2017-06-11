@@ -1,0 +1,48 @@
+﻿using System;
+
+namespace AntDesigner.NetCore.GameCity
+{
+    public interface IRoomConfig
+    {
+        /// <summary>
+        /// 公告
+        /// </summary>
+        string Affiche { get; set; }
+        /// <summary>
+        /// 游戏
+        /// </summary>
+        IInningeGame InningGame { get; set; }
+        /// <summary>
+        /// 满员
+        /// </summary>
+        bool IsFull { get; set; }
+        /// <summary>
+        /// 开放
+        /// </summary>
+        bool IsOpening { get; set; }
+        /// <summary>
+        /// 参与随机
+        /// </summary>
+        bool IsRandom { get; set; }
+        /// <summary>
+        /// 房间名称
+        /// </summary>
+        string name { get; set; }
+        /// <summary>
+        /// 人数上限
+        /// </summary>
+        int PlayerCountTopLimit { get; set; }
+        /// <summary>
+        /// 设置密码
+        /// </summary>
+        string SecretKey { get; set; }
+        /// <summary>
+        /// 门票价格
+        /// </summary>
+        decimal TicketPrice { get; set; }
+        /// <summary>
+        /// 到期时间
+        /// </summary>
+        DateTime Timelimit { get; set; }
+    }
+}

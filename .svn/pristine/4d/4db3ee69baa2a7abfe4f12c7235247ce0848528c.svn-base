@@ -1,0 +1,29 @@
+﻿@model IEnumerable<AccountDetail>
+@{
+    Layout = "~/Views/Shared/_LayoutHaveManue.cshtml";
+}
+
+@{Account account = ViewBag.account as Account;}
+<h2>账户明细</h2>
+账户余额：@account.balance<br />
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>变动时间</th>
+                <th>变动金额</th>
+                <th>变动说明</th>
+            </tr>
+        </thead>
+        @{
+            foreach (var accountDetail in Model)
+            {
+                <tr>
+                    <td>@accountDetail.createTime</td>
+                    <td class="amount">@accountDetail.amount</td>
+                    <td>@accountDetail.explain</td>
+                </tr>
+            }
+        }
+    </table>
+</div>

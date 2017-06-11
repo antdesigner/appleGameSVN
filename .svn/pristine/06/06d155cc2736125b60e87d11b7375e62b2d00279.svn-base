@@ -1,0 +1,124 @@
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace AntDesigner.AppleGame.boxs
+{
+    public class boxsManager
+    {
+        private  Collection<Box> boxsCollection {get;set;}
+        private Collection<Box> hitBoxsCollection { get; }
+       private Random randoem = new Random();
+       private bool change = false;
+        public static Action <decimal,string> addPlayerAccount;
+        public static Action<decimal,string> deductPlayerAccount;
+        public boxsManager()
+        {
+            boxsCollection = new Collection<Box>();
+
+            boxsCollection.Add(new Box("OrangeBig1", 5, 4));
+            boxsCollection.Add(new Box("BellBig1", 5, 4));
+            boxsCollection.Add(new Box("KingBig", 50, 1));
+            boxsCollection.Add(new Box("KingSmall", 25, 1));
+            boxsCollection.Add(new Box("AppleBig1", 5, 5));
+            boxsCollection.Add(new Box("AppleSmall", 1,10));
+            boxsCollection.Add(new Box("OliveBig1", 5, 4));
+            boxsCollection.Add(new Box("WatermelonSmall", 3, 5));
+            boxsCollection.Add(new Box("WatermelonBig", 10, 4));
+            boxsCollection.Add(new Box("ChangeSmall", 1, 1));
+            boxsCollection.Add(new Box("AppleBig2", 5, 5));
+            boxsCollection.Add(new Box("OrangeSmall", 3, 6));
+            boxsCollection.Add(new Box("BellBig2",5, 4));
+            boxsCollection.Add(new Box("OrangeBig2", 5, 4));
+            boxsCollection.Add(new Box("DoubleSevenSmall", 3, 6));
+            boxsCollection.Add(new Box("DoubleSevenBig", 10, 1));
+            boxsCollection.Add(new Box("AppleBig3", 5,5));
+            boxsCollection.Add(new Box("OliveSmall", 3, 5));
+            boxsCollection.Add(new Box("OliveBig2",5,4));
+            boxsCollection.Add(new Box("StarBig", 10, 2));
+            boxsCollection.Add(new Box("StarSmall", 3, 7));
+            boxsCollection.Add(new Box("ChangeBig", 1, 1));
+            boxsCollection.Add(new Box("AppleBig4", 5, 5));
+            boxsCollection.Add(new Box("BellSmall", 3, 6));
+
+            hitBoxsCollection = new Collection<Box>();
+        }
+
+       private void putRandomBoxIntoHitBoxs()
+        {
+            int hit =randoem.Next(1, 100);
+            int n = 0;
+         
+            foreach (var box in boxsCollection)
+            {
+              
+                if ((box.weightCoefficient+n)>=hit)
+                {
+                    if (
+                  (box.name == "ChangeBig")
+                  ||
+                  (box.name == "ChangeSmall")
+                  )
+                    {
+                        change = true;
+                        putRandomBoxIntoHitBoxs();
+                        return;
+                    }
+                    if (hitBoxsCollection.Contains(box))
+                    {
+                        continue;
+                    }
+                    hitBoxsCollection.Add(box);
+                    if (change==true)
+                    {
+                        putRandomBoxIntoHitBoxs();
+                        change = false;
+                    }
+                    break;
+                    
+                }else
+                {
+                    n = n + box.weightCoefficient;
+                }
+            }
+            return;
+        }
+
+      
+        private Collection<Box> comput(List<stakeBox> stakeBoxs )
+        {
+            
+            foreach (var stakeBox in stakeBoxs)
+            {
+                foreach (var box in hitBoxsCollection)
+                {
+                    if ( box.name.Contains(stakeBox.name))
+                    {
+                        box.prize = stakeBox.stake * box.odds;
+                    }
+                }
+            }
+
+            return hitBoxsCollection;
+        }
+        public Collection<Box> winningResult(List<stakeBox> stakeBoxs)
+        {
+            putRandomBoxIntoHitBoxs();
+            Collection<Box> winningResult = comput(stakeBoxs);
+            decimal losting = stakeBoxs.Sum(p => p.stake);
+            deductPlayerAccount(-(losting/10),"下注");
+            decimal winning = winningResult.Sum(p => p.prize);
+            if (winning>0)
+            {
+                addPlayerAccount((winning/10),"赢");
+            }
+        
+           return winningResult;
+        }
+    }
+}

@@ -1,0 +1,291 @@
+using System;
+using Xunit;
+using AntDesigner.NetCore.GameCity;
+using Moq;
+
+namespace GameCityTest
+{
+
+    public class RoomTest
+    {
+        Room _room;
+        public RoomTest()
+        {
+            Mock<IPlayerJoinRoom> IPlayerFactory = new Mock<IPlayerJoinRoom>();
+            Mock<IInningeGame> IInningGameFactory = new Mock<IInningeGame>();
+            _room = new Room(DateTime.Now.AddHours(1), 10, IInningGameFactory.Object, IPlayerFactory.Object);
+        }
+        [Theory(DisplayName = "向room中添加n个IPlayer")]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(0)]
+        public void AddPlayer_1(int n)
+        {
+            Mock<IPlayerJoinRoom> IPlayerFactory = new Mock<IPlayerJoinRoom>();
+            IPlayerFactory.Setup(p => p.DecutMoney(0)).Returns(true);
+            Mock<IInningeGame> IInningGameFactory = new Mock<IInningeGame>();
+            _room = new Room(DateTime.Now.AddHours(1), 10, IInningGameFactory.Object, IPlayerFactory.Object);
+            for (int i = 0; i < n; i++)
+            {
+                var player = IPlayerFactory.Object;
+                _room.AddPlayer(player);
+            }
+            Assert.Equal(_room.Players.Count, n + 1);
+        }
+        [Fact(DisplayName = "room删除Player1")]
+        public void RemovePlayer_1()
+        {
+            Mock<IPlayerJoinRoom> IPlayerFactory = new Mock<IPlayerJoinRoom>();
+            IPlayerFactory.Setup(pp => pp.DecutMoney(0)).Returns(true);
+            Mock<IInningeGame> IInningGameFactory = new Mock<IInningeGame>();
+            var myRoom = new Room(DateTime.Now.AddHours(1), 10, IInningGameFactory.Object, IPlayerFactory.Object);
+            var p1 = IPlayerFactory.Object;
+            myRoom.AddPlayer(p1);
+            var p2 = IPlayerFactory.Object;
+            myRoom.AddPlayer(p2);
+            var p3 = IPlayerFactory.Object;
+            myRoom.AddPlayer(p3);
+            myRoom.RemovePlayer(p2);
+            Assert.Equal(2 + 1, myRoom.Players.Count);
+        }
+        [Theory(DisplayName = "room删除Player3")]
+        [InlineData(10, 5)]
+        public void RemovePlayer_3(int n, int id_)
+        {
+            Mock<IPlayerJoinRoom> IPlayerFactory = new Mock<IPlayerJoinRoom>();
+            Mock<IInningeGame> IInningGameFactory = new Mock<IInningeGame>();
+            _room = new Room(DateTime.Now.AddHours(1), 10, IInningGameFactory.Object, IPlayerFactory.Object);
+            for (int i = 0; i < n; i++)
+            {
+                Mock<IPlayerJoinRoom> p = new Mock<IPlayerJoinRoom>();
+                p.SetupAllProperties().SetupGet(a => a.Id).Returns(i);
+                _room.AddPlayer(p.Object);
+            }
+            var index = 0;
+            foreach (var item in _room.Players)
+            {
+                if (item.Id == id_)
+                {
+                    index = _room.Players.IndexOf(item);
+                }
+            }
+            _room.RemovePlayer(_room.Players[index]);
+            Assert.DoesNotContain(_room.Players, p => p.Id == id_);
+        }
+        [Theory(DisplayName = "room删除Player")]
+        [InlineData(10, 5)]
+        public void RemovePlayer_4(int n, int id_)
+        {
+            Mock<IPlayerJoinRoom> IPlayerFactory = new Mock<IPlayerJoinRoom>();
+            // IPlayerFactory.Setup(pp => pp.DecutMoney(0)).Returns(true);
+            Mock<IInningeGame> IInningGameFactory = new Mock<IInningeGame>();
+
+            _room = new Room(DateTime.Now.AddHours(1), 10, IInningGameFactory.Object, IPlayerFactory.Object);
+            for (int i = 0; i < n; i++)
+            {
+                Mock<IPlayerJoinRoom> p = new Mock<IPlayerJoinRoom>();
+                p.SetupAllProperties().SetupGet(a => a.Id).Returns(i);
+                p.Setup(pp => pp.DecutMoney(0)).Returns(true);
+                _room.AddPlayer(p.Object);
+            }
+            var index = 0;
+            foreach (var item in _room.Players)
+            {
+                if (item.Id == id_)
+                {
+                    index = _room.Players.IndexOf(item);
+                }
+            }
+            _room.RemovePlayer(_room.Players[index]);
+            Assert.Contains(_room.Players, p => p.Id == id_ - 1);
+        }
+        [Theory]
+        [InlineData("new")]
+        [InlineData("")]
+        public void ChanageManger_1(string newManager_)
+        {
+            Mock<IPlayerJoinRoom> newManager = new Mock<IPlayerJoinRoom>();
+            newManager.SetupGet(p => p.WeixinName).Returns(newManager_);
+            _room.ChanageManger(newManager.Object);
+            Assert.Equal(newManager_, _room.RoomManager.WeixinName);
+        }
+        [Fact]
+        public void Close_1()
+        {
+            _room.Close();
+            Assert.False(_room.IsOpening);
+        }
+        [Fact]
+        public void Open()
+        {
+            _room.Open();
+            Assert.True(_room.IsOpening);
+        }
+        [Theory(DisplayName = "房间加密")]
+        [InlineData("mm")]
+        [InlineData("")]
+        public void Encrypt_2(string encyptor_)
+        {
+            try
+            {
+                _room.encrypt(encyptor_);
+                Assert.NotEqual("", _room.SecretKey);
+            }
+            catch (Exception)
+            {
+
+                Assert.ThrowsAny<Exception>(() => _room.encrypt(""));
+            }
+        }
+        [Fact(DisplayName = "去除房间密码")]
+        public void DeEncrypt()
+        {
+            _room.DeEncrypt();
+            Assert.Empty(_room.SecretKey);
+        }
+        [Theory(DisplayName = "延长房间分钟数")]
+        [InlineData(30)]
+        [InlineData(0)]
+        [InlineData(-20)]
+        public void ProLongTimeLimite_1(int minite_)
+        {
+            try
+            {
+                var pretime = _room.Timelimit;
+                _room.ProlongTimelimit(minite_);
+                Assert.True(_room.Timelimit > pretime);
+            }
+            catch (Exception)
+            {
+                Assert.Throws<Exception>(() => _room.ProlongTimelimit(minite_));
+            }
+        }
+        [Theory(DisplayName = "设置房间人数上限")]
+        [InlineData(10)]
+        [InlineData(5)]
+        [InlineData(1)]
+        public void SetPlayCountTopLimit_1(int count_)
+        {
+            _room.SetPlayerCountTopLimit(count_);
+            Assert.Equal(count_, _room.PlayerCountTopLimit);
+        }
+        [Theory(DisplayName = "房间人数上限不能小于1")]
+        [InlineData(1)]
+        [InlineData(0)]
+        [InlineData(-2)]
+        public void SetPlayCountTopLimit_2(int count_)
+        {
+            try
+            {
+                _room.SetPlayerCountTopLimit(count_);
+                Assert.True(_room.PlayerCountTopLimit >= 1);
+            }
+            catch (Exception)
+            {
+                Assert.Throws<Exception>(() => _room.SetPlayerCountTopLimit(count_));
+            }
+        }
+        [Fact(DisplayName = "超过房间人数上限不能加入")]
+        public void AddPlayer_overflow()
+        {
+            Mock<IPlayerJoinRoom> IPlayerFactory = new Mock<IPlayerJoinRoom>();
+            Mock<IInningeGame> IInningGameFactory = new Mock<IInningeGame>();
+            var myRoom = new Room(DateTime.Now.AddHours(1), 1, IInningGameFactory.Object, IPlayerFactory.Object);
+            Mock<IPlayerJoinRoom> IPlayerFactory2 = new Mock<IPlayerJoinRoom>();
+            Assert.False(myRoom.AddPlayer(IPlayerFactory2.Object));
+        }
+        [Fact(DisplayName = "触发玩家加入失败事件")]
+        public void AddPlayerFail()
+        {
+            Mock<IPlayerJoinRoom> IPlayerFactory = new Mock<IPlayerJoinRoom>();
+            Mock<IInningeGame> IInningGameFactory = new Mock<IInningeGame>();
+            var myRoom = new Room(DateTime.Now.AddHours(1), 1, IInningGameFactory.Object, IPlayerFactory.Object);
+            var raisEvent = false;
+
+            Room.AddPlayerFailRoomFullEvent += delegate { raisEvent = true; };
+            Mock<IPlayerJoinRoom> IPlayerFactory2 = new Mock<IPlayerJoinRoom>();
+            myRoom.AddPlayer(IPlayerFactory2.Object);
+            Assert.True(raisEvent);
+        }
+        [Fact(DisplayName = "玩家加入成功事件")]
+        public void AddPlayerSuccess()
+        {
+            Mock<IPlayerJoinRoom> IPlayerFactory = new Mock<IPlayerJoinRoom>();
+
+            Mock<IInningeGame> IInningGameFactory = new Mock<IInningeGame>();
+            var myRoom = new Room(DateTime.Now.AddHours(1), 2, IInningGameFactory.Object, IPlayerFactory.Object);
+            var raisEvent = false;
+            Room.AddPlayerSuccessEvent += delegate { raisEvent = true; };
+            Mock<IPlayerJoinRoom> IPlayerFactory2 = new Mock<IPlayerJoinRoom>();
+            IPlayerFactory2.Setup(pp => pp.DecutMoney(0)).Returns(true);
+            myRoom.AddPlayer(IPlayerFactory2.Object);
+            Assert.True(raisEvent);
+        }
+        [Fact(DisplayName = "扣除玩家门票")]
+        public void AddPlayer_getTiket()
+        {
+            Mock<IPlayerJoinRoom> player = new Mock<IPlayerJoinRoom>();
+            player.Setup<bool>(p => p.DecutMoney(_room.TicketPrice));
+            var p2 = player.Object;
+            _room.AddPlayer(p2);
+            player.Verify(p => p.DecutMoney(_room.TicketPrice));
+        }
+        [Fact(DisplayName = "扣除玩家门票失败")]
+        public void AddPlayer_notGettiket()
+        {
+            Mock<IPlayerJoinRoom> player = new Mock<IPlayerJoinRoom>();
+            player.Setup<bool>(p => p.DecutMoney(_room.TicketPrice)).Returns(false);
+            var p2 = player.Object;
+            _room.AddPlayer(p2);
+            Assert.DoesNotContain<IPlayerJoinRoom>(p2, _room.Players);
+        }
+        [Fact(DisplayName = "余额不足不能进入房间")]
+        public void AddPlayer_account()
+        {
+            Mock<IPlayerJoinRoom> IPlayerFactory = new Mock<IPlayerJoinRoom>();
+            Mock<IInningeGame> IInningGameFactory = new Mock<IInningeGame>();
+            var myRoom = new Room(DateTime.Now.AddHours(1), 10, IInningGameFactory.Object, IPlayerFactory.Object, ticketPrice_: 50);
+            Mock<IPlayerJoinRoom> player = new Mock<IPlayerJoinRoom>();
+            player.Setup<bool>(p => p.DecutMoney(_room.TicketPrice)).Returns(true);
+            player.Setup<decimal>(p => p.Account).Returns(0);
+            var p2 = player.Object;
+            myRoom.AddPlayer(p2);
+            Assert.DoesNotContain<IPlayerJoinRoom>(p2, myRoom.Players);
+        }
+        [Fact(DisplayName = "玩家进入余额不足触发事件")]
+        public void AddPlayer_accountEvent()
+        {
+            Mock<IPlayerJoinRoom> IPlayerFactory = new Mock<IPlayerJoinRoom>();
+            Mock<IInningeGame> IInningGameFactory = new Mock<IInningeGame>();
+            var myRoom = new Room(DateTime.Now.AddHours(1), 10, IInningGameFactory.Object, IPlayerFactory.Object, ticketPrice_: 50);
+            Mock<IPlayerJoinRoom> player = new Mock<IPlayerJoinRoom>();
+            player.Setup<bool>(p => p.DecutMoney(_room.TicketPrice)).Returns(true);
+            player.Setup<decimal>(p => p.Account).Returns(0);
+            var p2 = player.Object;
+            bool accountNotEnough = false;
+            Room.PlayCanNotPayTicketEvent += delegate { accountNotEnough = true; };
+            myRoom.AddPlayer(p2);
+            Assert.True(accountNotEnough);
+        }
+        [Fact(DisplayName = "房间易主后触发事件")]
+        public void ChangeManager()
+        {
+            Mock<IPlayerJoinRoom> player = new Mock<IPlayerJoinRoom>();
+            player.Setup<bool>(p => p.DecutMoney(_room.TicketPrice)).Returns(false);
+            var p2 = player.Object;
+            var preManager = _room.RoomManager;
+            bool managerChanged = false;
+            Room.ManagerChangedHandler += delegate { managerChanged = true; };
+            _room.ChanageManger(p2);
+            Assert.True(managerChanged);
+        }
+        [Fact(DisplayName = "房间的Id不为空")]
+        public void RoomInstall()
+        {
+            Assert.NotEmpty(_room.Id);
+        }
+    }
+
+}
+
+

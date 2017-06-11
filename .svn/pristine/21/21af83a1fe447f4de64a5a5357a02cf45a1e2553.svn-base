@@ -1,0 +1,28 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using AntDesigner.AppleGame;
+using AntDesigner.AppleGame.EF;
+using Microsoft.AspNetCore.Http;
+using AntDesigner.AppleGame.interFace;
+
+// For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+
+namespace AntDesigner.AppleGame.Controllers
+{
+    public class NoticeController : myController
+    {
+        public NoticeController(IStorehouse IStorehouse, IHttpContextAccessor httpContextAccessor) : base(IStorehouse, httpContextAccessor)
+        { }
+
+        // GET: /<controller>/
+        public IActionResult affiche()
+        {
+            IList<Notice> notices = IstoreHouse.getEntitys<Notice>(5); 
+            return View("noticesList",notices);
+
+        }
+    }
+}

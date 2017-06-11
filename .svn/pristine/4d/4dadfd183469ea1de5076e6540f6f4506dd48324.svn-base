@@ -1,0 +1,237 @@
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace AntDesigner.AppleGame.boxs
+{
+    public class boxsManager
+    {
+        private Collection<Box> boxsCollection { get; set; }
+        private Collection<Box> hitBoxsCollection { get; }
+        private Random randoem = new Random();
+        private bool change = false;
+        public static Action<decimal, string> addPlayerAccount;
+        public static Action<decimal, string> deductPlayerAccount;
+        public static string Degree{get;set;}
+        public boxsManager()
+        {
+            
+            Assembly assembly = Assembly.GetEntryAssembly();
+            ABboxsBuilder  builder = (ABboxsBuilder)assembly.CreateInstance("AntDesigner.AppleGame.boxs.boxsManager+" + Degree);//反射内部类用"+"号
+            Director director = new Director();
+            boxsCollection = director.builBoxs(builder);
+            //boxsCollection = new Collection<Box>();
+
+            //boxsCollection.Add(new Box("OrangeBig1", 5, 4));
+            //boxsCollection.Add(new Box("BellBig1", 5, 4));
+            //boxsCollection.Add(new Box("KingBig", 50, 1));
+            //boxsCollection.Add(new Box("KingSmall", 25, 1));
+            //boxsCollection.Add(new Box("AppleBig1", 5, 5));
+            //boxsCollection.Add(new Box("AppleSmall", 1, 10));
+            //boxsCollection.Add(new Box("OliveBig1", 5, 4));
+            //boxsCollection.Add(new Box("WatermelonSmall", 3, 5));
+            //boxsCollection.Add(new Box("WatermelonBig", 10, 4));
+            //boxsCollection.Add(new Box("ChangeSmall", 1, 1));
+            //boxsCollection.Add(new Box("AppleBig2", 5, 5));
+            //boxsCollection.Add(new Box("OrangeSmall", 3, 6));
+            //boxsCollection.Add(new Box("BellBig2", 5, 4));
+            //boxsCollection.Add(new Box("OrangeBig2", 5, 4));
+            //boxsCollection.Add(new Box("DoubleSevenSmall", 3, 6));
+            //boxsCollection.Add(new Box("DoubleSevenBig", 10, 1));
+            //boxsCollection.Add(new Box("AppleBig3", 5, 5));
+            //boxsCollection.Add(new Box("OliveSmall", 3, 5));
+            //boxsCollection.Add(new Box("OliveBig2", 5, 4));
+            //boxsCollection.Add(new Box("StarBig", 10, 2));
+            //boxsCollection.Add(new Box("StarSmall", 3, 7));
+            //boxsCollection.Add(new Box("ChangeBig", 1, 1));
+            //boxsCollection.Add(new Box("AppleBig4", 5, 5));
+            //boxsCollection.Add(new Box("BellSmall", 3, 6));
+
+            hitBoxsCollection = new Collection<Box>();
+        }
+        public Collection<Box> winningResult(List<stakeBox> stakeBoxs)
+        {
+            putRandomBoxIntoHitBoxs();
+            Collection<Box> winningResult = comput(stakeBoxs);
+            decimal losting = stakeBoxs.Sum(p => p.stake);
+            deductPlayerAccount(-(losting / 10), "下注");
+            decimal winning = winningResult.Sum(p => p.prize);
+            if (winning > 0)
+            {
+                addPlayerAccount((winning / 10), "赢");
+            }
+
+            return winningResult;
+        }
+        private void putRandomBoxIntoHitBoxs()
+        {
+            int hit = randoem.Next(1, 100);
+            int n = 0;
+
+            foreach (var box in boxsCollection)
+            {
+
+                if ((box.weightCoefficient + n) >= hit)
+                {
+                    if (
+                  (box.name == "ChangeBig")
+                  ||
+                  (box.name == "ChangeSmall")
+                  )
+                    {
+                        change = true;
+                        putRandomBoxIntoHitBoxs();
+                        return;
+                    }
+                    if (hitBoxsCollection.Contains(box))
+                    {
+                        continue;
+                    }
+                    hitBoxsCollection.Add(box);
+                    if (change == true)
+                    {
+                        putRandomBoxIntoHitBoxs();
+                        change = false;
+                    }
+                    break;
+
+                }
+                else
+                {
+                    n = n + box.weightCoefficient;
+                }
+            }
+            return;
+        }
+        private Collection<Box> comput(List<stakeBox> stakeBoxs)
+        {
+
+            foreach (var stakeBox in stakeBoxs)
+            {
+                foreach (var box in hitBoxsCollection)
+                {
+                    if (box.name.Contains(stakeBox.name))
+                    {
+                        box.prize = stakeBox.stake * box.odds;
+                    }
+                }
+            }
+
+            return hitBoxsCollection;
+        }
+        abstract class ABboxsBuilder
+        {
+           internal  abstract  Collection<Box> buildBox();
+        }
+        class BuilderNormal : ABboxsBuilder
+        {
+            internal  override Collection<Box> buildBox()
+            {
+                Collection<Box> boxsCollection = new Collection<Box>();
+                boxsCollection.Add(new Box("OrangeBig1", 5, 4));
+                boxsCollection.Add(new Box("BellBig1", 5, 4));
+                boxsCollection.Add(new Box("KingBig", 50, 1));
+                boxsCollection.Add(new Box("KingSmall", 25, 1));
+                boxsCollection.Add(new Box("AppleBig1", 5, 3));
+                boxsCollection.Add(new Box("AppleSmall", 1, 11));
+                boxsCollection.Add(new Box("OliveBig1", 5, 4));
+                boxsCollection.Add(new Box("WatermelonSmall", 3, 7));
+                boxsCollection.Add(new Box("WatermelonBig", 10, 4));
+                boxsCollection.Add(new Box("ChangeSmall", 1, 1));
+                boxsCollection.Add(new Box("AppleBig2", 5, 3));
+                boxsCollection.Add(new Box("OrangeSmall", 3, 7));
+                boxsCollection.Add(new Box("BellBig2", 5, 4));
+                boxsCollection.Add(new Box("OrangeBig2", 5, 4));
+                boxsCollection.Add(new Box("DoubleSevenSmall", 3, 7));
+                boxsCollection.Add(new Box("DoubleSevenBig", 10, 1));
+                boxsCollection.Add(new Box("AppleBig3", 5, 3));
+                boxsCollection.Add(new Box("OliveSmall", 3, 7));
+                boxsCollection.Add(new Box("OliveBig2", 5, 4));
+                boxsCollection.Add(new Box("StarBig", 10, 2));
+                boxsCollection.Add(new Box("StarSmall", 3, 7));
+                boxsCollection.Add(new Box("ChangeBig", 1, 1));
+                boxsCollection.Add(new Box("AppleBig4", 5, 3));
+                boxsCollection.Add(new Box("BellSmall", 3, 7));
+                return boxsCollection;
+            }
+        }
+        class BuilderHard : ABboxsBuilder
+        {
+         internal override Collection<Box> buildBox()
+            {
+                Collection<Box> boxsCollection = new Collection<Box>();
+                boxsCollection.Add(new Box("OrangeBig1", 5, 4));
+                boxsCollection.Add(new Box("BellBig1", 5, 4));
+                boxsCollection.Add(new Box("KingBig", 50, 1));
+                boxsCollection.Add(new Box("KingSmall", 25, 1));
+                boxsCollection.Add(new Box("AppleBig1", 5, 2));
+                boxsCollection.Add(new Box("AppleSmall", 1, 15));
+                boxsCollection.Add(new Box("OliveBig1", 5, 4));
+                boxsCollection.Add(new Box("WatermelonSmall", 3, 8));
+                boxsCollection.Add(new Box("WatermelonBig", 10, 3));
+                boxsCollection.Add(new Box("ChangeSmall", 1, 1));
+                boxsCollection.Add(new Box("AppleBig2", 5, 2));
+                boxsCollection.Add(new Box("OrangeSmall", 3, 8));
+                boxsCollection.Add(new Box("BellBig2", 5, 4));
+                boxsCollection.Add(new Box("OrangeBig2", 5, 3));
+                boxsCollection.Add(new Box("DoubleSevenSmall", 3, 7));
+                boxsCollection.Add(new Box("DoubleSevenBig", 10, 1));
+                boxsCollection.Add(new Box("AppleBig3", 5, 2));
+                boxsCollection.Add(new Box("OliveSmall", 3, 8));
+                boxsCollection.Add(new Box("OliveBig2", 5, 3));
+                boxsCollection.Add(new Box("StarBig", 10, 1));
+                boxsCollection.Add(new Box("StarSmall", 3, 8));
+                boxsCollection.Add(new Box("ChangeBig", 1, 1));
+                boxsCollection.Add(new Box("AppleBig4", 5, 2));
+                boxsCollection.Add(new Box("BellSmall", 3, 7));
+                return boxsCollection;
+            }
+        }
+        class BuilderEasy : ABboxsBuilder
+        {
+          internal override Collection<Box> buildBox()
+            {
+                Collection<Box> boxsCollection = new Collection<Box>();
+                boxsCollection.Add(new Box("OrangeBig1", 5, 4));
+                boxsCollection.Add(new Box("BellBig1", 5, 3));
+                boxsCollection.Add(new Box("KingBig", 50, 1));
+                boxsCollection.Add(new Box("KingSmall", 25, 2));
+                boxsCollection.Add(new Box("AppleBig1", 5, 3));
+                boxsCollection.Add(new Box("AppleSmall", 1, 12));
+                boxsCollection.Add(new Box("OliveBig1", 5, 4));
+                boxsCollection.Add(new Box("WatermelonSmall", 3, 5));
+                boxsCollection.Add(new Box("WatermelonBig", 10, 4));
+                boxsCollection.Add(new Box("ChangeSmall", 1, 1));
+                boxsCollection.Add(new Box("AppleBig2", 5, 5));
+                boxsCollection.Add(new Box("OrangeSmall", 3, 6));
+                boxsCollection.Add(new Box("BellBig2", 5, 4));
+                boxsCollection.Add(new Box("OrangeBig2", 5, 4));
+                boxsCollection.Add(new Box("DoubleSevenSmall", 3, 5));
+                boxsCollection.Add(new Box("DoubleSevenBig", 10, 2));
+                boxsCollection.Add(new Box("AppleBig3", 5, 5));
+                boxsCollection.Add(new Box("OliveSmall", 3, 4));
+                boxsCollection.Add(new Box("OliveBig2", 5, 5));
+                boxsCollection.Add(new Box("StarBig", 10, 3));
+                boxsCollection.Add(new Box("StarSmall", 3, 6));
+                boxsCollection.Add(new Box("ChangeBig", 1, 2));
+                boxsCollection.Add(new Box("AppleBig4", 5, 4));
+                boxsCollection.Add(new Box("BellSmall", 3, 6));
+                return boxsCollection;
+            }
+        }
+        class Director
+        {
+           
+          internal  Collection<Box>  builBoxs(ABboxsBuilder builder)
+            {
+                return builder.buildBox();
+            }
+        }
+    }
+}

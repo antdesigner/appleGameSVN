@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<parameters>
+  <parameter name="IIS Web Application Name" description="" value="appleGame" tags="IisApp">
+    <parameterEntry kind="ProviderPath" scope="IisApp" match="^C:\\Users\\ant_d\\Documents\\Visual\ Studio\ 2017\\Projects\\appleGame\\AppleGame\\obj\\Release\\netcoreapp1\.1\\PubTmp\\Out\\$" />
+  </parameter>
+</parameters>

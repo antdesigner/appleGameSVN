@@ -1,0 +1,96 @@
+﻿using AntDesigner.AppleGame;
+using AntDesigner.AppleGame.boxs;
+using AntDesigner.AppleGame.EF;
+using AntDesigner.AppleGame.interFace;
+using AntDesigner.weiXinPay;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using WxPayAPI;
+
+namespace AntDesigner.AppleGame.EF
+{
+    public class myController: Controller
+    {
+
+        //protected DataContext _db;
+        public  IStorehouse IstoreHouse;
+        protected ManagePlayer managerPlayer ;
+        protected ISession session;
+        protected Player player;
+        protected  IHttpContextAccessor httpContextAccessor;
+        static myController()
+        {
+            Account.accounBalanceChanged += Account_accounBalanceChanged;
+        }
+        public myController( IStorehouse Istorehouse_,IHttpContextAccessor httpContextAccessor_)
+        {
+            // _db = db;
+            httpContextAccessor = httpContextAccessor_;
+            IstoreHouse = Istorehouse_;
+            session = httpContextAccessor_.HttpContext.Session;
+            DelegateToDB(IstoreHouse);
+            loadManager();
+            loadPlayerInfo();
+
+        }
+
+        private void DelegateToDB(IStorehouse IStorehouse)
+        {
+           
+            Player.DgetFriendsOfPlayer = IStorehouse.getFrindOfPlayer;
+            Player.DgetMessagesOfPlayer = IStorehouse.getMessagsOfPlayer;
+            Player.DsaveNewMessage = IStorehouse.addMessage;
+           
+            ManagePlayer.DgetOnlinePlayer = IStorehouse.getOnliePlayers;
+            ManagePlayer.DgetPlayerByWeixinName = IStorehouse.getPlayerByweixinName;
+            ManagePlayer.DgetManagePlayer = IStorehouse.getManagePlayer;
+            ManagePlayer.DgetAllPlayer = IStorehouse.getAllPlayers;
+            ManagePlayer.DpublicNotice = IStorehouse.addEntity<Notice>;
+            ManagePlayer.DremoveNotice= IstoreHouse.removeEntity<Notice>;
+            ManagePlayer.DgetAllPlayer = IstoreHouse.getAllPlayers;
+            ManagePlayer.DgetRedPackgeList = IStorehouse.getRedPackgerList;
+            ManagePlayer.DgetPayOrderList = IStorehouse.getPayOrderList;
+        }
+
+        private void loadManager()
+        {
+            if (session.GetInt32("playerId") == ManagePlayer.getOnlyInstance().id)
+            {
+                managerPlayer = ManagePlayer.getOnlyInstance();
+            }
+            else
+            {
+                managerPlayer = null;
+            }
+        }
+
+        protected  virtual  void loadPlayerInfo()
+        {
+            if ( session.GetInt32("playerId")==null)
+            {
+                return;
+            }
+            if (session.GetInt32("playerId") > 0)
+            {
+                // player = _db.Players.Include("account").First(p=>p.id==session.GetInt32("playerId"));
+                player = IstoreHouse.getPlayerByweixinName(session.GetString("playerName"));
+            }
+            boxsManager.deductPlayerAccount = player.account.addmount;
+            boxsManager.addPlayerAccount = player.account.addmount;
+        }
+
+        protected static void Account_accounBalanceChanged(object sender,EventArgs e) 
+        {
+            Account account = (Account)sender;
+            Player player_= ManagePlayer.getOnlyInstance().findPlayerByWeixinName(account.weixinName);
+            ManagePlayer.getOnlyInstance().sendMessageTo(player_, ((Account.changeDetail)e).accoutDetail.explain  + ((Account.changeDetail)e).accoutDetail.amount.ToString("#0.##"));
+
+        }
+      
+    }
+}

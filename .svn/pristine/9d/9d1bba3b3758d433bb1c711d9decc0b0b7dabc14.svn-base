@@ -1,0 +1,39 @@
+﻿@model Account
+@{
+    Layout = "~/Views/Shared/_LayoutHaveManue.cshtml";
+}
+<h2>申请红包</h2>
+<div class="text-center">
+    <div>
+        账户余额<div>
+            <div>
+                @Model.balance<div>
+                <div>
+                    <br />
+                    <script>
+    function checkAmount() {
+        var redPackAmount = $("#amount").val()
+        if (redPackAmount > 30 || (redPackAmount - 0) < 1) {
+            alert("每次申领红包金额只能在1至30");
+            return false;
+        }
+        else if (redPackAmount <= 30 && (@Model.balance-redPackAmount) > 2) {
+            return true;
+        }
+        else if ((@Model.balance-redPackAmount) <=2) {
+            alert("领红包后,账户余额不能低于于2!领取失败");
+            return false;
+        }
+    }
+                    </script>
+
+                    <form role="form" class="form-horizontal" action="/Player/withdrawCash/" method="post" onsubmit="return checkAmount()">
+                        <div class="form-group text-center">
+                            <input type="text" class="form-control text-center " placeholder="在此输入申请红包金额" pattern="^(([1-9]\d{0,9})|0)(\.\d{1,2})?$" id="amount" name="amount" />
+                            <br />
+                            <input type="submit" class="btn btn-primary btn-lg btn-block text-center" value="确定" />
+
+                            <div>
+                    </form>
+
+                    <br /><div>@ViewBag.result</div>

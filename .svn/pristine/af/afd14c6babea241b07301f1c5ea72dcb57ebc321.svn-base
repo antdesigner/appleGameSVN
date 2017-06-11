@@ -1,0 +1,50 @@
+﻿@model IEnumerable<Notice>
+@{
+    Layout = "~/Views/Shared/_LayoutHaveManue.cshtml";
+}
+<h2>公告列表</h2>
+<a href="/Manage/Index/">返回</a>
+<script type="text/javascript">
+    function deleteNotice(id) {
+        $.ajax(
+            {
+                url: "/manage/deletenotice/",
+                type: 'post',
+                datatype: 'text',
+                data: { noticeid: id },
+                beforeSend: function () {
+                    confirm("是否要删除?");
+
+                },
+                success: function () {
+                    $("#" + id).remove();
+                }
+            })
+    }
+    function modifyNotice(id, content) {
+        $.ajax({
+            url: "/Manage/modifyNotice/",
+            type: 'post',
+            dataType: 'text',
+            data: { noticeId: id, newContent: content },
+            success: function () {
+                alert("修改完成");
+            }
+        })
+    }
+</script>
+@{
+    foreach (var notice in Model)
+    {
+        <div id="@notice.id">
+            <button type="button" class="btn btn-warning btn-xs  text-center" value="删除" onclick="deleteNotice(@notice.id)">
+                <span class="glyphicon glyphicon-trash"></span> 删除
+            </button>
+            <button type="button" class="btn btn-warning btn-xs  text-center" onclick="modifyNotice(@notice.id,$('#content@(notice.id)').val())" value="保存">
+                <span class="glyphicon glyphicon-floppy-saved"></span> 保存
+            </button>
+            发布日期 @notice.createTime
+            <textarea id="content@(notice.id)" class="form-control" rows="4">@notice.content</textarea>
+        </div><br />
+    }
+}

@@ -1,0 +1,99 @@
+﻿using AntDesigner.AppleGame.interFace;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using AntDesigner.AppleGame;
+using System.Net;
+using System.IO;
+using Newtonsoft.Json;
+using System.Text;
+
+namespace AntDesinger.AppleGame
+{
+    public class LoginByWeixin : ILoginGame
+    {
+        public Func<Player, Player> DaddPlayer
+        {
+            get;
+            set;
+        }
+
+        public Func<string, Player> DgetPlayerByWeixianName
+        {
+            get;
+            set;
+        }
+        public static readonly string token = "ant";
+        public Player login(string name,string shareId)
+        {
+            var player = DgetPlayerByWeixianName(name);
+            if (player == null)
+            {
+                Account account = new Account(name);
+                account.balance = 1;
+                Player newPlayer = new Player(name);
+                newPlayer.account = account;
+                newPlayer.introducerWeixinName = shareId;
+                player = DaddPlayer(newPlayer);
+            }
+
+            return player;
+
+        }
+        public static string getOpenId(string code)
+        {
+
+            string appId = WxPayAPI.WxPayConfig.APPID;
+            string secret = WxPayAPI.WxPayConfig.APPSECRET;
+            string getOpenIdUrl = "https://api.weixin.qq.com/sns/oauth2/access_token?"
+               + "appid=" + appId
+                + "&secret=" + secret
+                 + "&code=" + code
+                 + "&grant_type=authorization_code";
+            HttpWebRequest httpWebRequest = (HttpWebRequest)(HttpWebRequest.Create(getOpenIdUrl));
+            System.Threading.Tasks.Task<WebResponse> getResponseTask = httpWebRequest.GetResponseAsync();
+            getResponseTask.Wait(); 
+            using (HttpWebResponse httpWebResponse = getResponseTask.Result as HttpWebResponse)
+            { 
+            Stream stream = httpWebResponse.GetResponseStream();
+            StreamReader streamReader = new StreamReader(stream, Encoding.UTF8);
+            string responseString = streamReader.ReadToEnd();
+            httpWebRequest.Abort();
+           LoginByWeixin.json_access_token json_access_token = JsonConvert.DeserializeObject<LoginByWeixin.json_access_token>(responseString);
+            return json_access_token.openid;
+            }
+
+        }
+
+
+    public class json_access_token
+    {
+        public string access_token { get; set; }
+        public string expires_in { get; set; }
+        public string refresh_token { get; set; }
+        public string openid { get; set; }
+        public string scope { get; set; }
+        public json_access_token()
+        {
+
+        }
+    }
+    public static bool checkedSignature(string timestamp, string nonce, string signature)
+    {
+
+        string[] arr = { token, timestamp, nonce };
+        Array.Sort(arr);
+        string arrStr = String.Join("", arr);
+        if (Game.getSHA1(arrStr) == signature)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+
+    }
+}
+}

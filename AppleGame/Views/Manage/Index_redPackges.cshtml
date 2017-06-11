@@ -1,0 +1,16 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutHaveManue.cshtml";
+}
+<style type="text/css">
+
+</style>
+<h2>发出红包查询</h2>
+<a href="/Manage/Index/">返回</a>
+<form action="/Manage/redPackges" method="post">
+   从 <input type="date" name="fromDateStr" required/>
+    至<input type="date" name="toDateStr" required/><br/><br />
+    <button type="submit"  class="btn btn-warning    btn-lg btn-block  text-center" value="确定">
+        <span class="glyphicon glyphicon-search"></span> 确定
+    </button>
+</form>
+

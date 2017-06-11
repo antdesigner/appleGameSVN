@@ -1,0 +1,190 @@
+﻿using System;
+using Xunit;
+using AntDesigner.NetCore.GameCity;
+using Moq;
+using System.Collections.Generic;
+
+namespace GameCityTest
+{
+    public class IInningeGameTest
+    {
+          Mock<IGameProject>  _gameProgectFacktory;
+
+
+        public IInningeGameTest()
+        {
+            _gameProgectFacktory = new Mock<IGameProject>();
+
+        }
+        [Theory(DisplayName ="启动游戏_座位未达最低要求")]
+        [InlineData(4,3)]
+        public void StartGame_SeatNotEnough_(int playerCount_,int seatCount_)
+        {
+            Mock<IGameProject> gameProjectMock = new Mock<IGameProject>();
+            gameProjectMock.Setup<int>(g => g.PlayerCountLeast).Returns(playerCount_);
+            gameProjectMock.Setup<int>(g => g.PlayerCountLimit).Returns(playerCount_);
+            InningeGame inningeGame = new InningeGame();
+            inningeGame.DCheckAddSeat += delegate { return true; };
+            inningeGame.DCheckStart += delegate {return true; };
+            inningeGame.IGameProject = gameProjectMock.Object;
+            inningeGame.AddSet(seatCount_);
+            var gameHaveStarted=inningeGame.Start();
+            Assert.False (inningeGame.IsStarted);
+            Assert.False(gameHaveStarted);
+        }
+        [Theory(DisplayName = "启动游戏_座位达最低要求_座位未超最高限制")]
+        [InlineData(3,3,3)]
+        [InlineData(3,4,4)]
+        [InlineData(1,4,2)]
+        [InlineData(0,2,1)]
+        public void StartGame_SeatEnough_(int playerCount_,int limitCount_, int seatCount_)
+        {
+            Mock<IGameProject> gameProjectMock = new Mock<IGameProject>();
+            gameProjectMock.Setup<int>(g => g.PlayerCountLeast).Returns(playerCount_);
+            gameProjectMock.Setup<int>(g => g.PlayerCountLimit).Returns(limitCount_);
+            InningeGame inningeGame = new InningeGame();
+            inningeGame.DCheckStart += delegate { return true; };
+            inningeGame.DCheckAddSeat += delegate { return true; };
+            inningeGame.IGameProject = gameProjectMock.Object;
+            inningeGame.AddSet(seatCount_);
+            var gameHaveStarted = inningeGame.Start();
+            Assert.True (inningeGame.IsStarted);
+            Assert.True(gameHaveStarted);
+        }
+
+        [Theory(DisplayName = "启动游戏_座位为零")]
+        [InlineData(1,0)]
+        [InlineData(0,0)]
+        public void StartGame_SeatIsZero_(int playerCount_, int seatCount_)
+        {
+            Mock<IGameProject> gameProjectMock = new Mock<IGameProject>();
+            gameProjectMock.Setup<int>(g => g.PlayerCountLeast).Returns(playerCount_);
+            InningeGame inningeGame = new InningeGame();
+            inningeGame.DCheckAddSeat += delegate { return true; };
+            inningeGame.DCheckStart += delegate {  return true; };
+            inningeGame.IGameProject = gameProjectMock.Object;
+            inningeGame.AddSet(seatCount_);
+            Assert.Throws<Exception>(() => inningeGame.Start());
+        }
+        [Theory(DisplayName ="添加一个空座位_座位已达到游戏上限_异常")]
+        [InlineData(5,5)]
+        [InlineData(1,1)]
+        [InlineData(0,0)]
+        public void AddSeat_NoEmptySeat(int playerCountLimit_,int seatCount_)
+        {
+            Mock<IGameProject> gameProjectMock = new Mock<IGameProject>();
+            gameProjectMock.Setup<int>(g => g.PlayerCountLimit).Returns(playerCountLimit_);
+            InningeGame inningeGame = new InningeGame();
+            inningeGame.DCheckAddSeat += delegate { return true; };
+            inningeGame.IGameProject = gameProjectMock.Object;
+            inningeGame.AddSet(seatCount_);
+            int preSeatCount = inningeGame.SeatCount;
+            Assert.Throws<Exception>(() => inningeGame.AddSet(1));
+        }
+        [Fact(DisplayName ="返回空座位_")]
+        public void GetEmptySeats()
+        {
+            InningeGame inningeGame= new InningeGame();
+            List<ISeat> Seats= inningeGame.EmptySeats();
+            Assert.Empty(Seats); 
+        }
+        [Theory(DisplayName = "返回空座位_有n个空座位")]
+        [InlineData(2)]
+        [InlineData(1)]
+        [InlineData(0)]
+        public void GetEmptySeats_n(int emptyCount_)
+        {
+            _gameProgectFacktory.SetupGet(g => g.PlayerCountLeast).Returns(emptyCount_);
+            _gameProgectFacktory.SetupGet(g => g.PlayerCountLimit).Returns(emptyCount_);
+            InningeGame inningeGame = new InningeGame();
+            inningeGame.DCheckAddSeat += delegate { return true; };
+            inningeGame.IGameProject = _gameProgectFacktory.Object;
+            inningeGame.AddSet(emptyCount_);
+            List<ISeat> Seats = inningeGame.EmptySeats();
+            Assert.True(Seats.Count == emptyCount_);
+            _gameProgectFacktory.SetupAllProperties();
+        }
+        [Fact(DisplayName ="返回一个空座位")]
+        public void PlayerSitDown()
+        {
+            _gameProgectFacktory.SetupGet(g => g.PlayerCountLeast).Returns(1);
+            _gameProgectFacktory.SetupGet(g => g.PlayerCountLimit).Returns(5);
+            InningeGame inningeGame = new InningeGame();
+            inningeGame.DCheckAddSeat += delegate { return true; };
+            inningeGame.IGameProject = _gameProgectFacktory.Object;
+            inningeGame.AddSet(1);
+            ISeat emptySeat= inningeGame.GetOneEmptySeat();
+            Assert.NotNull(emptySeat);
+        }
+        [Fact(DisplayName = "委托检查能否启动游戏")]
+        public void Start_DCheckStart()
+        {
+            var canStart = false;
+            _gameProgectFacktory.SetupGet(g => g.PlayerCountLeast).Returns(1);
+            _gameProgectFacktory.SetupGet(g => g.PlayerCountLimit).Returns(5);
+            InningeGame inningeGame = new InningeGame();
+            inningeGame.IGameProject = _gameProgectFacktory.Object;
+            inningeGame.DCheckAddSeat += delegate { return true; };
+            inningeGame.DCheckStart += delegate { canStart = true; return true; };
+            inningeGame.AddSet(1);
+            var gameHaveStarted = inningeGame.Start();
+            Assert.True(gameHaveStarted);
+            Assert.True(canStart);
+        }
+        [Fact(DisplayName = "触发启动游戏事件")]
+        public void Start_Event()
+        {
+            var beforGameStartEvent = false;
+            var StartEvent = false;
+            _gameProgectFacktory.SetupGet(g => g.PlayerCountLeast).Returns(1);
+            _gameProgectFacktory.SetupGet(g => g.PlayerCountLimit).Returns(5);
+            InningeGame inningeGame = new InningeGame();
+            inningeGame.DCheckAddSeat += delegate {return true; };
+            inningeGame.IGameProject = _gameProgectFacktory.Object;
+            inningeGame.DCheckStart += delegate { return true; };
+            inningeGame.BeforGameStartHandler += delegate { beforGameStartEvent = true; };
+            inningeGame.GameStartHandler += delegate { StartEvent = true; };
+            inningeGame.AddSet(1);
+            var gameHaveStarted = inningeGame.Start();
+            Assert.True(beforGameStartEvent, "启动游戏前");
+            Assert.True(StartEvent,"启动游戏事件");
+        }
+        [Theory(DisplayName = "委托检查能否添加座位")]
+        [InlineData(5, 5)]
+        [InlineData(1, 1)]
+        [InlineData(0, 0)]
+        public void AddSeat_DCheckAddRoom(int playerCountLimit_, int seatCount_)
+        {
+            bool DCheckAddRoom = false;
+            Mock<IGameProject> gameProjectMock = new Mock<IGameProject>();
+            gameProjectMock.Setup<int>(g => g.PlayerCountLimit).Returns(playerCountLimit_);
+            InningeGame inningeGame = new InningeGame();
+            inningeGame.DCheckAddSeat+= delegate { DCheckAddRoom = true; return true; };
+            inningeGame.IGameProject = gameProjectMock.Object;
+            inningeGame.AddSet(seatCount_);
+            int preSeatCount = inningeGame.SeatCount;
+            Assert.True(DCheckAddRoom);
+        }
+        [Theory(DisplayName = "触发添加座位前后事件")]
+        [InlineData(5, 5)]
+        [InlineData(1, 1)]
+        [InlineData(0, 0)]
+        public void AddSeat_AddSeatEvent(int playerCountLimit_, int seatCount_)
+        {
+            bool beforAddSeatEvent= false;
+            bool afterAddSeatEvent= false;
+            Mock<IGameProject> gameProjectMock = new Mock<IGameProject>();
+            gameProjectMock.Setup<int>(g => g.PlayerCountLimit).Returns(playerCountLimit_);
+            InningeGame inningeGame = new InningeGame();
+            inningeGame.DCheckAddSeat += delegate {return true; };
+            inningeGame.beforAddSeatHandler += delegate { beforAddSeatEvent = true; };
+            inningeGame.afterAddSeatHandler += delegate { afterAddSeatEvent = true; };
+
+            inningeGame.IGameProject = gameProjectMock.Object;
+            inningeGame.AddSet(seatCount_);
+            int preSeatCount = inningeGame.SeatCount;
+            Assert.True(beforAddSeatEvent,"添加座位前");
+            Assert.True(afterAddSeatEvent, "添加座位后");
+        }
+    }
+}

@@ -1,0 +1,597 @@
+﻿@model Player
+@{
+    Layout = "~/Views/Shared/_LayoutHaveManue.cshtml";
+}
+@section styles{
+    <style>
+        body {
+            background-image: url(/images/land.png);
+        }
+
+        #stakeBoxs, #boxs {
+            margin: 0px auto;
+        }
+
+        .box, .stakeBox {
+            float: left;
+            background-size: cover;
+            color: red;
+        }
+
+        .box {
+            border: 1px solid limegreen;
+            margin: -1px;
+            border-radius: 8px;
+            transition: transform 10s ease-in-out;
+            transition-delay: 1s;
+        }
+
+        .leftBox {
+            position: absolute;
+        }
+
+        #stakeBoxs {
+            padding-top: 5%;
+            clear: both;
+        }
+
+
+            #stakeBoxs image {
+                width: 100%;
+                height: 70%;
+            }
+
+        .score {
+            height: 50%;
+            text-align: center;
+        }
+
+        #accountBalance {
+            position: absolute;
+            color: palegreen;
+        }
+
+        #accountResult {
+            position: absolute;
+            text-align: center;
+            color: yellow;
+        }
+
+        #panelStart, #accountBalance {
+            font-family: Georgia;
+            font-weight: 400;
+            text-align: center;
+        }
+
+        #start image {
+            width: 100%;
+            height: 100%;
+        }
+
+        .score {
+            width: 100%;
+            height: 100%;
+            transition: transform 1s ease-in-out;
+            color: green;
+        }
+
+        .backgroundColor1 {
+            opacity: 1
+        }
+
+        .backgroundColor2 {
+            opacity: 0.7
+        }
+
+        .bei {
+            text-align: center;
+            width: 100%;
+            color: green;
+            box-shadow: 5px 3px 3px;
+        }
+
+        #tree {
+            position: absolute;
+            z-index: -100;
+        }
+
+        .animation360deg {
+            transform: rotate(360deg);
+        }
+
+        .animation3600deg {
+            transform: rotate(3600deg);
+        }
+
+        #systemManager {
+            position: fixed;
+            top: 5px;
+            right: 0px;
+        }
+    </style>
+}
+<div id="boxs">
+    <div id="OrangeBig1" class="box" style="background-image:url(/images/OrangeBig.png)"></div>
+    <div id="BellBig1" class="box" style="background-image:url(/images/BellBig.png)"></div>
+    <div id="KingBig" class="box" style="background-image:url(/images/KingBig.png)"></div>
+    <div id="KingSmall" class="box" style="background-image:url(/images/KingSmall.png)">25</div>
+    <div id="AppleBig1" class="box" style="background-image:url(/images/AppleBig.png)"></div>
+    <div id="AppleSmall" class="box" style="background-image:url(/images/AppleSmall.png)">1</div>
+    <div id="OliveBig1" class="box" style="background-image:url(/images/OliveBig.png)"></div>
+    <div id="WatermelonSmall" class="box" style="background-image:url(/images/WatermelonSmall.png)">3</div>
+    <div id="WatermelonBig" class="box" style="background-image:url(/images/WatermelonBig.png)"></div>
+    <div id="ChangeSmall" class="box" style="background-image:url(/images/ChangeSmall.png);background-color:gold"></div>
+    <div id="AppleBig2" class="box" style="background-image:url(/images/AppleBig.png)"></div>
+    <div id="OrangeSmall" class="box" style="background-image:url(/images/OrangeSmall.png)">3</div>
+    <div id="BellBig2" class="box" style="background-image:url(/images/BellBig.png)"></div>
+    <div id="OrangeBig2" class="box" style="background-image:url(/images/OrangeBig.png)"></div>
+    <div id="DoubleSevenSmall" class="box" style="background-image:url(/images/DoubleSevenSmall.png)">3</div>
+    <div id="DoubleSevenBig" class="box" style="background-image:url(/images/DoubleSevenBig.png)"></div>
+    <div id="AppleBig3" class="box" style="background-image:url(/images/AppleBig.png)"></div>
+    <div id="OliveSmall" class="box" style="background-image:url(/images/OliveSmall.png)">3</div>
+    <div id="OliveBig2" class="box" style="background-image:url(/images/OliveBig.png)"></div>
+    <div id="StarBig" class="box" style="background-image:url(/images/StarBig.png)"></div>
+    <div id="StarSmall" class="box" style="background-image:url(/images/StarSmall.png)">3</div>
+    <div id="ChangeBig" class="box" style="background-image:url(/images/ChangeBig.png);background-color:gold"></div>
+    <div id="AppleBig4" class="box" style="background-image:url(/images/AppleBig.png)"></div>
+    <div id="BellSmall" class="box" style="background-image:url(/images/BellSmall.png)">3</div>
+</div>
+<img id="tree" src="/images/tree.png">
+<div id="accountBalance">@(Model.account.balance * 10)</div>
+<div id="accountResult" class="backgroundColor1"></div>
+<div id="stakeBoxs">
+    <div id="King" class="stakeBox" style="background-image:url(/images/stakeBoxs/King.png)">
+        <div class="score">0</div>
+        <label class="bei">50X</lable>
+    </div>
+    <div id="DoubleSeven" class="stakeBox" style="background-image:url(/images/stakeBoxs/DoubleSeven.png)">
+        <div class="score">0</div>
+        <label class="bei">10X</lable>
+    </div>
+    <div id="Star" class="stakeBox" style="background-image:url(/images/stakeBoxs/Star.png)">
+        <div class="score">0</div>
+        <label class="bei">10X</lable>
+    </div>
+    <div id="Watermelon" class="stakeBox" style="background-image:url(/images/stakeBoxs/Watermelon.png)">
+        <div class="score">0</div>
+        <label class="bei">10X</lable>
+    </div>
+    <div id="Olive" class="stakeBox" style="background-image:url(/images/stakeBoxs/Olive.png)">
+        <div class="score">0</div>
+        <label class="bei">5X</lable>
+    </div>
+    <div id="Bell" class="stakeBox" style="background-image:url(/images/stakeBoxs/Bell.png)">
+        <div class="score">0</div>
+        <label class="bei">5X</lable>
+    </div>
+    <div id="Orange" class="stakeBox" style="background-image:url(/images/stakeBoxs/Orange.png)">
+        <div class="score">0</div>
+        <label class="bei">5X</lable>
+    </div>
+    <div id="Apple" class="stakeBox" style="background-image:url(/images/stakeBoxs/Apple.png)">
+        <div class="score">0</div>
+        <label class="bei">5X</lable>
+    </div>
+</div>
+<div style="float:left;width:100%;opacity:0.6;color:red">
+    <br />
+    <a href="/Notice/affiche/">公告:</a>
+    @if (ViewBag.notice != null)
+    {
+        @ViewBag.notice.content<br />
+    }  @* <br /><a href="/Message/messages/" >玩家消息</a>*@
+
+</div>
+<div id="panelStart">
+    <button type="button" class="btn btn-warning btn-lg btn-block text-center" id="zero" value="押 分 清 零">
+        <span class="glyphicon glyphicon-trash"></span> 押 分 清 零
+    </button>
+    <button type="button" class="btn btn-warning btn-lg btn-block text-center" id="start" value="启 动 游 戏">
+        <span class="glyphicon glyphicon-play-circle"></span> 启 动 游 戏
+    </button>
+    <button type="button" class="btn btn-warning btn-lg btn-block  text-center" id="again" value="重 复 上 次">
+        <span class="glyphicon glyphicon-repeat"></span> 重 复 上 次
+    </button>
+    @{
+        if (ViewBag.manager.id == Model.id)
+        {
+            <button type="button" id="systemManager" class="btn btn-warning btn-xs  text-center" value="管 理 游 戏" onclick="window.location.href='/Manage/Index/'">
+                <span class="glyphicon glyphicon-cog"></span>管理
+            </button>
+        }
+    }
+</div>
+
+<audio id="ddAudio">
+    <source src="~/di.mp3" type="audio/mp3">
+</audio>
+<audio id="backgroundAudio" loop="loop">
+    <source src="~/background.mp3" type="audio/mp3">
+</audio>
+<audio id="startingAudio">
+    <source src="~/starting.mp3" type="audio/mp3">
+</audio>
+<audio id="winAudio">
+    <source src="~/win.mp3" type="audio/mp3">
+</audio>
+<audio id="lostAudio">
+    <source src="~/lost.mp3" type="audio/mp3">
+</audio>
+
+@section scripts{
+    <script type="text/javascript">
+        var stakeBoxs = {
+            Apple: { stake: 0 },
+            King: { stake: 0 },
+            DoubleSeven: { stake: 0 },
+            Star: { stake: 0 },
+            Watermelon: { stake: 0 },
+            Olive: { stake: 0 },
+            Bell: { stake: 0 },
+            Orange: { stake: 0 },
+            Apple: { stake: 0 }
+        };
+        function startGame() {  //转盘开始
+
+            var stakeBoxsJsonarry = stakeBoxsToJsonString();
+            if (stakeBoxsJsonarry == "") {
+                alert("没有下注!");
+                return;
+            }
+            againReflash();
+            accountResult.html("???");
+            accountResultWidth = accountResult.width();
+            accountResult.css("left", baseLong * 5.1 - accountResultWidth / 2).fadeIn(1000, function () { });
+            disableStake();
+            $.ajax(
+                {
+                    url: "/Game/getHitBoxs/",
+                    type: "POST",
+                    dataType: "json",
+                    contentType: 'charset=UTF-8',
+                    data: stakeBoxsJsonarry,
+                    success: function (boxs, strStatus) {
+                        var n = 0;
+                        var prize = 0;
+                        $.each(boxs, function (index) {
+                            n++;
+                            prize = prize + parseInt(boxs[index].prize);
+                        });
+                        if (n == 1) {
+                            if (boxs[0].name == "KingBig" || boxs[0].name == "KingSmall") {
+                                boxsColorChangeRuning("yellow", 200);
+                                setTimeout(function () { clearInterval(boxsDefaultRuningTimer); boxsRuning("AppleBig1", boxs[0].name, prize); }, 5000)
+                            }
+                            else {
+                                boxsRuning("AppleBig1", boxs[0].name, prize)
+                            }
+
+                        } else if (n > 1) {
+                            boxsColorChangeRuning("yellow", 200);
+                            setTimeout(function () { clearInterval(boxsDefaultRuningTimer); boxsRuningComplex(boxs, prize); }, 3000)
+
+                        }
+
+                    }
+                }
+            );
+
+        }
+        function stake(event) { //押分
+            var boxName = $(event.target).parent().attr("id");
+            var currentBox = stakeBoxs[boxName];
+            if (parseFloat(accountBalance.html()) < 1) {
+                alert("余额不足!");
+                return;
+            }
+            if (currentBox.stake < 50) {
+                changeAccountBalance(-1);
+                DDVoice[0].play();
+                currentBox.stake = currentBox.stake + 1;
+                var scoreDom = $(event.target).parent().find(".score");
+                scoreDom.html(currentBox.stake);
+                //  scoreDom.data("fen",{stake:currentBox.stake});
+                //$(event.target).parent().find(".score").data("fen",{stake:currentBox.stake});
+                // $(event.target).parent().find(".score").html(currentBox.stake).data("fen",{stake:currentBox.stake});
+
+            }
+            else {
+                alert("最多只能押50!");
+            }
+        }
+        function again()//跟投注
+        {
+            zero();
+            $.each(stakeBoxs, function (Property, Value) {
+                var scoreDom = stakeBoxsPanel.find("#" + Property).find(".score");
+                if (typeof (scoreDom.data("fen")) != "undefined") {
+                    var preFen = scoreDom.data("fen").stake;
+                    if (!checkAccountBalance(preFen)) {
+                        alter("余额不足!");
+                        return;
+                    }
+
+                    changeAccountBalance(-preFen);
+                    scoreDom.html(preFen);
+                    Value.stake = preFen;
+                }
+            });
+
+            startGame();
+
+        }
+        function againReflash()//投注刷新
+        {
+            $.each(stakeBoxs, function (Property, Value) {
+                var scoreDom = stakeBoxsPanel.find("#" + Property).find(".score");
+                var preFen = scoreDom.html();
+                scoreDom.data("fen", { stake: preFen });
+                Value.stake = preFen;
+            });
+
+        }
+        function zero() { //押分清零
+            $(".score").toggleClass("animation360deg");
+            $.each(stakeBoxs, function (Property, Value) {
+                changeAccountBalance(Value.stake);
+                Value.stake = 0;
+                var scoreDom = stakeBoxsPanel.find("#" + Property).find(".score");
+                scoreDom.html(0);
+            });
+        }
+        function cleanStake() {//算分清零
+            $.each(stakeBoxs, function (Property, Value) {
+                Value.stake = 0;
+                stakeBoxsPanel.find("#" + Property).find(".score").html(0);
+            });
+        }
+        function stakeBoxsToJsonString() { //准备Ajax格式
+            var stakeBoxsStr = "[";
+            var stakeBoxsNotZero = false;
+            $.each(stakeBoxs, function (Property, Value) {
+                if (Value.stake > 0) {
+                    stakeBoxsNotZero = true;
+                    stakeBoxsStr = stakeBoxsStr + '{"name":"' + Property + '","stake":' + Value.stake + "},"
+                }
+            });
+            stakeBoxsStr = stakeBoxsStr.substr(0, stakeBoxsStr.length - 1) + "]"
+            if (stakeBoxsNotZero) {
+                return stakeBoxsStr;
+            }
+            return "";
+        }
+        function checkAccountBalance(amount) {
+            var totle = accountBalance.html();
+            if ((totle - amount) >= 0) {
+                return true;
+            }
+            return false;
+        }
+        function changeAccountBalance(amount) { //积分增减
+            accountBalance.html((parseFloat(accountBalance.html()) + parseFloat(amount)).toFixed(2));
+
+        }
+        function enableStake() { //可以操作,重新押分
+            disableStake();
+            stakeBoxsPanel.bind("click", stake);
+            zeroPanel.bind("click", zero);
+            startPanel.bind("click", startGame);
+            againPanel.bind("click", again);
+            boxsColorChangeRuning("yellowgreen", 800);
+        }
+        function disableStake() { //禁止操作,不可押分
+            try { clearInterval(boxsDefaultRuningTimer) }
+            catch (err) { };
+            boxsPanel.css("background-color", "palegreen");
+            stakeBoxsPanel.unbind("click", stake);//押分
+            zeroPanel.unbind("click", zero);//清零
+            startPanel.unbind("click", startGame);//开始
+            againPanel.unbind("click", again);
+        }
+        function boxsRuning(startBoxName, stopBoxName, prize) { //转盘开始转动
+            startingVoice[0].play();
+            var startBoxIndex_ = getBoxIndex(startBoxName);
+            var stopBoxIndex_ = getBoxIndex(stopBoxName);
+            var timeSpan_ = $("#boxs").children("div").length;
+            var circle_ = 4;
+            var prize_ = prize;
+            oneResultRun(timeSpan_, startBoxIndex_, circle_, stopBoxIndex_, prize_);
+
+        }
+        function oneResultRun(timeSpan, startBoxIndex, circle, stopBoxIndex, prize) { //转盘转动动画
+            var box = $("#boxs");
+            var boxlength = box.children("div").length;
+            boxRunning = setInterval(function () {
+                box.children("div:eq(" + startBoxIndex + ")").css("background-color", "yellow");
+                accountResult.toggleClass("backgroundColor1");
+                $("#tree").toggleClass("backgroundColor2");
+                $("#tree").toggleClass("backgroundColor1");
+                accountResult.toggleClass("backgroundColor2");
+
+                if (startBoxIndex == 0) {
+                    box.children("div:eq(" + (boxlength - 1) + ")").css("background-color", "palegreen");
+                } else {
+                    box.children("div:eq(" + (startBoxIndex - 1) + ")").css("background-color", "palegreen");
+                };
+                if (startBoxIndex == stopBoxIndex) {
+                    circle--;
+                    if (circle == 0) {
+                        clearInterval(boxRunning);
+                        setTimeout(function () { refreshGame(prize) }, 2000);
+                        return;
+                    };
+                }
+                startBoxIndex = startBoxIndex + 1;
+                clearInterval(boxRunning);
+                timeSpan = timeSpan * (1 + 1 / boxlength);
+                if (startBoxIndex == boxlength) {
+                    startBoxIndex = 0;
+                }
+                oneResultRun(timeSpan, startBoxIndex, circle, stopBoxIndex, prize);
+            }, timeSpan)
+
+        }
+        function refreshGame(prize) {  //转盘转动结束后
+            if (prize > 0) {
+                winVoice[0].play();
+                accountResult.html("+" + prize);
+
+            }
+            else {
+                lostVoice[0].play();
+                accountResult.html("LOST");
+            }
+            var accountResultWidth = accountResult.width();
+            accountResult.css("left", baseLong * 5 - accountResultWidth / 2).fadeOut(7000, function () { });
+            backgroundVoice[0].play();
+            cleanStake();
+            changeAccountBalance(prize);
+            enableStake();
+
+        }
+        function getBoxIndex(boxName) { //根据box名称返回顺序位置
+            var box = $("#boxs");
+            for (var index = 0; index < box.children("div").length; index++) {
+                if (box.children("div:eq(" + index + ")").attr("id") == boxName) {
+                    return index;
+                };
+            }
+        }
+
+        function setLayout(long) { //页面布局
+
+            $("#boxs").width(long * 7);
+            $(".box").height(long).width(long);
+
+            boxsPanel.removeClass("leftBox");
+            $.each(boxsPanel, function (index) {
+                if (index <= 6) {
+                    $(this).css("float", "left");
+                } else if (6 < index && index <= 12) {
+                    $(this).css("float", "right").css("clear", "right");
+                } else if (12 < index && index <= 18) {
+                    $(this).css("float", "right");
+                } else {
+                    $(this).addClass("leftBox");
+                }
+            });
+
+            $(".stakeBox").height(long * 1.7).width(long * 1.11);
+            var n = 0;
+            var leftBoxLenth = $(".leftBox").length;
+            $.each($(".leftBox"), function () {
+                $(this).css("top", (long) * (leftBoxLenth + n));
+                n--;
+            })
+
+            $(".score").css("font-size", long * 0.5);
+            accountBalance.css("font-size", long / 1.5);
+            var accountBalanceWidth = accountBalance.width();
+            accountBalance.css("top", long * 2.2).css("left", long * 5 - accountBalanceWidth / 2)
+
+
+            accountResultWidth = $("#accountResult").width();
+            accountResult.css("top", long * 3).css("left", long * 5 - accountResultWidth / 2).css("font-size", long / 1.7);
+
+
+            $("#tree").width(long * 4.8)
+            var treeWidth = $("#tree").width();
+            $("#tree").css("top", long).css("left", long * 5 - treeWidth / 2);
+
+
+
+        }
+        $(function () {
+            accountBalance = $("#accountBalance");
+            accountResult = $("#accountResult");
+            stakeBoxsPanel = $("#stakeBoxs");
+            zeroPanel = $("#zero");
+            startPanel = $("#start");
+            againPanel = $("#again");
+            boxsPanel = $(".box");
+            oddBoxs = $(".box:odd");
+            evenBoxs = $(".box:even");
+            baseLong = document.body.clientWidth / 10;
+            setLayout(baseLong);
+            $(window).resize(function () {
+                baseLong = document.body.clientWidth / 10;
+                setLayout(baseLong)
+            });
+            changeForboxsColorToggle = true;
+            enableStake();
+            DDVoice = $("#ddAudio");
+            winVoice = $("#winAudio");
+            lostVoice = $("#lostAudio");
+            startingVoice = $("#startingAudio");
+            backgroundVoice = $("#backgroundAudio");
+            backgroundVoice[0].play();
+
+        })
+
+        function boxsColorChangeRuning(color, speed) {
+            boxsDefaultRuningTimer = setInterval(function () { boxsColorToggle(color); }
+                , speed);
+        }
+        function boxsColorToggle(color) {
+            if (changeForboxsColorToggle == true) {
+                oddBoxs.css("background-color", color);
+                evenBoxs.css("background-color", "palegreen");
+                changeForboxsColorToggle = false;
+            } else {
+                oddBoxs.css("background-color", "palegreen");
+                evenBoxs.css("background-color", color);
+                changeForboxsColorToggle = true;
+            }
+        }
+
+        function boxsRuningComplex(boxs, prize) {
+            var n = 0;
+            $.each(boxs, function () {
+
+                $("#" + this.name).css("background-color", "yellow").toggleClass("animation3600deg");
+                n++;
+                if (n == boxs.length) {
+                    setTimeout(function () { refreshGame(prize) }, n * 1000 + 10000);
+                    ;
+                }
+            })
+        }
+
+    </script>
+    <script>
+        wx.config({
+            debug: false,
+            appId: '@Html.Raw(ViewBag.wxConfig.appId)',
+            timestamp: '@Html.Raw(ViewBag.wxConfig.timestamp)',
+            nonceStr: '@Html.Raw(ViewBag.wxConfig.nonceStr)',
+            signature: '@Html.Raw(ViewBag.wxConfig.signature)',
+            jsApiList: ["onMenuShareAppMessage", "onMenuShareTimeline"]
+        });
+        wx.ready(function () {
+            wx.onMenuShareAppMessage({
+                title: '呵护你眼睛的小游戏',
+                desc: '点击进入',
+                link: 'http://www.88v88v.com/Game/Index/?state=@(Html.Raw(ViewBag.shareId))',
+                imgUrl: 'http://www.88v88v.com/images/AppleBig.png',
+                type: '',
+                dataUrl: '',
+                success: function () {
+                },
+                cancel: function () {
+                    alert("求求你分享给朋友吧！主人");
+                }
+            });
+            wx.onMenuShareTimeline({
+                title: '呵护你眼睛的小游戏',
+                link: 'http://www.88v88v.com/Game/Index/?state=@(Html.Raw(ViewBag.shareId))',
+                imgUrl: 'http://www.88v88v.com/images/AppleBig4.png',
+                success: function () {
+                },
+                cancel: function () {
+                    alert("求求你分享给朋友吧！主人");
+                }
+            });
+        });
+
+    </script>
+}

@@ -1,0 +1,164 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace AntDesigner.NetCore.GameCity
+{
+    /// <summary>
+    /// 
+    /// </summary>
+    interface IGameCity
+    {
+    }
+    /// <summary>
+    /// 进入房间的玩家接口
+    /// </summary>
+    public interface IPlayerJoinRoom
+    {/// <summary>
+    /// 玩家名称
+    /// </summary>
+        string weixinName { get; set; }
+        /// <summary>
+        /// 玩家Id
+        /// </summary>
+        int id { get; set; }
+        /// <summary>
+        /// 玩家余额
+        /// </summary>
+        decimal account { get; }
+        /// <summary>
+        /// 玩家账户增加(-)减少(+)
+        /// </summary>
+        /// <param name="ticketPrice"></param>
+        /// <returns></returns>
+        bool DecutMoney(decimal ticketPrice);
+    }
+    /// <summary>
+    /// 游戏城管理员
+    /// </summary>
+    public interface ICityManager : IPlayerJoinRoom
+    {
+    }/// <summary>
+    /// 房间游戏座位
+    /// </summary>
+    public interface IPlayerSeat
+    {
+        /// <summary>
+        /// 玩家Id
+        /// </summary>
+        int id { get; set; }
+    }
+    /// <summary>
+    /// 公告
+    /// </summary>
+    public interface INotice
+    {
+    }
+    /// <summary>
+    /// 进入游戏城的票
+    /// </summary>
+    public interface IJoinGameCityTicket
+    {
+    }
+    /// <summary>
+    /// 游戏
+    /// </summary>
+    public interface IGameProject
+    {/// <summary>
+    /// 游戏名称
+    /// </summary>
+        string Name { get; set; }
+        /// <summary>
+        /// 人数下限
+        /// </summary>
+        int PlayerCountLeast { get; set; }
+        /// <summary>
+        /// 人数上限
+        /// </summary>
+        int PlayerCountLimit { get; set; }
+        /// <summary>
+        /// 能否添加座位检查
+        /// </summary>
+        /// <param name="arg"></param>
+        /// <returns></returns>
+        bool CheckAddSeat(IInningeGame arg);
+        /// <summary>
+        /// 能否启动游戏检查
+        /// </summary>
+        /// <param name="arg"></param>
+        /// <returns></returns>
+        bool CheckStart(IInningeGame arg);
+        /// <summary>
+        /// 添加座位前事件处理
+        /// </summary>
+        /// <param name="sender">IInningeGame一局游戏</param>
+        /// <param name="e">暂无用</param>
+        void BeforAddSeat(object sender, EventArgs e);
+        /// <summary>
+        /// 添加座位后事件处理
+        /// </summary>
+        /// <param name="sender">IInningeGame一局游戏</param>
+        /// <param name="e">暂无用</param>
+        void AfterAddSeat(object  sender, EventArgs e);
+        /// <summary>
+        /// 游戏启动前事件处理
+        /// </summary>
+        /// <param name="sender">IInningeGame一局游戏</param>
+        /// <param name="e"></param>
+        void BeforGameStar(object sender, EventArgs e);
+        /// <summary>
+        /// 游戏启动处理
+        /// </summary>
+        /// <param name="sender">IInningeGame一局游戏</param>
+        /// <param name="e">暂无用</param>
+        void GameStart(object sender, EventArgs e);
+    }
+    public interface ISeat
+    {/// <summary>
+    /// 座位上没人
+    /// </summary>
+        bool IsEmpty { get; }
+        /// <summary>
+        /// 玩家Id
+        /// </summary>
+        int PlayerId { get; }/// <summary>
+        /// 玩家是否能坐下
+        /// </summary>
+        Func<IInningeGame, bool> DCheckSitDown { get; set; }
+        /// <summary>
+        /// 一局游戏
+        /// </summary>
+        IInningeGame  IIningeGame {get;}
+        /// <summary>
+        /// 该座位玩家游戏中各种数据
+        /// </summary>
+        Dictionary<string,List<string>> GameDate { get; set; }
+        /// <summary>
+        /// 玩家离开座位前事件
+        /// </summary>
+        event EventHandler BeforPlayerLeaveHandler;
+        /// <summary>
+        /// 玩家离开座位后事件
+        /// </summary>
+        event EventHandler AfterPlayerLeaveHandler;
+        /// <summary>
+        /// 玩家做下后事件
+        /// </summary>
+        event EventHandler AfterSitDownHandler;
+        /// <summary>
+        /// 玩家坐下前事件
+        /// </summary>
+        event EventHandler BeforSitDownHandler;
+        /// <summary>
+        /// 玩家坐下
+        /// </summary>
+        /// <param name="player_">玩家</param>
+        /// <returns></returns>
+        bool  PlayerSitDown(IPlayerSeat player_);
+        /// <summary>
+        /// 玩家离开座位
+        /// </summary>
+        void PlayLeave();
+    }
+   
+}

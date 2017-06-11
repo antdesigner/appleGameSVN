@@ -1,0 +1,26 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutHaveManue.cshtml";
+}
+<style type="text/css">
+
+</style>
+<h2>房间配置</h2>
+
+<div style="text-align:center;margin:auto;">
+    <a href="/Citys/Rooms/RoomsList">返回</a><br />
+    <form name="createRoom" action="/Citys/Rooms/CreateRoom" method="post">
+        <label>游戏城名</label> @Html.DropDownList("gameCityId", ViewBag.GameCitys as IEnumerable<SelectListItem>, new { @class = "inputBoxs" })<br />
+        <label>游戏项目</label> @Html.DropDownList("gameProject", ViewBag.GameProjects as IEnumerable<SelectListItem>, new { @class = "inputBoxs" })<br />
+        <label>房间名称</label><input type="text" name="Name" class="inputBoxs" required /><br />
+        <label>人数上限</label><input type="number" name="PlayerCountTopLimit" class="inputBoxs" required /><br />
+        <label>房间密码</label><input type="password" name="SecretKey" class="inputBoxs" /><br />
+        <label>房间价格</label><input type="text" class="text-center inputBoxs " placeholder="0.00" pattern="^(([1-9]\d{0,9})|0)(\.\d{1,2})?$" name="TicketPrice" /><br />
+        <div style="width:100%;text-align:center">
+            <label class="text-center" style="margin:auto;margin-top:1.5rem;margin-bottom:1rem">房间公告</label><br />
+            <textarea name="Affiche" style="width:100%;height:10rem;"></textarea>
+        </div>
+        <button type="submit" class="btn btn-warning   btn-lg btn-block  text-center" value="确定">
+             确定
+        </button>
+    </form>
+</div>

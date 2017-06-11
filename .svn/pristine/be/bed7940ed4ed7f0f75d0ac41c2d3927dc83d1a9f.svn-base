@@ -1,0 +1,29 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace AntDesigner.NetCore.GameCity
+{
+    interface IGameCity
+    {
+    }
+    public interface IPlayerJoinRoom
+    {
+        string weixinName { get; set; }
+        int id { get; set; }
+        decimal account { get; }
+        bool DecutMoney(decimal ticketPrice);
+    }
+    public interface ICityManager : IPlayerJoinRoom
+    {
+    }
+    public interface IInningeGame
+    {
+    }
+    public interface INotice
+    {
+    }
+    public interface IJoinGameCityTicket
+    {
+    }
+}

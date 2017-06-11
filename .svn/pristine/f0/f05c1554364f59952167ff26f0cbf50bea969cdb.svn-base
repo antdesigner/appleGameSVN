@@ -1,0 +1,32 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutHaveManue.cshtml";
+}
+<style type="text/css">
+
+</style>
+<h2>管理游戏</h2>
+
+
+<ul class="nav nav-pills nav-stacked">
+    <li class="active" "><a>管理玩家</a></li>
+    <li><a href="/Manage/PlayersOnline/">在线玩家</a></li>
+    <li><a href="/Manage/AllOfPlayer/">全部玩家</a></li>
+    <li><a href="/Manage/Index_findPlayer/">查找玩家</a></li>
+</ul>
+<ul class="nav nav-pills nav-stacked">
+    <li class="active"><a>游戏公告</a></li>
+    <li><a href="/Manage/Index_newNotice/">发布公告</a></li>
+    <li><a href="/Manage/noticesManager/">公告列表</a></li>
+</ul>
+    </li>
+
+@*<li>
+        游戏难度
+        <ul  class="nav nav-pills nav-stacked">
+            <li><a href="/Manage/setGameDegree/?gameDegree=1">简单</a></li>
+            <li><a href="/Manage/setGameDegree/?gameDegree=2">容易</a></li>
+            <li><a href="/Manage/setGameDegree/?gameDegree=3">困难</a></li>
+        </ul>
+    </li>
+    <li>当天流水</li>*@
+</ul>

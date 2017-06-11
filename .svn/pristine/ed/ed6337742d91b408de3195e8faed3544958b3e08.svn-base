@@ -1,0 +1,141 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace AntDesigner.NetCore.GameCity
+{/// <summary>
+/// 一局游戏
+/// </summary>
+    public  class InningeGame:IInningeGame
+    {/// <summary>
+    /// 添加座位后事件
+    /// </summary>
+        public event EventHandler afterAddSeatHandler;
+        /// <summary>
+        /// 即将添加座位前事件
+        /// </summary>
+        public event EventHandler beforAddSeatHandler;
+        /// <summary>
+        /// 可以启动游戏前事件
+        /// </summary>
+        public event EventHandler BeforGameStartHandler;
+        /// <summary>
+        /// 启动了游戏事件
+        /// </summary>
+        public event EventHandler GameStartHandler;
+        /// <summary>
+        /// 不能直接添加元素
+        /// </summary>
+        List<ISeat> Seats { get; set; }
+        /// <summary>
+        /// 游戏开始了?
+        /// </summary>
+        public bool IsStarted { get;private  set; }
+        /// <summary>
+        /// /游戏
+        /// </summary>
+        public IGameProject IGameProject { get; set; }
+        /// <summary>
+        /// 这局游戏的座位数
+        /// </summary>
+        public int SeatCount { get { return Seats.Count; } private set { } }
+        /// <summary>
+        /// 委托检查是否可以启动游戏
+        /// </summary>
+        public Func<IInningeGame,bool> DCheckStart { get; set; }
+        /// <summary>
+        /// 委托检查能否添加座位
+        /// </summary>
+        public Func<IInningeGame, bool> DCheckAddSeat{ get; set; }
+
+        /// <summary>
+        /// 游戏所在房间导航
+        /// </summary>
+        //public IRoom Room { get; set; }
+        /// <summary>
+        /// 开始游戏
+        /// </summary>
+        /// <returns></returns>
+        public bool Start()
+        {
+            if (DCheckStart(this))
+            {
+               BeforGameStartHandler?.Invoke(this, new EventArgs());
+                if (MyStart())
+                {
+                    GameStartHandler?.Invoke(this, new EventArgs());
+                    return true;
+                }
+            }
+            return false;
+        }
+       private  bool MyStart()
+        {
+            if (SeatCount==0)
+            {
+                throw new Exception("座位数量不能为零");
+            }
+            if (IGameProject.PlayerCountLeast>SeatCount || IGameProject.PlayerCountLimit<SeatCount )
+            {
+                IsStarted = false;
+                return false;
+            }
+            IsStarted = true;
+            return IsStarted;
+        }
+        public InningeGame()
+        {
+            Seats= new List<ISeat>();
+           
+           // Seats.Add(new Seat());
+        }
+        /// <summary>
+        /// 添加座位
+        /// </summary>
+        /// <param name="n"></param>
+        public bool AddSet(int n)
+        {
+            if (DCheckAddSeat(this))
+            {
+                beforAddSeatHandler?.Invoke(this,new EventArgs());
+                MyAddSet(n);
+                afterAddSeatHandler?.Invoke(this, new EventArgs());
+                return true;
+            }
+            return false;
+        }
+        private void MyAddSet(int n)
+        {
+            for (int i = 0; i < n; i++)
+            {
+                if ( IGameProject.PlayerCountLimit == SeatCount)
+                {
+                    throw new Exception("座位已经达到游戏上限,不能再添加");
+                }
+                Seats.Add(new Seat());
+            }
+        }
+        /// <summary>
+        /// 获得全部没有玩家的座位
+        /// </summary>
+        /// <returns></returns>
+        public List<ISeat> EmptySeats()
+        {
+            return Seats.Where<ISeat>(s => s.IsEmpty == true).ToList();
+        }
+        /// <summary>
+        /// 获得一个空座位
+        /// </summary>
+        /// <returns></returns>
+        public ISeat GetOneEmptySeat()
+        {
+            List<ISeat> emptySeats = EmptySeats();
+            if (emptySeats.Count==0)
+            {
+                return null;
+            }
+            return emptySeats[0];
+        }
+    }
+}

@@ -1,0 +1,36 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@RenderBody()
+
+@section bottomMenue{
+    <div id="Panel">
+        <ul class="pagination">
+            <li>
+                <a id="withDraw" href="/Player/Index_withdrawCash/">奖品</a>
+            </li>
+            <li>
+                <a id="rechage" href="/Player/Index_recharge/">充值</a>
+            </li>
+            <li>
+                <a id="gameExplain" href="/Game/gameExplain/">玩法</a>
+            </li>
+            <li>
+                <a id="accountDetails" href="/Account/accountDetail/">账户</a>
+            </li>
+            <li>
+                <a id="popularize" href="/Player/friends/">朋友</a>
+            </li>
+            <li>
+                <a id="share" href="/Game/logGameAgain/">返回</a>
+            </li>
+        </ul>
+    </div>
+
+}
+@section styles{
+    @RenderSection("styles", required: false)
+}
+@section scripts{
+    @RenderSection("scripts", required: false)
+}

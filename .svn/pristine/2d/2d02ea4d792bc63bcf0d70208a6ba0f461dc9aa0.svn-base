@@ -1,0 +1,16 @@
+{
+  "ApplicationInsights": {
+    "InstrumentationKey": ""
+  },
+  "Logging": {
+    "IncludeScopes": false,
+    "LogLevel": {
+      "Default": "Debug",
+      "System": "Information",
+      "Microsoft": "Information"
+    }
+  },
+  "ConnectionStrings": {
+    "myConnectionStrings": "Server=(LocalDB)\\.\\appleLoacaldb;AttachDbFilename=\"C:\\appleGame\\App_Data\\AppleGame.mdf\";Integrated Security=True;MultipleActiveResultSets=False;Connect Timeout=60"
+  }
+}

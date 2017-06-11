@@ -1,0 +1,126 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using AntDesigner.AppleGame.EF;
+using AntDesigner.AppleGame;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using AntDesigner.AppleGame.interFace;
+using WxPayAPI;
+using AntDesigner.weiXinPay;
+using System.IO;
+using System.Text;
+// For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+
+namespace AntDesigner.AppleGame.Controllers
+{
+ 
+    public class PlayerController : myController
+    {
+
+        public PlayerController(IStorehouse IStorehouse, IHttpContextAccessor httpContextAccessor) : base(IStorehouse, httpContextAccessor)
+        {
+
+        }
+
+
+        public IActionResult Index()
+        {
+
+            return View("friends");
+        }
+
+        public IActionResult friends()
+        {
+            IList<Player> friends = player.seeFriends();
+            return View("friends", friends);
+        }
+        public IActionResult Index_withdrawCash()
+        {
+
+            return View("withdrawCash", player.account);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult withdrawCash(decimal amount)
+        {
+            if (amount > 30)
+            {
+                return View("withdrawCash", player.account);
+            }
+
+            try
+            {
+                player.account.addmount(-amount, "红包");
+            }
+            catch (Exception e)
+            {
+
+                ViewBag.result = e.Message;
+                return View("withdrawCash", player.account);
+            }
+            RedPack redPack = new RedPack();
+            if (!redPack.request(player.weixinName, amount, "恭喜获得苹果机游戏红包", "苹果机游戏", "申请红包", "一天只能领一个红包"))
+            {
+                ViewBag.result = "发放出现异常,一天只能领两次,请明天再试";
+                player.account.addmount(amount, "红包");
+            }
+            else {
+                ViewBag.result = "红包领取成功";
+            }
+            IstoreHouse.addEntity<RedPack>(redPack);
+            try
+            {
+                IstoreHouse.saveChanges();
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                foreach (var entry in ex.Entries)
+                {
+                    if (entry.Entity is Account)
+                    {
+
+                        decimal  databaseValue = IstoreHouse.getAccountAsNoTracking(player.account.id).balance;
+                        decimal currentValue =(decimal)entry.Property("balance").CurrentValue;
+      
+                        entry.Property("balance").CurrentValue = currentValue+((decimal)entry.Property("balance").OriginalValue - databaseValue);
+                        entry.Property("balance").OriginalValue = databaseValue;
+                    }
+                    else
+                    {
+                        throw new NotSupportedException(player.account.id +"账户变更冲突" );
+                    }
+                }
+                IstoreHouse.saveChanges();
+            }
+            
+            return View("withdrawCash", player.account);
+        }
+        public IActionResult Index_recharge()
+        {
+            return View("recharge", player.account);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult creatOrder(decimal amount)
+        {
+            if (amount>10)
+            {
+                return View("recharge", player.account);
+            }
+            PayOrder payOrder = new PayOrder(player.weixinName, amount);
+            ViewBag.wxJsApiParam = payOrder.createWxJsApiParam();
+            IstoreHouse.addEntity<PayOrder>(payOrder);
+            IstoreHouse.saveChanges();
+            ViewBag.amount = amount;
+            return View("recharge", player.account);
+
+            //新建订单
+        }
+
+    }
+
+}
+

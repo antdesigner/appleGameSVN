@@ -1,0 +1,37 @@
+﻿@model IEnumerable<AntDesigner.GameCityBase.Player>
+
+@{
+    Layout = "~/Views/Shared/_LayoutHaveManue.cshtml";
+}
+<h2>在线玩家</h2>
+<a href="/Manage/Index/">返回</a>
+共 @Model.Count() 人在线
+<table>
+    <tr>
+        <th>选择</th>
+        <th>注册日期</th>
+        <th>玩家</th>
+        <th>余额</th>
+        <th>介绍人</th>
+        <th>发送消息</th>
+        <th>调整余额</th>
+    </tr>
+    @{
+        foreach (var player in Model)
+        {
+
+            <tr>
+
+                <td><input type="checkbox" /></td>
+                <td>@player.CreateTime</td>
+                <td>@player.WeixinName</td>
+                <td>@player.Account.Balance</td>
+                <td>@player.IntroducerWeixinName</td>
+                <td><a href="/Manage/Index_sendMessageTo/name?=@player.WeixinName">发送消息</a></td>
+                <td><a href="/Manage/Index_adjustAccount/name?=@player.WeixinName">调整余额</a></td>
+
+            </tr>
+
+        }
+    }
+</table>

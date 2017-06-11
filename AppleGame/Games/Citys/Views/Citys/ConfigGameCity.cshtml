@@ -1,0 +1,16 @@
+﻿@using AntDesigner.NetCore.GameCity;
+@model IGameCity
+@{
+    Layout = "~/Views/Shared/_LayoutHaveManue.cshtml";
+}
+<h2>配置游戏城</h2>
+<form name="configGameCity" action="/Citys/Citys/ConfigGameCity" method="post">
+    Id:<input type="hidden" name="Id" value="@Model.Id"/>
+    名称:<input type="text" name="Name" value="@Model.Name" />
+    房价:<input type="text"name="TicketPrice"  placeholder="0.00" pattern="^(([1-9]\d{0,9})|0)(\.\d{1,2})?$"  value="@Model.TicketPrice"/>
+    密码:<input type="text" name="SecretKey" value="@Model.SecretKey"/>
+    开放:<input type="checkbox" name="IsOpening" @(Model.IsOpening==true? @"checked":"") value="true"/>
+    <input name="IsOpening" type="hidden" value="false" />
+    公告:<textarea name="Notic">@Model.INotic</textarea>
+    <input type="submit" class="btn btn-primary btn-lg btn-block text-center" value="确定" />
+</form>

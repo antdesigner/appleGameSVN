@@ -1,0 +1,12 @@
+﻿@model IEnumerable<Notice>
+@{
+    Layout = "~/Views/Shared/_LayoutHaveManue.cshtml";
+}
+<h2>公告列表</h2>
+@{foreach (var notice in Model)
+    {
+@:发布日期：@notice.createTime<br />
+@:公告内容：@notice.content<br />
+<hr />
+    }
+}

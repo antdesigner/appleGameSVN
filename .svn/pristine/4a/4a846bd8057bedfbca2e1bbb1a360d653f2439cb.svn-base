@@ -1,0 +1,167 @@
+﻿using AntDesigner.AppleGame.EF;
+using AntDesigner.AppleGame.interFace;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Reflection;
+using System.Dynamic;
+using AntDesigner.weiXinPay;
+using WxPayAPI;
+using AntDesigner.AppleGame;
+
+namespace AntDesigner.AppleGame
+{
+    public class StorehouseEF : IStorehouse
+    {
+        DataContext db;
+        public StorehouseEF(DataContext db_)
+        {
+            db = db_;
+        }
+
+        public  IList<Player> getFrindOfPlayer(Player player)
+        {
+            return db.Players.AsNoTracking().Include(p=>p.account).Where(p => p.introducerWeixinName == player.weixinName).ToList();
+        }
+        public IQueryable<Player> getOnliePlayers()
+        {
+            return db.Players.AsNoTracking().Include(p=>p.account).Where(p => p.OnlineState == true);
+        }
+        public IQueryable<Player> getAllPlayers()
+        {
+           
+            return db.Players.AsNoTracking().Include(p => p.account);
+        }
+        public IList<Message> getMessagsOfPlayer(Player player)
+        {
+            return db.Messages.AsNoTracking().Include(m=>m.sender).Where(m => m.receiver.id == player.id).ToList();
+           // return db.Messages.Include(m => m.sender).Where(m => m.receiver.id == player.id).ToList();
+        }
+        public Player getPlayerByweixinName(string name)
+        {
+            //   var player=db.Players.Include(p=>p.account)
+            //      .ThenInclude(a=>a.accountDetails).FirstOrDefault(p => p.weixinName == name);
+           Player player =db.Players.FirstOrDefault(p => p.weixinName == name);
+            if (player == null)
+            {
+                return player;
+            }
+            db.Entry(player).Reference(p => p.account).Load();
+            db.Entry(player.account).Collection(a => a.accountDetails).Load();
+            return player;
+        }
+        public ManagePlayer getManagePlayer()
+        {
+
+            return db.ManagePlayers.FirstOrDefault();
+        }
+        //public Message getMessageById(int id)
+        // {
+        //
+        //     return db.Messages.Include(m => m.sender).Include(n => n.receiver).FirstOrDefault(p => p.id == id);
+        //}
+        public Player addPlayer(Player player)
+        {
+          
+            db.Players.Add(player);
+            db.SaveChanges();
+            return player;
+        }
+        public IList<Notice> getAllNotices()
+        {
+            var notices = from item in db.Notices
+                          select item;
+            return notices.ToList();
+        }
+
+      
+
+        public void saveChanges()
+        {
+            try {
+                db.SaveChanges();
+            }
+
+            catch (DbUpdateConcurrencyException ex)
+            {
+                foreach (var entry in ex.Entries)
+                {
+                    
+                    if (entry.Entity is Account)
+                    {
+                        int accountId = (int)entry.Property("id").CurrentValue;
+                        decimal databaseValue = db.Accounts.AsNoTracking().FirstOrDefault(a => a.id == accountId).balance;
+                        decimal currentValue = (decimal)entry.Property("balance").CurrentValue;
+
+                        entry.Property("balance").CurrentValue = currentValue + ((decimal)entry.Property("balance").OriginalValue - databaseValue);
+                        entry.Property("balance").OriginalValue = databaseValue;
+                    }
+                    else
+                    {
+                        throw new NotSupportedException((int)entry.Property("id").CurrentValue + "账户变更冲突");
+                    }
+                }
+                db.SaveChanges();
+            }
+
+        }
+        public T addEntity<T>(T t) where T : class
+        {
+            db.Add(t);
+            return t;
+        }
+        public void removeEntity<T>(T t) where T : class
+        {
+            db.Remove<T>(t);
+            db.SaveChanges();
+        }
+        public T getEntityById<T>(int id) where T : class
+        {
+            return db.Find<T>(id);
+        }
+        public IList<T> getEntitys<T>(int n) where T : class
+        {
+            Type t=typeof(T);
+            string typeName = t.Name;
+            PropertyInfo propertyInfo = db.GetType().GetProperty(typeName+"s");
+            DbSet<T> entitys = (DbSet<T>)propertyInfo.GetValue(db);
+            return (entitys.Take<T>(n)).ToList();
+            
+        }
+      public Message addMessage(Message message)
+        {
+            addEntity<Message>(message);
+            if (db.Entry(message.sender).State==EntityState.Added)
+                {
+                db.Entry(message.sender).State = EntityState.Unchanged;
+                }
+            db.SaveChanges();
+            return message;
+        }
+
+        public PayOrder findPayOrder(WxPayData WxPayData)
+        {
+        string out_trade_no= WxPayData.GetValue("out_trade_no").ToString();
+        string openid=WxPayData.GetValue("openid").ToString();
+        decimal total_fee = (int.Parse(WxPayData.GetValue("total_fee").ToString()))/ 100;
+        return  db.PayOrders.FirstOrDefault(p => p.out_trade_no == out_trade_no);
+        }
+        public Account getAccountAsNoTracking(int accountId)
+        {
+           return  db.Accounts.AsNoTracking().FirstOrDefault(a => a.id == accountId);
+        }
+
+        public IList<RedPack> getRedPackgerList(DateTime fromDate, DateTime toDate)
+        {
+            return db.RedPacks.AsNoTracking().Where(r => r.createTime>= fromDate && r.createTime<=toDate).OrderByDescending(r=>r.createTime).ToList();
+        }
+
+        public IList<PayOrder> getPayOrderList(DateTime fromDate, DateTime toDate)
+        {
+            return db.PayOrders.AsNoTracking().Where(r => r.createTime >= fromDate && r.createTime <= toDate).OrderByDescending(r => r.createTime).ToList();
+            
+        }
+    }
+}

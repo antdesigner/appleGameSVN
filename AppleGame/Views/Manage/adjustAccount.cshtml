@@ -1,0 +1,25 @@
+﻿@model Player
+@using AntDesigner.GameCityBase;
+@{
+    Layout = "~/Views/Shared/_LayoutHaveManue.cshtml";
+}
+<h2>调整账户</h2>
+<a href="/Manage/Index/">返回</a>
+@using(Html.BeginForm("Index_adjustAccount","Manage",FormMethod.Get))
+{
+    @:玩家账号 <input type="text"  id="name" name="name" />
+    <input type="submit" value="查找" />@TempData["nofind"]<br />
+}
+
+
+@using (Html.BeginForm("adjustAccount", "Manage", FormMethod.Post))
+{
+<input type="hidden" id="name_" name="name_"  value="@Model.WeixinName"/>
+@:玩家：<label >@Model.WeixinName</label> <br />
+@:注册日期：@Model.CreateTime<br />
+@:账户余额：@Model.Account.Balance<br />
+@:累计充值：<br />
+@:介绍人：@Model.IntroducerWeixinName<br />
+@:调整余额<input type="text" id="amount" name="amount" /><br />
+        <input type="submit" value="确定" />
+}

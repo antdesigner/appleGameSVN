@@ -1,0 +1,242 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutHaveManue.cshtml";
+}
+@using WxPayAPI;
+@using AntDesigner.NetCore.GameCity;
+@model IRoom
+<style>
+    .buttnMargin {
+        margin: 0.3rem;
+    
+    }
+    #roomMessage span:nth-child(even){
+        font-weight:bolder;
+        color:red;
+    }
+</style>
+@section styles{
+    @RenderSection("styles", required: false)
+}
+@*<a href="/Citys/Rooms/ConfigRoom?gameCityId=@Model.GameCityId&roomId=@Model.Id">房间配置</a>*@
+<!--房间信息 -->
+<div class="modal fade" id="RoomInfoModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">房间信息</h4>
+            </div>
+            <div class="modal-body">
+                <label>房间名称</label>@Model.Name<br />
+                <label>房主昵称</label>@Model.RoomManager.WeixinName<br />
+                <label>门票价格</label>@Model.TicketPrice<br />
+                <label>房间人数</label>@Model.Players.Count/@Model.PlayerCountTopLimit<br />
+                <label>到期时间</label>@Model.Timelimit<br />
+                <label>房间公告</label><br /><hr />@Model.Affiche<br />
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<!--提示信息 -->
+<div class="modal fade" id="AlertInfoModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">提示信息</h4>
+            </div>
+            <div class="modal-body">
+                <label id="alertContent"></label><br />
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div id="GamePanel" style="background-color:aqua;height:calc(100% - 14.6rem);display:flex;flex-direction:column;">
+    @RenderBody()
+</div>
+<div id="roomTools" class="roomInfo" style="display:flex;flex-direction:column;height:14.5rem;text-align:center;margin:auto;position:fixed;bottom:0px;left:0px;text-align:right;width:100%;">
+    <div style="width:100%;float:right;display:flex;flex-direction:row">
+        <div style="width:30%;height:100%;background-color:antiquewhite;border-radius:7px 7px;text-align:center">
+            <button type="button" id="ConfigRoom" style="width:95%" class="btn btn-warning btn-xs  text-center buttnMargin">配置房间</button>
+            <button type="button" id="ShowRoomInfo" style="width:95%;" class="btn btn-warning btn-xs  text-center buttnMargin">房间信息</button><br />
+            <button type="button" id="KickPlayer" style="width:95%" class="btn btn-warning btn-xs  text-center buttnMargin">踢出玩家</button>
+            <button type="button" id="leaveRoom" style="width:95%" class="btn btn-warning btn-xs  text-center buttnMargin">返回大厅</button><br />
+            <button type="button" id="StartGame" style="width:95%" class="btn btn-warning btn-xs  text-center buttnMargin">开始游戏</button>
+        </div>
+        <div id="roomMessage" style="font-size:0.6rem;height:12rem;word-break: break-all;word-wrap: break-word;border-radius:5px 5px;border:solid 1px white;background-color:antiquewhite;text-align:left;flex-grow:1;overflow-y:auto;overflow-x:hidden;"></div>
+    </div>
+    <div style="display:flex">
+        <input type="text" id="message" list="forMessage" placeholder="消息内容:" style="background-color:antiquewhite;border-radius:7px 7px;flex-grow:1" /><button type="button" id="SendMessage" style="border-radius:5px 5px" class="btn btn-warning btn-xs  text-center buttnMargin">发送</button>
+        <datalist id="forMessage">
+            <option>快点!我等得花儿都谢了</option>
+            <option>大家慢慢玩!我先离开了</option>
+        </datalist>
+    </div>
+</div>
+@section scripts{
+    <script>
+        var _gameFace = new GameFace();
+         function MethodInfo(methodName){///服务端方法签名
+             this.askMethodName = methodName;
+             this.methodParam = {};
+         }
+         function InvokeSeverMethod(methodInfo) {///调用服务端方法
+            var result;
+            console.debug("invokeSeverMehtod_" + methodInfo.askMethodName);
+            $.ajax({
+                type: "Post",
+                async:false,
+                url: "/GameProjects/GameHandler/WebSocketHandler?gameCityId=@Model.GameCityId&roomId=@Model.Id",
+                data: methodInfo,
+                dataType: "json",
+                success: function (data) {
+                    result = data;
+                }
+            })
+            return result;
+         }
+        var webSocket = new WebSocket("ws://127.0.0.1:8000/ws");
+        webSocket.onopen = function () {
+         alert(@ViewBag.Player.Id);
+        }
+        webSocket.onmessage = function (event) {
+            var obj = JSON.parse(event.data);
+            var methodName = obj.ClientMethodName;
+            var paramStar="";
+            $.each(obj, function(name, value)
+            {
+                if (name != "ClientMethodName") {
+                    paramStar=paramStar+"'"+value+"'"+","
+                }
+
+            });
+            paramStar = paramStar.substring(0, paramStar.length - 1);
+            paramStar = "(" + paramStar + ")";
+            eval(methodName + paramStar);
+
+        }
+        webSocket.onerror = function () {
+            alert("websocket连接发生错误");
+        }
+        webSocket.onclose = function () {
+            alert("和服务器断开websocket连接");
+        }
+                        function ConfigRoom()//配置房间
+        {
+                window.location.href="/Citys/Rooms/ConfigRoom?gameCityId=@Model.GameCityId&roomId=@Model.Id";
+        }
+        function GameFace()
+        {
+            this.Seats = [];
+            currentSeats = null;
+            this.Fresh = function ()///刷新
+            {
+                console.debug("befor_GameFace");
+                var methodInfo = new MethodInfo("FreshGameFace");
+                var gameFace = InvokeSeverMethod(methodInfo);
+                Fresh(gameFace);
+            }
+         }///游戏界面
+        var _GameFace = new GameFace();
+        function StartGame()//开始游戏
+        {
+            console.debug("befor_StartGame");
+            $.get("/GameProjects/GameHandler/Start?gameCityId=@Model.GameCityId&roomId=@Model.Id");
+            console.debug("after_startGame");
+        }
+        function LeaveRoom()//离开房间返回大厅
+        {
+            console.debug("befor_LeaveRoom");
+            window.location.href ="/Citys/Rooms/LeaveRoom?gameCityId=@Model.GameCityId&roomId=@Model.Id";
+            console.debug("after_LeaveRoom");
+        }
+        function NewInnigeGame()
+        {
+        }//开始新的一局
+        function Alert(AlertContent)
+        {
+            $("#AlertInfoModal").find("#alertContent").html() = AlertContent;
+            $("#AlertInfoModal").show();
+        }///提示信息
+        function GameOver()
+        {
+
+        }//游戏正常结束
+        function Stoped()//游戏异常中断
+        {
+        }///游戏异常终止
+        function Kicket(event)//提玩家出房间
+        {
+            var playerId = event.data.playerId;
+            console.debug("befor_Kicket");
+            $.get("/Citys/Rooms/KickPlayer?playerId=" + playerId +"&gameCityId=@Model.GameCityId&roomId=@Model.Id");
+        }
+            function ShowRoomInfo()
+            {
+
+                $('#RoomInfoModal').modal('show');
+        }//房间信息
+            function RoomMessage(name,message)
+            {
+                var $messageElement = $("<span>" + name + ":</span>" + "<span>"+message+"</span></br>")
+                $("#roomMessage").prepend($messageElement);
+            }//房间消息
+            function SendMessage()
+            {
+                var messageStr = $("#message").val();
+                $.get("/Citys/Rooms/RoomMessage?gameCityId=@Model.GameCityId&roomId=@Model.Id&message="+messageStr);
+            }//发送房间消息
+                wx.config({
+            debug: false,
+            appId: '@Html.Raw(ViewBag.wxConfig.appId)',
+            timestamp: '@Html.Raw(ViewBag.wxConfig.timestamp)',
+            nonceStr: '@Html.Raw(ViewBag.wxConfig.nonceStr)',
+            signature: '@Html.Raw(ViewBag.wxConfig.signature)',
+            jsApiList: ["onMenuShareAppMessage", "onMenuShareTimeline"]
+        });
+        wx.ready(function () {
+            wx.onMenuShareAppMessage({
+                title: '呵护你眼睛的小游戏',
+                desc: '点击进入',
+                link: '@(Html.Raw(WxPayConfig.SiteName))/Game/Index/?state=@(Html.Raw(ViewBag.shareId))',
+                imgUrl: '@(Html.Raw(WxPayConfig.SiteName))/images/AppleBig.png',
+                type: '',
+                dataUrl: '',
+                success: function () {
+                },
+                cancel: function () {
+                    alert("求求你分享给朋友吧！主人");
+                }
+            });
+            wx.onMenuShareTimeline({
+                title: '呵护你眼睛的小游戏',
+                link: '@(Html.Raw(WxPayConfig.SiteName))/Game/Index/?state=@(Html.Raw(ViewBag.shareId))',
+                imgUrl:'@(Html.Raw(WxPayConfig.SiteName))/images/AppleBig4.png',
+                success: function () {
+                },
+                cancel: function () {
+                    alert("求求你分享给朋友吧！主人");
+                }
+            });
+                });
+        $(function () {
+         $("#StartGame").on("click", StartGame);
+         $("#leaveRoom").on("click", LeaveRoom);
+         $("#ConfigRoom").on("click", ConfigRoom);
+         $("#KickPlayer").on("click", { playerId: "2" }, Kicket);
+         $("#ShowRoomInfo").on("click", ShowRoomInfo);
+         $("#SendMessage").on("click", SendMessage);
+        })
+    </script>
+    @RenderSection("scripts", required: false)
+}
+
+
