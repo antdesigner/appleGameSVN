@@ -1,7 +1,0 @@
-﻿@{
-    Layout = "~/Views/Shared/_LayoutHaveManue.cshtml";
-}
-<h2>游戏玩法</h2>
-<p>
-    积分大于20时可以获得领红包的机会。QQ群310654555。
-</p>
