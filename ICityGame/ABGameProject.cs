@@ -97,6 +97,7 @@ namespace AntDesigner.NetCore.GameCity
             int playerOnSeatCopunt = innineGame_.NotEmptySeats().Count;
             if (playerOnSeatCopunt < innineGame_.IGameProject.PlayerCountLeast || playerOnSeatCopunt > PlayerCountLimit)
             {
+                Notify?.Invoke(WebscoketSendObjs.RoomMessage(0, "人数不足,不能启动游戏"));
                 return false;
             }
 
@@ -119,7 +120,7 @@ namespace AntDesigner.NetCore.GameCity
         public virtual void GameStart(object inngineGame, EventArgs e)
         {
             inngineGame = (IInningeGame)inngineGame;
-
+            Notify?.Invoke(WebscoketSendObjs.RoomMessage(0, "游戏开始了!"));
         }
         /// <summary>
         /// 添加座位检查
@@ -179,7 +180,10 @@ namespace AntDesigner.NetCore.GameCity
         /// <param name="inningeGame"></param>
         /// <param name="e"></param>
         public virtual void AfterSitDown(object inningeGame, EventArgs e)
-        { }
+        {
+            var roomMessage = WebscoketSendObjs.RoomMessage(0, "有玩家进入");
+            Notify?.Invoke(roomMessage);
+        }
         /// <summary>
         /// 玩家离开座位前事件出路
         /// </summary>
@@ -193,7 +197,11 @@ namespace AntDesigner.NetCore.GameCity
         /// <param name="inningeGame"></param>
         /// <param name="e"></param>
         public virtual void AfterPlayerLeave(object inningeGame, EventArgs e)
-        { }
+        {
+            string playerId = ((PlayerEventArgs)e).Player.Id.ToString();
+            var roomMessage = WebscoketSendObjs.RoomMessage(0, "玩家" + playerId + "离开了");
+            Notify?.Invoke(roomMessage);
+        }
         /// <summary>
         /// 游戏异常中断
         /// </summary>
@@ -201,7 +209,8 @@ namespace AntDesigner.NetCore.GameCity
         /// <param name="e"></param>
         public   virtual   void Stoped(object inningeGame, EventArgs e)
         {
-            Notify?.Invoke(WebscoketSendObjs.Stoped(0));
+            var myE = (GameStopedEventArgs)e;
+            Notify?.Invoke(WebscoketSendObjs.Stoped(0,myE.Message));
         }
         /// <summary>
         /// 游戏正常结束
@@ -224,6 +233,12 @@ namespace AntDesigner.NetCore.GameCity
                 innineGame_.AddSet(PlayerCountLeast - innineGame_.SeatCount);
             }
         }
-        
+        /// <summary>
+        /// 重置游戏,以便开始新的一局
+        /// </summary>
+        public virtual void ResetGame(object inningeGame, EventArgs e)
+        {
+            Notify?.Invoke(WebscoketSendObjs.ResetGame(0));
+        }
     }
 }

@@ -194,14 +194,14 @@ namespace AntDesigner.NetCore.Games
     {
         protected override void Specific()
         {
-            AddSinglerCard("王", "小王"); //小王 王
-            AddSinglerCard("王", "大王");//大王
+            AddSinglerCard("d", "王"); //小王 王
+            AddSinglerCard("d", "王");//大王
         }
         protected override void ConfigCardsNameAndColor()
         {
             CardNameList = new string[] { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
-            //  CardColor = new List<string> { "h", "s", "d", "c" };//hearts红桃、spades黑桃、diamonds梅花,clubs方块
-            CardColor = new List<string> { "红桃", "黑桃", "梅花", "方块" };
+              CardColor = new List<string> { "h", "s", "d", "c" };//hearts红桃、spades黑桃、diamonds梅花,clubs方块
+          //  CardColor = new List<string> { "红桃", "黑桃", "梅花", "方块" };
             Cirlcal = 1;
         }
     }

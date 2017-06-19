@@ -52,14 +52,47 @@
             <div class="modal-body">
                 <label id="alertContent"></label><br />
             </div>
-
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
             </div>
         </div><!-- /.modal-content -->
     </div><!-- /.modal -->
 </div>
-<div id="GamePanel" style="background-color:aqua;height:calc(100% - 14.6rem);display:flex;flex-direction:column;">
+<div class="modal fade" id="gameOverInfo" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">提示信息</h4>
+            </div>
+            <div class="modal-body">
+                <label>本局游戏结束</label><br />
+                <button>继续游戏</button><button>离开房间</button>
+            </div>
+            <div class="modal-footer">
+             @*<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>*@
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal fade" id="gameStoped" tabindex="-1" role="dialog" data-backdrop="false" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">提示信息</h4>
+            </div>
+            <div class="modal-body">
+                <label>游戏异常结束,继续游戏重新开始</label><br />
+                <button>继续游戏</button><button>离开房间</button>
+            </div>
+            <div class="modal-footer">
+              @*<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>*@
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div id="GamePanel" style="height:calc(100% - 14.6rem);display:flex;flex-direction:column;">
     @RenderBody()
 </div>
 <div id="roomTools" class="roomInfo" style="display:flex;flex-direction:column;height:14.5rem;text-align:center;margin:auto;position:fixed;bottom:0px;left:0px;text-align:right;width:100%;">
@@ -84,11 +117,13 @@
 @section scripts{
     <script>
         var _gameFace = new GameFace();
-         function MethodInfo(methodName){///服务端方法签名
+        ///服务端方法签名
+         function MethodInfo(methodName){
              this.askMethodName = methodName;
              this.methodParam = {};
-         }
-         function InvokeSeverMethod(methodInfo) {///调用服务端方法
+        }
+        ///调用服务端方法
+         function InvokeSeverMethod(methodInfo) {
             var result;
             console.debug("invokeSeverMehtod_" + methodInfo.askMethodName);
             $.ajax({
@@ -133,6 +168,7 @@
         {
                 window.location.href="/Citys/Rooms/ConfigRoom?gameCityId=@Model.GameCityId&roomId=@Model.Id";
         }
+        ///游戏界面
         function GameFace()
         {
             this.Seats = [];
@@ -144,36 +180,51 @@
                 var gameFace = InvokeSeverMethod(methodInfo);
                 Fresh(gameFace);
             }
-         }///游戏界面
+         }
         var _GameFace = new GameFace();
-        function StartGame()//开始游戏
+        //开始游戏
+        function StartGame()
         {
             console.debug("befor_StartGame");
             $.get("/GameProjects/GameHandler/Start?gameCityId=@Model.GameCityId&roomId=@Model.Id");
             console.debug("after_startGame");
         }
-        function LeaveRoom()//离开房间返回大厅
+        //离开房间返回大厅
+        function LeaveRoom()
         {
             console.debug("befor_LeaveRoom");
             window.location.href ="/Citys/Rooms/LeaveRoom?gameCityId=@Model.GameCityId&roomId=@Model.Id";
             console.debug("after_LeaveRoom");
         }
+        //开始新的一局
         function NewInnigeGame()
         {
-        }//开始新的一局
+        }
+        ///提示信息
         function Alert(AlertContent)
         {
-            $("#AlertInfoModal").find("#alertContent").html() = AlertContent;
-            $("#AlertInfoModal").show();
-        }///提示信息
+            $("#AlertInfoModal").find("#alertContent").html(AlertContent);
+            $("#AlertInfoModal").modal("show");
+        }
+        //游戏正常结束
         function GameOver()
         {
-
-        }//游戏正常结束
-        function Stoped()//游戏异常中断
+            $("#gameOverInfo").modal("show");
+        }
+        //游戏异常中断
+        function Stoped(Message)
         {
-        }///游戏异常终止
-        function Kicket(event)//提玩家出房间
+          
+            $("#gameStoped").modal("show");
+        }
+        ///重置游戏
+        function ResetGame()
+        {
+
+
+        }
+        //提玩家出房间
+        function Kicket(event)
         {
             var playerId = event.data.playerId;
             console.debug("befor_Kicket");
@@ -181,13 +232,17 @@
         }
             function ShowRoomInfo()
             {
-
                 $('#RoomInfoModal').modal('show');
         }//房间信息
             function RoomMessage(name,message)
             {
-                var $messageElement = $("<span>" + name + ":</span>" + "<span>"+message+"</span></br>")
-                $("#roomMessage").prepend($messageElement);
+                if (name=="0") {
+                    name = "系统";
+                }
+                var myDate = new Date();
+                var time = myDate.toLocaleTimeString();
+                var $messageElement = $("<span>"+time+">"+ name + ":</span>" + "<span>"+message+"</span></br>")
+                $("#roomMessage").append($messageElement);
             }//房间消息
             function SendMessage()
             {

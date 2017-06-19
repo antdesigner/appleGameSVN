@@ -139,6 +139,11 @@ namespace AntDesigner.GameCityBase.Controllers
         [HttpPost]
         public virtual IActionResult WebSocketHandler(string askMethodName, Dictionary<string, string> methodParam)
         {
+            if (_inngeGame!=null&&_inngeGame.IsStarted!=true)
+            {
+                ClientWebsocketsManager.Send(new Alert(player.Id, "游戏还未启动!请房主先启动游戏"));
+                return null;
+            }
             methodParam.Remove("askMethodName");
             methodParam.Add("playerId", player.Id.ToString());
             IGameProject gameProject = _room.InningGame.IGameProject;

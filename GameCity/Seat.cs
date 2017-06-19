@@ -77,9 +77,10 @@ namespace AntDesigner.NetCore.GameCity
         public void PlayLeave()
         {
             BeforPlayerLeaveHandler?.Invoke(IIningeGame, new EventArgs());
+            var player = IPlayer;
             IPlayer = null;
             IsEmpty = true;
-            AfterPlayerLeaveHandler?.Invoke(IIningeGame, new EventArgs());
+            AfterPlayerLeaveHandler?.Invoke(IIningeGame, new PlayerEventArgs(player));
         }
         /// <summary>
         /// 离开座位后事件
@@ -104,7 +105,14 @@ namespace AntDesigner.NetCore.GameCity
             }
             return true;
         }
-  
+        /// <summary>
+        /// 清空游戏数据
+        /// </summary>
+  public void ClearSeatInfo()
+        {
+            GameDateStr.Clear();
+            GameDateObj.Clear();
+        }
 
        
     }

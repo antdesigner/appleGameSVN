@@ -135,7 +135,8 @@ namespace AntDesigner.NetCore.Games.GameTiger
         /// <param name="e"></param>
         public override void Stoped(object inningeGame, EventArgs e)
         {
-            Notify?.Invoke(WebscoketSendObjs.Stoped(0));
+            var myE = (GameStopedEventArgs)e;
+            Notify?.Invoke(WebscoketSendObjs.Stoped(0,myE.Message));
         }
         /// <summary>
         /// 游戏正常结束
@@ -156,7 +157,15 @@ namespace AntDesigner.NetCore.Games.GameTiger
         {
             throw new NotImplementedException();
         }
-
+        /// <summary>
+        /// 重置游戏后事件
+        /// </summary>
+        /// <param name="inningeGame"></param>
+        /// <param name="e"></param>
+        public override void ResetGame(object inningeGame, EventArgs e)
+        {
+            Notify?.Invoke(WebscoketSendObjs.ResetGame(0));
+        }
         #region 各个游戏单独定义的内容
         private IPlayerJoinRoom player;
      

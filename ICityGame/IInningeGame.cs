@@ -68,9 +68,13 @@ namespace AntDesigner.NetCore.GameCity
         /// </summary>
         event EventHandler GameOverHander;
         /// <summary>
+        ///重置游戏后事件
+        /// </summary>
+        event EventHandler AfterResetHander;
+        /// <summary>
         /// 异常中断游戏
         /// </summary>
-        void Stoped();
+        void Stoped(string message);
         /// <summary>
         /// 正常结束游戏
         /// </summary>
@@ -119,6 +123,14 @@ namespace AntDesigner.NetCore.GameCity
         /// <param name="id">玩家Id</param>
         /// <returns></returns>
         List<ISeat> NotMyEmtySteats(int id);
-       
+        /// <summary>
+        /// 游戏进行中检查人数够不够;
+        /// </summary>
+        void CheckSeatCountEnoughWhenRunning();
+        /// <summary>
+        /// 重置一局游戏
+        /// </summary>
+        void Reset();
+
     }
 }
