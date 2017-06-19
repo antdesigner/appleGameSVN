@@ -32,6 +32,10 @@ namespace AntDesigner.NetCore.GameCity
         /// 游戏正常结束事件
         /// </summary>
         public event EventHandler GameOverHander;
+        /// <summary>
+        ///重置游戏后事件
+        /// </summary>
+        public event EventHandler AfterResetHander;
 
         /// <summary>
         /// 不能直接添加元素
@@ -93,6 +97,7 @@ namespace AntDesigner.NetCore.GameCity
             BeforGameStartHandler += IGameProject.BeforGameStart;
             StoptedHandler += IGameProject.Stoped;
             GameOverHander += IGameProject.GameOver;
+            AfterResetHander += IGameProject.ResetGame;
            
         }
         /// <summary>
@@ -118,7 +123,11 @@ namespace AntDesigner.NetCore.GameCity
         }
         private bool CheckStart()
         {
-                if (DCheckStart!=null)
+            if (IsStarted==true||IsStoped==true||IsGameOver==true)
+            {
+                return false;
+            }
+            if (DCheckStart!=null) 
                 {
                     return DCheckStart(this);
                 }
@@ -243,10 +252,11 @@ namespace AntDesigner.NetCore.GameCity
        /// <summary>
        /// 异常中断游戏
        /// </summary>
-        public void Stoped()
+        public void Stoped(string message)
         {
             IsStoped = true;
-            StoptedHandler?.Invoke(this, new EventArgs());
+            StoptedHandler?.Invoke(this, new GameStopedEventArgs(message));
+            Reset();
         }
         /// <summary>
         /// 正常结束游戏
@@ -254,7 +264,50 @@ namespace AntDesigner.NetCore.GameCity
         public void GameOver()
         {
             IsGameOver = true;
+            Reset();
             GameOverHander?.Invoke(this, new EventArgs());
+        }
+        /// <summary>
+        /// 游戏进行人数够不够
+        /// </summary>
+        public void CheckSeatCountEnoughWhenRunning()
+        {
+            if (IsStarted==true)
+            {
+                if (NotEmptySeats().Count < IGameProject.PlayerCountLeast)
+                {
+                    Stoped("有玩家离开,游戏人数不足");
+                }
+            }
+
+        }
+        /// <summary>
+        /// 重置游戏
+        /// </summary>
+        public void Reset()
+        {
+            ClearAllSeatInfo();
+            IsStarted = false;
+            IsStoped = false;
+            IsGameOver = false;
+            AfterResetHander?.Invoke(this, new EventArgs());
+        }
+        /// <summary>
+        /// 清除本局全部座位游戏数据
+        /// </summary>
+        private void ClearAllSeatInfo()
+        {
+            for (int i = 0; i < Seats.Count(); i++)
+            {
+                Seats[i].GameDateObj.Clear();
+                Seats[i].GameDateStr.Clear();
+            }
+            //foreach (var item in Seats)
+            //{
+            //    Seats.Clear();
+            //}
+            GameDateStr.Clear();
+            GameDateObj.Clear();
         }
     }
 }

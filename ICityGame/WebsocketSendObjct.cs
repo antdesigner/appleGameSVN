@@ -20,14 +20,33 @@ namespace AntDesigner.NetCore.GameCity
         {
             return new GameOver(playerId);
         }
-        public static Stoped Stoped(int playerId)
+        public static Stoped Stoped(int playerId,string message)
         {
-            return new Stoped(playerId);
+            Stoped stoped = new Stoped(playerId)
+            {
+                Message = message
+            };
+            return stoped;
         }
         public static LeaveRoom LeaveRoom(int playerId)
         {
             return new LeaveRoom(playerId);
         }
+        public static RoomMessage RoomMessage(int playerId, string message)
+        {
+            RoomMessage roomMessage = new RoomMessage(playerId)
+            {
+                Name = playerId.ToString(),
+                Message = message
+            };
+            return roomMessage;
+
+        }
+        public static ResetGame ResetGame(int playerId)
+        {
+            return new ResetGame(playerId);
+        }
+
     }
   public abstract  class WebsocketSendObjctBase
     {
@@ -58,6 +77,7 @@ namespace AntDesigner.NetCore.GameCity
     }
     public class Stoped : WebsocketSendObjctBase
     {
+        public string Message { get; set; }
         public Stoped(int playerId,string clientMethodName="Stoped") : base(playerId,clientMethodName)
         {
         }
@@ -80,6 +100,13 @@ namespace AntDesigner.NetCore.GameCity
        public  string Message { get; set; }
         public RoomMessage(int playerId, string clientMethodName="RoomMessage") : base(playerId, clientMethodName)
         {
+        }
+    }
+    public class ResetGame : WebsocketSendObjctBase
+    {
+        public ResetGame(int playerId, string clientMethodName= "ResetGame") : base(playerId, clientMethodName)
+        {
+
         }
     }
 }

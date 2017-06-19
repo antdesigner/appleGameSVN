@@ -321,6 +321,7 @@ namespace AntDesigner.NetCore.GameCity
             }
             RemovePlayer_SuccessEvent?.Invoke(this, new PlayerEventArgs(player_));
             CheckFull();
+            InningGame.CheckSeatCountEnoughWhenRunning();
         }
         /// <summary>
         /// 玩家被踢离开房间
@@ -423,5 +424,6 @@ namespace AntDesigner.NetCore.GameCity
             }
             InningGame.IGameProject= game;
         }
+
     }
 }

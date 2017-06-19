@@ -58,6 +58,9 @@ namespace AntDesigner.NetCore.GameCity
         /// 玩家离开座位后事件
         /// </summary>
         event EventHandler AfterPlayerLeaveHandler;
-
+        /// <summary>
+        /// 清空游戏数据
+        /// </summary>
+        void ClearSeatInfo();
     }
 }

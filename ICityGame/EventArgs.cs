@@ -13,4 +13,13 @@ namespace AntDesigner.NetCore.GameCity
         }
 
     }
+    public class GameStopedEventArgs : EventArgs
+    {
+        public string Message { get; set; }
+        public GameStopedEventArgs(string message)
+        {
+            Message = message;
+        }
+
+    }
 }

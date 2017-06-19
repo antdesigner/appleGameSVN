@@ -5,74 +5,105 @@
 }
 @section styles{
    <style>
-       #opponentPoker, #table, #myPoker{width:100%;display:flex;flex-direction:row;}
-       #opponentPoker,#myPoker{
-          flex:4;
-           background-color:coral
+       #opponentPoker, #table, #myPoker{display:flex;flex-direction:row;}
+       #opponentPoker {
+           height: 25%;
        }
-       #table{
-           flex:8;
+       #table {
+           height:50%;
            flex-direction:column;
        }
-       #table>div{
-           flex-grow:1;
-           margin:auto;
-           height:40%
+       #myPoker {
+           height:25%;
+     display:flex;
        }
-       #myPoker .hand{
-           display: flex;
-           flex: 1;
-           justify-content: center
+ canvas {
+           display:block;
        }
-     .payOut {
-           background-color: rebeccapurple;
-           width: 100%;
-          height:50%;
+         #pokerImg{
+             display:none;
+         }
+       #handPoker{
+           width:80%;
+       } #myPoker button {
+           background: linear-gradient(30deg,#f69105,green);
+           margin-right: 1rem;
+           border-radius:0.5rem;
+           color: yellow;
+           border-width: 0;
+           height:75%;
+           border-width:2px;
+           border-color:yellow;
+           transform:rotate(-25deg);
        }
-       #handPoker{width:100%}
     </style>
 }
+<div id="pokerImg">
+    <img src="/images/Pokers/h.png" />
+    <img src="/images/Pokers/s.png" />
+    <img src="/images/Pokers/d.png" />
+    <img src="/images/Pokers/c.png" />
+</div>
 <div id="opponentPoker">
  
 </div>
 <div id="table">
-    <div class="payOut">
-        <canvas id="opponentPayOutPoker"></canvas>
-    </div>
-    <div class="payOut">
+        <canvas id="opponentPayOutPoker" ></canvas>
         <canvas id="payOutPoker"></canvas>
-    </div>
 </div>
 <div id="myPoker">
-    <div class="hand">
-        <canvas id="handPoker"></canvas>
-    </div>
-    <button id="payOut">出牌</button>
-    <button id="getPoker">摸牌</button>
+    <canvas id="handPoker"></canvas>
+        <button id="payOut">出<br />牌</button>
+        <button id="getPoker">要<br />牌</button>
 </div>
 
 @section scripts{
     <script>
+        var payOutPoker = $("#payOutPoker");
+        var handPoker = $("#handPoker");
+        var opponentPayOutPoker = $("#opponentPayOutPoker");
+        function Poker(color,name) {
+            this.CardColor = color;
+            this.name = name;
+        }
+        //绘制
         function Fresh(gameFace)
         {
-           
-            //$("#myPoker>.hand>.name").text(gameFace.myPoker.Name);
-            //$("#myPoker>.hand>.color").text(gameFace.myPoker.CardColor);
-            //$("#myPoker>.payOut>.name").text(gameFace.myPayOutPoker.Name + gameFace.myComparePoker.Name);
-            //$("#myPoker>.payOut>.color").text(gameFace.myPayOutPoker.CardColor + gameFace.myComparePoker.CardColor);
-            //$("#opponentPoker>.payOut>.name").text(gameFace.otherPlayersPoker.Name);
-            //$("#opponentPoker>.payOut>.color").text(gameFace.otherPlayersPoker.CardColor);
+
+            //var myPokerHand = { "name": gameFace.myPoker.Name, "CardColor": gameFace.myPoker.CardColor};
+            var myPokerHand = new Poker(gameFace.myPoker.CardColor, gameFace.myPoker.Name);
+           // var myPokerPayOut = { "name": gameFace.myPayOutPoker.Name + gameFace.myComparePoker.Name, "CardColor":  };
+            var myPokerPayOut = new Poker(gameFace.myPayOutPoker.CardColor + gameFace.myComparePoker.CardColor, gameFace.myPayOutPoker.Name + gameFace.myComparePoker.Name);
+            var oppentPokerPayOut = new Poker(gameFace.otherPlayersPoker.CardColor ,gameFace.otherPlayersPoker.Name)
+
+           // var oppentPokerPayOut = { "name": gameFace.otherPlayersPoker.Name, "CardColor": gameFace.otherPlayersPoker.CardColor };
+            //清空界面
+            //刷新我手上的牌
+            //刷新我出的牌
+            //刷新对手出的牌
+            CleanTable();
+            PaintOnePoker(payOutPoker[0],0,0, myPokerPayOut);
+            PaintOnePoker(handPoker[0],0,0, myPokerHand);
+            PaintOnePoker(opponentPayOutPoker[0], 0, 0, oppentPokerPayOut);
+
             console.debug("after_GameFace");
 
         }
-        function PlayOutCard()//出牌比较
+        canvas = $("canvas");
+        ///还原所有画布
+        function CleanTable()
+        {
+            $.each(canvas, function (i,v) { CleanCanv(v) });
+        }
+        //出牌比较
+        function PlayOutCard()
         {
             console.debug("befor_PlayOutCard");
             var methodInfo = new MethodInfo("PlayerPlayOutOnePoker");
             var mySeat = InvokeSeverMethod(methodInfo);
             console.debug("after_PlayOutCard");
-            var canv = $("#handPoker")[0];
-            CleanCanv(canv);
+           // var canv = $("#handPoker")[0];
+          //  CleanCanv(canv);
         }
         //获得一张牌
         function GetNewPoker()
@@ -81,16 +112,139 @@
             var methodInfo = new MethodInfo("PlayerGetOnePoker");
             var poker = InvokeSeverMethod(methodInfo);
             console.debug("after_GetNewPker");
-            var canv = $("#handPoker")[0];
-            PaintOnePoker(canv);
+           // var canv = $("#handPoker")[0];
+         //   var poker = { "CardColor": "s","name":"7" };
+
         }
-        function PaintOnePoker(canv,x,y,Poker)
+        ///画布水平居中画一张牌(canv画布,偏移,偏移,一张牌)
+        function PaintOnePoker(canv, x, y, Poker) {
+            if (Poker.CardColor.length == 0) {
+                return;
+            }
+            var h = canv.height * 0.9;
+            //画边框
+            var boder = PaintBoder(canv, x, y, h);
+            //画花色
+            PaintCardColor(boder, Poker);
+            //画点数
+            PaintName(boder, Poker);
+        }
+     
+        //    var pokerRatio = 5.7 / 8.8;
+        //    var context = canv.getContext('2d');
+        //    var pokerH = canv.height * 0.8;
+        //    var pokerW = pokerRatio * pokerH;
+        //    var image = new Image();
+        //    image.src = "/images/Pokers/" + Poker.CardColor + ".png";
+        //    var pokerLocationY= 0 + y;
+        //    var pokerLocationX = (canv.width - pokerW) / 2 + x;
+        //    context.drawImage(image, pokerLocationX, pokerLocationY, pokerW, pokerH);
+        //    var fontSize = pokerW * 0.7;
+        //    context.font = (fontSize + "px Georgia");
+        //    context.textAlign = "center";
+        //    context.Baseline = "middle";
+        //    var fontColor = "red";
+        //    switch (Poker.CardColor) {
+        //          //   "h", "s", "d", "c" ;//hearts红桃、spades黑桃、diamonds梅花,clubs方块
+        //        case "s": fontColor = "black"; break;
+        //        case "d": fontColor = "black"; break;
+        //        default: fontColor="red"
+        //    }
+        //    context.fillStyle = fontColor;
+        //    context.fillText(Poker.name, pokerLocationX + pokerW/2, pokerLocationY + pokerH/2);
+        //}
+        //画边框
+        function PaintBoder(canv, x, y,h)
         {
-            var context = canv.getContext('2d');
-            var image = new Image();
-            image.src = "/images/Pokers/s.png";
-            context.drawImage(image, 0, 0);
+            var boder = new Boder(canv,h);
+            boder.X = x + (canv.width - h) / 2;
+            boder.Y = y;
+            //boder.height = h;
+            var c = canv.getContext("2d");
+            c.lineWidth = 1;
+            boder.Y = y + c.lineWidth;
+            c.strokeStyle = "green";
+            c.fillStyle = "white";
+            c.beginPath();
+               //画top boder
+            var r = boder.width / 8;
+            c.moveTo(boder.X+r, boder.Y );
+            c.lineTo(boder.X + boder.width-r, boder.Y );
+            //画top right 圆角
+            c.arcTo(boder.X + boder.width, boder.Y, boder.X + boder.width, boder.Y+r,r)
+            //left boder
+            c.lineTo(boder.X + boder.width, boder.Y  + boder.height-r);
+            //bottom left radius
+            c.arcTo(boder.X + boder.width, boder.Y + boder.height, boder.X + boder.width-r, boder.Y + boder.height,r)
+            //bottom boder
+            c.lineTo(boder.X+r, boder.Y  + boder.height);
+            //bottom right radius
+            c.arcTo(boder.X, boder.Y + boder.height, boder.X, boder.Y + boder.height-r,r)
+            //right boder
+            c.lineTo(boder.X, boder.Y+r );
+            //top right radius
+            c.arcTo(boder.X, boder.Y, boder.X + r, boder.Y, r);
+            c.stroke();
+            c.fill();
+            return boder;
         }
+
+        //画花色
+        function PaintCardColor(boder, Poker)
+        {
+            //花色图片
+            var image = new Image();
+            image.src = "/images/Pokers/" + Poker.CardColor + ".png";
+            //画布
+            var canvasContext = boder.canvasContext
+            //正方形花色变宽
+            var width = boder.width /4;
+            //位置
+            var x = boder.X + boder.width / 8;
+            var y = boder.Y + boder.width / 8;
+            canvasContext.drawImage(image, x,y,width,width);
+        }
+        //画点数
+        function PaintName(boder, Poker)
+        {
+            //字体大小
+            var fontSize = boder.height*0.5;
+            //颜色
+            var fontColor = GetPaintColor(Poker);
+            //点数
+            var name = Poker.name;
+            //画布
+            var canvasContext = boder.canvasContext;
+            //位置
+            var x =boder.X+ boder.width / 2;
+            var y =boder.Y+ boder.height / 2;
+
+            canvasContext.font = (fontSize + "px Georgia");
+            canvasContext.textAlign = "center";
+            canvasContext.textBaseline = "middle";
+            canvasContext.fillStyle = fontColor;
+            canvasContext.fillText(name, x, y);
+        }
+        function GetPaintColor(Poker)
+        {
+            var color = "red";
+               switch (Poker.CardColor) {
+                //   "h", "s", "d", "c" ;//hearts红桃、spades黑桃、diamonds梅花,clubs方块
+                case "s": color = "black"; break;
+                case "d": color = "black"; break;
+                default: color = "red"
+            }
+               return color;
+        }
+        function Boder(canvas,h)
+        {
+            this.canvasContext =canvas.getContext("2d");
+            this.height=h;
+            this.width = this.height * 5.7 / 8.8;
+            this.X;
+            this.Y;
+        }
+        ///还原画布
         function CleanCanv(canv)
         {
             var context = canv.getContext('2d');
@@ -99,5 +253,25 @@
         }
         $("#payOut").on("click", PlayOutCard);
         $("#getPoker").on("click", GetNewPoker);
+        //js控制布局
+        function setLayout()
+        {
+            var bodyW = $("body").innerWidth();
+            var handPokerCssRotia = 0.8;
+            payOutPoker[0].height = payOutPoker.parent().innerHeight() / 2;
+            handPoker[0].height = handPoker.parent().innerHeight();
+            opponentPayOutPoker[0].height = opponentPayOutPoker.parent().innerHeight() / 2;
+            payOutPoker[0].width = bodyW;
+            handPoker[0].width = bodyW*handPokerCssRotia;
+            opponentPayOutPoker[0].width = bodyW;
+        };
+        $(function () {
+            setLayout();
+            $(window).resize(function () {
+                setLayout();
+                _gameFace.Fresh();
+            });
+        });
 </script>
+
 }

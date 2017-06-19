@@ -120,6 +120,10 @@ namespace AntDesigner.NetCore.GameCity
         /// <param name="id">玩家id</param>
         /// <returns></returns>
         object FreshGameFace(int id);
-       
+        /// <summary>
+        /// 重置游戏
+        /// </summary>
+        void ResetGame(object inningeGame, EventArgs e);
+
     }
 }
