@@ -65,3 +65,5 @@
 >  :snail: 知无涯,而生有涯,长路漫漫,愿与君结伴同行
 ### 开发架构
 https://github.com/antdesigner/appleGameSVN/wiki/开发架构
+### 加入项目
+https://github.com/antdesigner/appleGameSVN/wiki
