@@ -67,13 +67,20 @@
             this.name = name;
         }
         //绘制
+        var preOppentPokerPayOut = new Poker();
         function Fresh(gameFace)
         {
 
             //var myPokerHand = { "name": gameFace.myPoker.Name, "CardColor": gameFace.myPoker.CardColor};
             var myPokerHand = new Poker(gameFace.myPoker.CardColor, gameFace.myPoker.Name);
            // var myPokerPayOut = { "name": gameFace.myPayOutPoker.Name + gameFace.myComparePoker.Name, "CardColor":  };
-            var myPokerPayOut = new Poker(gameFace.myPayOutPoker.CardColor + gameFace.myComparePoker.CardColor, gameFace.myPayOutPoker.Name + gameFace.myComparePoker.Name);
+            if (gameFace.myPayOutPoker.CardColor=="") {
+                var myPokerPayOut = new Poker(gameFace.myPayOutPoker.CardColor + gameFace.myComparePoker.CardColor, gameFace.myPayOutPoker.Name + gameFace.myComparePoker.Name);
+            }
+            else {
+                var myPokerPayOut = new Poker(gameFace.myPayOutPoker.CardColor , gameFace.myPayOutPoker.Name );
+
+            }
             var oppentPokerPayOut = new Poker(gameFace.otherPlayersPoker.CardColor ,gameFace.otherPlayersPoker.Name)
 
            // var oppentPokerPayOut = { "name": gameFace.otherPlayersPoker.Name, "CardColor": gameFace.otherPlayersPoker.CardColor };
@@ -83,8 +90,10 @@
             //刷新对手出的牌
             CleanTable();
             PaintOnePoker(payOutPoker[0],0,0, myPokerPayOut);
-            PaintOnePoker(handPoker[0],0,0, myPokerHand);
-            PaintOnePoker(opponentPayOutPoker[0], 0, 0, oppentPokerPayOut);
+            PaintOnePoker(handPoker[0], 0, 0, myPokerHand);
+            if (gameFace.myPoker.CardColor == "" && gameFace.myPayOutPoker.CardColor=="") {
+                PaintOnePoker(opponentPayOutPoker[0], 0, 0, oppentPokerPayOut);
+            }
 
             console.debug("after_GameFace");
 
@@ -109,6 +118,7 @@
         function GetNewPoker()
         {
             console.debug("befor_GetNewPoker");
+            CleanCanv($("#opponentPayOutPoker")[0]);
             var methodInfo = new MethodInfo("PlayerGetOnePoker");
             var poker = InvokeSeverMethod(methodInfo);
             console.debug("after_GetNewPker");
@@ -130,30 +140,7 @@
             PaintName(boder, Poker);
         }
      
-        //    var pokerRatio = 5.7 / 8.8;
-        //    var context = canv.getContext('2d');
-        //    var pokerH = canv.height * 0.8;
-        //    var pokerW = pokerRatio * pokerH;
-        //    var image = new Image();
-        //    image.src = "/images/Pokers/" + Poker.CardColor + ".png";
-        //    var pokerLocationY= 0 + y;
-        //    var pokerLocationX = (canv.width - pokerW) / 2 + x;
-        //    context.drawImage(image, pokerLocationX, pokerLocationY, pokerW, pokerH);
-        //    var fontSize = pokerW * 0.7;
-        //    context.font = (fontSize + "px Georgia");
-        //    context.textAlign = "center";
-        //    context.Baseline = "middle";
-        //    var fontColor = "red";
-        //    switch (Poker.CardColor) {
-        //          //   "h", "s", "d", "c" ;//hearts红桃、spades黑桃、diamonds梅花,clubs方块
-        //        case "s": fontColor = "black"; break;
-        //        case "d": fontColor = "black"; break;
-        //        default: fontColor="red"
-        //    }
-        //    context.fillStyle = fontColor;
-        //    context.fillText(Poker.name, pokerLocationX + pokerW/2, pokerLocationY + pokerH/2);
-        //}
-        //画边框
+
         function PaintBoder(canv, x, y,h)
         {
             var boder = new Boder(canv,h);

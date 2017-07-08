@@ -32,6 +32,6 @@ namespace AntDesigner.NetCore.GameCity
         /// <param name="ammount_">比较金额</param>
         /// <returns>YN</returns>
         bool AccountNotEnough(decimal ammount_);
-
+        object WebSocketLink { get; set; }
     }
 }

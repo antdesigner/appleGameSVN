@@ -138,8 +138,10 @@
             })
             return result;
          }
+
         var webSocket = new WebSocket("ws://127.0.0.1:8000/ws");
         webSocket.onopen = function () {
+            $.get("/GameProjects/GameHandler/WebsocketCheck");
          alert(@ViewBag.Player.Id);
         }
         webSocket.onmessage = function (event) {
@@ -181,7 +183,8 @@
                 Fresh(gameFace);
             }
          }
-        var _GameFace = new GameFace();
+      //  var _GameFace = new GameFace();
+
         //开始游戏
         function StartGame()
         {
@@ -214,7 +217,7 @@
         //游戏异常中断
         function Stoped(Message)
         {
-          
+
             $("#gameStoped").modal("show");
         }
         ///重置游戏

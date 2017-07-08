@@ -52,10 +52,13 @@ namespace AntDesigner.NetCore.GameCity
     {
         public string ClientMethodName { get; set; }
         public int PlayerId { get; set; }
-        public WebsocketSendObjctBase(int playerId,string clientMethodName)
+
+       public WebsocketSendObjctBase(int playerId,string clientMethodName)
+
         {
             ClientMethodName = clientMethodName;
-            PlayerId = playerId;
+             PlayerId = playerId;
+        
         }
     }
     public class Alert : WebsocketSendObjctBase
