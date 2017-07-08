@@ -146,6 +146,8 @@ namespace AntDesigner.GameCityBase
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public DateTime ModifyTime
         { get; set; }
+        [NotMapped]
+        public object WebSocketLink { get ; set ; }
     }//end Player
 
 }//end namespace AntDesigner.AppleGame

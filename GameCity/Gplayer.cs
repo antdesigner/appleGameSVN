@@ -10,6 +10,7 @@ namespace AntDesigner.NetCore.GameCity
         public int Id { get; set; }
 
         public decimal Account { get; set; }
+        public object WebSocketLink { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public bool AccountNotEnough(decimal ammount_)
         {

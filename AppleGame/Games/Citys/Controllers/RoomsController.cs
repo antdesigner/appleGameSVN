@@ -59,6 +59,7 @@ namespace AppleGame.Games.Romms.Controllers
             string gameName_ = createRoom["gameProject"].ToString();
             IGameProject gameProject_ = LoadGameProject(gameName_);
             IInningeGame inningeGame_ = new InningeGame(gameProject_);
+            gameProject_.InningeGame = inningeGame_;
             if (!int.TryParse(createRoom["PlayerCountTopLimit"].ToString(), out int limitCount_))
             {
                 limitCount_ = 1;
@@ -75,6 +76,10 @@ namespace AppleGame.Games.Romms.Controllers
             BoundingEventOfRoom(room_);
             var gameCityId = createRoom["gameCityId"];
             WriteToSeeion(gameCityId, room_);
+            if (inningeGame_.IGameProject.PlayerCountLimit==1)
+            {
+                return RedirectToAction("JoinRoom");
+            }
             return RedirectToAction("RoomsList");
         }
         private void BoundingEventOfRoom(IRoom room_)
@@ -138,7 +143,11 @@ namespace AppleGame.Games.Romms.Controllers
             {
                 return RedirectToAction("RoomsList");
             }
-
+            //IPlayerJoinRoom roomPlayer = _room.Players.FirstOrDefault(p => p.Id == player.Id);
+            //if (null != roomPlayer)
+            //{
+            //    roomPlayer.WebSocketLink = ClientWebsocketsManager.FindClientWebSocketByPlayerId(player.Id);
+            //}
             return RedirectToAction("GameIndex", "GameHandler", new
             {
                 Area = "GameProjects"
@@ -222,6 +231,7 @@ namespace AppleGame.Games.Romms.Controllers
         {
             if (player.Id!=_room.RoomManager.Id)
             {
+                return null;
                 throw new Exception("不是房主没有权限修改");
             }
             ViewBag.GameProjects = new SelectList(CityGameController.GameCityList.GameProjects, "Name", "ShowName");
@@ -249,7 +259,20 @@ namespace AppleGame.Games.Romms.Controllers
                 Name = player.WeixinName,
                 Message = message
             };
-            ClientWebsocketsManager.Send(roomMessage);
+
+            if (null!=_room)
+            {
+                foreach (IPlayerJoinRoom item in _room.Players)
+                {
+                    if (null != item.WebSocketLink)
+                    {
+                        ClientWebsocketsManager.SendToWebsocket(roomMessage, item.WebSocketLink);
+                    }
+
+                }
+            }
+
+           // ClientWebsocketsManager.Send(roomMessage);
         }
     }
 }
