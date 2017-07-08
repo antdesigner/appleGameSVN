@@ -192,17 +192,22 @@ namespace AntDesigner.NetCore.Games
     /// </summary>
     public class Poker : Cards
     {
+        /// <summary>
+        /// 单独添加特殊的扑克牌
+        /// </summary>
         protected override void Specific()
         {
-            AddSinglerCard("d", "王"); //小王 王
+            AddSinglerCard("d", "王"); //小王 调用基类的AddSinglerCard方法单独添加一张牌
             AddSinglerCard("d", "王");//大王
         }
+        /// <summary>
+        /// 循环定义扑克牌
+        /// </summary>
         protected override void ConfigCardsNameAndColor()
         {
             CardNameList = new string[] { "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A" };
               CardColor = new List<string> { "h", "s", "d", "c" };//hearts红桃、spades黑桃、diamonds梅花,clubs方块
-          //  CardColor = new List<string> { "红桃", "黑桃", "梅花", "方块" };
-            Cirlcal = 1;
+            Cirlcal = 1;//循环生成次数点数为1. 共需要生成13*4*1=52张牌
         }
     }
     /// <summary>
@@ -210,12 +215,18 @@ namespace AntDesigner.NetCore.Games
     /// </summary>
     public class MahJong : Cards
     {
+        /// <summary>
+        /// 循环定义麻将花色和点数
+        /// </summary>
         protected override void ConfigCardsNameAndColor()
         {
             CardNameList = new string[] { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
             CardColor = new List<string> { "w", "t", "l" }; //w"万", t"同", t"条",z中,f发,b,百
             Cirlcal = 4;
         }
+        /// <summary>
+        /// 单独定义特殊的麻将牌
+        /// </summary>
         protected override void Specific()
         {
             string[] specificCards = new string[] { "z", "f", "b" };//z中,f发,b,百

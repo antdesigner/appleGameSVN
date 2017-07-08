@@ -136,7 +136,9 @@ namespace AntDesigner.NetCore.Games.GameTiger
         public override void Stoped(object inningeGame, EventArgs e)
         {
             var myE = (GameStopedEventArgs)e;
-            Notify?.Invoke(WebscoketSendObjs.Stoped(0,myE.Message));
+
+           // Notify?.Invoke(WebscoketSendObjs.Stoped(0,myE.Message));
+            NotifyRoomPlayers(WebscoketSendObjs.Stoped(0, myE.Message));
         }
         /// <summary>
         /// 游戏正常结束
@@ -145,7 +147,8 @@ namespace AntDesigner.NetCore.Games.GameTiger
         /// <param name="e"></param>
         public override void GameOver(object inningeGame, EventArgs e)
         {
-            Notify?.Invoke(WebscoketSendObjs.GameOver(0));
+           // Notify?.Invoke(WebscoketSendObjs.GameOver(0));
+            NotifyRoomPlayers(WebscoketSendObjs.GameOver(0));
 
         }
         /// <summary>
@@ -164,7 +167,8 @@ namespace AntDesigner.NetCore.Games.GameTiger
         /// <param name="e"></param>
         public override void ResetGame(object inningeGame, EventArgs e)
         {
-            Notify?.Invoke(WebscoketSendObjs.ResetGame(0));
+           // Notify?.Invoke(WebscoketSendObjs.ResetGame(0));
+            NotifyRoomPlayers(WebscoketSendObjs.ResetGame(0));
         }
         #region 各个游戏单独定义的内容
         private IPlayerJoinRoom player;

@@ -34,12 +34,13 @@ namespace AntDesigner.NetCore.GameCity
         /// <summary>
         ///委托websocket方式发送给客户端数据
         /// </summary>
-        //public virtual  Action<int?, string> Notify { get; set; }
+
         public virtual Action<WebsocketSendObjctBase> Notify { get; set; }
+        public virtual Action<WebsocketSendObjctBase,object> NotifyByWebsockLink { get; set; }
         public Func <string,decimal,string,decimal> DChangePlayerAccount { get; set; }
         public ABGameProject()
         {
-
+            
         }
         /// <summary>
         /// 接送客户端请求并调用请求方法返回json格式
@@ -97,7 +98,8 @@ namespace AntDesigner.NetCore.GameCity
             int playerOnSeatCopunt = innineGame_.NotEmptySeats().Count;
             if (playerOnSeatCopunt < innineGame_.IGameProject.PlayerCountLeast || playerOnSeatCopunt > PlayerCountLimit)
             {
-                Notify?.Invoke(WebscoketSendObjs.RoomMessage(0, "人数不足,不能启动游戏"));
+                //Notify?.Invoke(WebscoketSendObjs.RoomMessage(0, "人数不足,不能启动游戏"));
+                NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "人数不足,不能启动游戏"));
                 return false;
             }
 
@@ -119,8 +121,9 @@ namespace AntDesigner.NetCore.GameCity
         /// <param name="e"></param>
         public virtual void GameStart(object inngineGame, EventArgs e)
         {
-            inngineGame = (IInningeGame)inngineGame;
-            Notify?.Invoke(WebscoketSendObjs.RoomMessage(0, "游戏开始了!"));
+            InningeGame = (IInningeGame)inngineGame;
+           // Notify?.Invoke(WebscoketSendObjs.RoomMessage(0, "游戏开始了!"));
+            NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "游戏开始了!"));
         }
         /// <summary>
         /// 添加座位检查
@@ -182,7 +185,8 @@ namespace AntDesigner.NetCore.GameCity
         public virtual void AfterSitDown(object inningeGame, EventArgs e)
         {
             var roomMessage = WebscoketSendObjs.RoomMessage(0, "有玩家进入");
-            Notify?.Invoke(roomMessage);
+            // Notify?.Invoke(roomMessage);
+            NotifyRoomPlayers(roomMessage);
         }
         /// <summary>
         /// 玩家离开座位前事件出路
@@ -200,7 +204,8 @@ namespace AntDesigner.NetCore.GameCity
         {
             string playerId = ((PlayerEventArgs)e).Player.Id.ToString();
             var roomMessage = WebscoketSendObjs.RoomMessage(0, "玩家" + playerId + "离开了");
-            Notify?.Invoke(roomMessage);
+           // Notify?.Invoke(roomMessage);
+            NotifyRoomPlayers(roomMessage);
         }
         /// <summary>
         /// 游戏异常中断
@@ -210,7 +215,8 @@ namespace AntDesigner.NetCore.GameCity
         public   virtual   void Stoped(object inningeGame, EventArgs e)
         {
             var myE = (GameStopedEventArgs)e;
-            Notify?.Invoke(WebscoketSendObjs.Stoped(0,myE.Message));
+           // Notify?.Invoke(WebscoketSendObjs.Stoped(0,myE.Message));
+            NotifyRoomPlayers(WebscoketSendObjs.Stoped(0, myE.Message));
         }
         /// <summary>
         /// 游戏正常结束
@@ -219,8 +225,8 @@ namespace AntDesigner.NetCore.GameCity
         /// <param name="e"></param>
         public  virtual  void GameOver(object inningeGame, EventArgs e)
         {
-            Notify?.Invoke(WebscoketSendObjs.GameOver(0));
-
+           // Notify?.Invoke(WebscoketSendObjs.GameOver(0));
+            NotifyRoomPlayers(WebscoketSendObjs.GameOver(0));
         }
         /// <summary>
         /// 添加座位到游戏最低数
@@ -238,7 +244,26 @@ namespace AntDesigner.NetCore.GameCity
         /// </summary>
         public virtual void ResetGame(object inningeGame, EventArgs e)
         {
-            Notify?.Invoke(WebscoketSendObjs.ResetGame(0));
+           // Notify?.Invoke(WebscoketSendObjs.ResetGame(0));
+            NotifyRoomPlayers(WebscoketSendObjs.ResetGame(0));
+        }
+
+        protected  void NotifyRoomPlayers(WebsocketSendObjctBase websocketSendObjctBase)
+        {
+            
+            foreach (IPlayerJoinRoom item in InningeGame.IRoom.Players)
+            {
+                if (null!= item.WebSocketLink)
+                {
+                    NotifyByWebsockLink?.Invoke(websocketSendObjctBase, item.WebSocketLink);
+                }
+               
+            }
+        }
+        protected void NotifySinglePlayer(WebsocketSendObjctBase websocketSendObjctBase,int playerId)
+        {
+            var myPlayer = InningeGame.IRoom.Players.Find(p => p.Id == playerId);
+            NotifyByWebsockLink?.Invoke(websocketSendObjctBase, myPlayer.WebSocketLink);
         }
     }
 }

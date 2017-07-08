@@ -27,7 +27,11 @@
                         <td>@room.InningGame.IGameProject.ShowName</td>
                         <td>@room.Players.Count()<span>/</span>@room.PlayerCountTopLimit</td>
                         <td>@(room.IsFull==true? "已满":"")</td>
+                       @if (room.IsFull != true)
+                       {
                         <td><a class="joinRoom" href="/Citys/Rooms/JoinRoom?gameCityId=@room.GameCityId&roomId=@room.Id" value="@room.TicketPrice">进入</a></td>
+                       }
+                        <td></td>
                     </tr>
                 }
             }

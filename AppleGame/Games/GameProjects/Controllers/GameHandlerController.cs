@@ -18,6 +18,7 @@ using AntDesigner.weiXinPay;
 using AntDesigner.NetCore.GameCity;
 using GameCitys.DomainService;
 using GameCitys.Tools;
+using GameCitys.GamCityBase;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -47,6 +48,7 @@ namespace AppleGame.Games.GameProjects.Controllers
             ViewBag.GameProject = iGameProject;
             var gameName = iGameProject.Name;
             return View(gameName+"GameIndex", _room);
+
         }
     }
 }

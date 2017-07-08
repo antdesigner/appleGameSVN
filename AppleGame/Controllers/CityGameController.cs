@@ -31,43 +31,49 @@ namespace AntDesigner.GameCityBase.Controllers
         protected IGameProject LoadGameProject(string gameName_)
         {
             Assembly assembly = Assembly.Load(new AssemblyName(gameName_));
-           
+
             IGameProject gameProject_ = (IGameProject)assembly.CreateInstance("AntDesigner.NetCore.Games." + gameName_ + "." + gameName_);
-            gameProject_.Notify= ClientWebsocketsManager.Send;
+            gameProject_.Notify = ClientWebsocketsManager.Send;
+            gameProject_.NotifyByWebsockLink = ClientWebsocketsManager.SendToWebsocket;
             // gameProject_.DChangePlayerAccount = _playerService.AdjustAccount;
             gameProject_.DChangePlayerAccount = PlayerService.AdjustAccountForDelegate;
             return gameProject_;
         }
-        public CityGameController( IHttpContextAccessor httpContextAccessor_,IPlayerService playerService) : base( httpContextAccessor_,playerService)
+        public CityGameController(IHttpContextAccessor httpContextAccessor_, IPlayerService playerService) : base(httpContextAccessor_, playerService)
         {
             string gameCityId_;
             string roomId_;
             if (session.Keys.Contains("RoomId") && session.Keys.Contains("CityId"))
             {
-                 gameCityId_ = session.GetString("CityId");
-             roomId_ = session.GetString("RoomId");
+                gameCityId_ = session.GetString("CityId");
+                roomId_ = session.GetString("RoomId");
             }
             else
             {
-              gameCityId_ = httpContextAccessor.HttpContext.Request.Query["gameCityId"];
-               roomId_ = httpContextAccessor.HttpContext.Request.Query["roomId"];
+                gameCityId_ = httpContextAccessor.HttpContext.Request.Query["gameCityId"];
+                roomId_ = httpContextAccessor.HttpContext.Request.Query["roomId"];
             }
 
-           
-            if (gameCityId_!= null && gameCityId_.Length > 0)
+
+            if (gameCityId_ != null && gameCityId_.Length > 0)
             {
                 _gameCity = CityGameController.GameCityList.FindGameCityById(gameCityId_);
             }
             if (roomId_ != null && roomId_.Length > 0)
             {
                 _room = _gameCity.FindRoomById(roomId_);
-                if (_room==null)
+                if (_room == null)
                 {
-                    throw new RoomIsNotExistException(player.Id,"房间已经不存在了");
+                    throw new RoomIsNotExistException(player.Id, "房间已经不存在了");
                 }
                 _inngeGame = _room.InningGame;
                 _gameProject = _inngeGame.IGameProject;
-              
+                IPlayerJoinRoom roomPlayer = _room.Players.FirstOrDefault(p => p.Id == player.Id);
+                if (null != roomPlayer)
+                {
+                    roomPlayer.WebSocketLink = ClientWebsocketsManager.FindClientWebSocketByPlayerId(player.Id);
+                }
+
             }
         }
         static CityGameController()
@@ -75,27 +81,27 @@ namespace AntDesigner.GameCityBase.Controllers
             GameCityList = new GameCityCollection();
             GameCityList.GameProjects.Add(new GameSimpleCards());
             GameCityList.GameProjects.Add(new GameTiger());
-           
+
         }
         /// <summary>
         /// 玩家离开房间后事件
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-  protected void _room_RemovePlayer_SuccessEvent(object sender, EventArgs e)
+        protected void _room_RemovePlayer_SuccessEvent(object sender, EventArgs e)
         {
             IRoom room = (IRoom)sender;
-            if (room.Players.Count==0)
+            if (room.Players.Count == 0)
             {
-             IGameCity gameCity=   GameCityList.FindGameCityById(room.GameCityId);
-             gameCity.RemoveRoom(room);
+                IGameCity gameCity = GameCityList.FindGameCityById(room.GameCityId);
+                gameCity.RemoveRoom(room);
             }
         }
         /// <summary>
         /// 玩家进入房间成功后事件
         /// </summary>
         /// <param name="sender"></param>
-      protected void Room_AddPlayerSuccessEvent(object sender, EventArgs e)
+        protected void Room_AddPlayerSuccessEvent(object sender, EventArgs e)
         {
 
         }
@@ -111,24 +117,30 @@ namespace AntDesigner.GameCityBase.Controllers
             ViewBag.GameProject = iGameProject;
             ViewBag.Player = player;
             string gameName = iGameProject.Name;
-         //   return View("GameIndex", _room);
-            return View(gameName+"GameIndex", _room);
+            //   return View("GameIndex", _room);
+            return View(gameName + "GameIndex", _room);
         }
         /// <summary>
         /// SimpleCards游戏开始
         /// </summary>
         /// <param name="roomId"></param>
         [HttpGet]
-        public void  Start()
+        public void Start()
         {
 
-           if (!_room.InningGame.IsStarted)
+            if (!_room.InningGame.IsStarted)
             {
-               _room.InningGame.Start();
+                _room.InningGame.Start();
             }
             ViewBag.GameProject = _room.InningGame.IGameProject;
             ViewBag.Player = player;
 
+        }
+        [HttpGet]
+        ///player.websocket连接激活
+        public void WebsocketCheck()
+        {
+            
         }
         /// <summary>
         /// 客户端ajax请求服务端方法

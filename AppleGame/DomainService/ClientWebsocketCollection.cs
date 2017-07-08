@@ -19,11 +19,23 @@ namespace GameCitys.GamCityBase
         public static void Add(int? playerId, WebSocket websocket)
         {
             PlayerIdAndWebsockets.Add(playerId, websocket);
+            return;
         }
         public static WebSocket FindClientWebSocketByPlayerId(int? id)
         {
             WebSocket websocket = PlayerIdAndWebsockets.FirstOrDefault(p => p.Key == id).Value;
             return websocket;
+        }
+        public static void SendToWebsocket(WebsocketSendObjctBase obj,object websocket_)
+        {
+            WebSocket websocket = (WebSocket)websocket_;
+            string sendjsonStr = Tools.ToolsSerialize.SerializeObjectToJson(obj);
+            if (websocket.State == WebSocketState.Open)
+            {
+                websocket.SendAsync(new ArraySegment<byte>(System.Text.Encoding.UTF8.GetBytes(sendjsonStr)),
+                WebSocketMessageType.Text, true, CancellationToken.None);
+            }
+            return;
         }
         public static void Send(WebsocketSendObjctBase obj)
         {

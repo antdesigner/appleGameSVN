@@ -14,6 +14,7 @@ namespace AntDesigner.NetCore.GameCity
         /// </summary>
        // Action<int?, string> Notify { get; set; }
         Action<WebsocketSendObjctBase> Notify { get; set; }
-
+       Action<WebsocketSendObjctBase, object> NotifyByWebsockLink { get; set; }
+       
     }
 }
