@@ -15,29 +15,25 @@
                 <th>门票</th>
                 <th>游戏</th>
                 <th>人数</th>
-                <th>满员</th>
+                <th>加密</th>
                 <th></th>
             </tr>
             @{
-                foreach (var room in Model)
-                {
+                foreach (var room in Model) {
                     <tr>
-                        <th>@room.Name</th>
-                        <th>@room.TicketPrice<span>元</span></th>
+                        <td>@room.Name</td>
+                        <td>@room.TicketPrice<span>元</span></td>
                         <td>@room.InningGame.IGameProject.ShowName</td>
-                        <td>@room.Players.Count()<span>/</span>@room.PlayerCountTopLimit</td>
-                        <td>@(room.IsFull==true? "已满":"")</td>
-                       @if (room.IsFull != true)
-                       {
-                        <td><a class="joinRoom" href="/Citys/Rooms/JoinRoom?gameCityId=@room.GameCityId&roomId=@room.Id" value="@room.TicketPrice">进入</a></td>
-                       }
+                        <td>@room.Players.Count()<span>/</span>@room.PlayerCountTopLimit@(room.IsFull == true ? "满" : "")</td>
+                        <td class="needpwd">@(room.SecretKey.Length==0? "N":"Y")</td>
+                            <td><a class="joinRoom" href="/Citys/Rooms/JoinRoom?gameCityId=@room.GameCityId&roomId=@room.Id" value="@room.TicketPrice">进入</a></td>
                         <td></td>
                     </tr>
                 }
             }
         </tbody>
     </table>
-    </div>
+</div>
 <!--查找房间 -->
 <div class="modal fade" id="FindRoomModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -47,7 +43,7 @@
                 <h4 class="modal-title" id="myModalLabel">查找房间</h4>
             </div>
             <div class="modal-body">
-            <label>房间名称</label><input type="text" id="roomName" />
+                <label>房间名称</label><input type="text" id="roomName" />
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
@@ -56,30 +52,53 @@
         </div><!-- /.modal-content -->
     </div><!-- /.modal -->
 </div>
-    @section styles{
+<!--输入密码-->
+<div class="modal fade" id="needPwd" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" >进入房间需要密码</h4>
+            </div>
+            <div class="modal-body">
+                <label>输入密码</label><input type="password" id="roomkey" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="joinRoomUsekey">确定</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+@section styles{
 
-    }
+}
 @section scripts{
     <script>
+        glob_linka = new Object();
         function CreateRoom() {
             $(location).attr('href', '/Citys/Rooms/Index_CreateRoom');
         };//新建房间
         function JoinRoom() {
-            var joinRoomLinks = $(".joinRoom");
-            if (joinRoomLinks.length==0) {
+            var joinRoomLinks = $.grep($(".joinRoom"), function (n, i) {
+                var tr = $(i).parent().parent("tr");
+                return Needpwd(tr);
+            }, false);
+            if (joinRoomLinks.length == 0) {
+                alert("没有合适的房间");
                 return;
-            }
+            };
             var index = parseInt(Math.random() * joinRoomLinks.length);
-            var linka= joinRoomLinks.get(index);
+            var linka = joinRoomLinks[index];
             var roomPrice = $(linka).attr("value");
-            if (NoticPrice(roomPrice)!=true) {
+            if (NoticPrice(roomPrice) != true) {
                 return;
-            }
-            var link = linka.href;
-            $(location).attr("href", link);
+            };
+            JoinChooseRoom(linka);
+           // var link = linka.href;
+           // $(location).attr("href", link);
         }//随机进入
-        function NoticPrice(roomPrice)
-        {
+        function NoticPrice(roomPrice) {
             if (roomPrice > 0) {
                 if (confirm("需要支付门票" + roomPrice + "元才能进入该房间,是否愿意?")) {
                     return true;
@@ -87,41 +106,66 @@
                     return false;
                 }
             }
-            else { return true;}
-            
+            else { return true; }
+
         }//有门票提示
-         function JoinChooseRoom(event)
-        {
-           var linka = event.target;
-           var roomPrice = $(linka).attr("value");
-            if (NoticPrice(roomPrice) != true) {
+      
+        function JoinChooseRoom(linka) {
+            glob_linka = $(linka);
+            var tr = $(linka).parent().parent("tr");
+            if (Needpwd(tr)) {
+                $('#needPwd').modal('show');
                 return false;
-           }
-           else
-            {
-                return true;
             }
+            else { 
+                var roomPrice = $(linka).attr("value");
+                if (NoticPrice(roomPrice) != true) {
+                    return false;
+                }else{
+                    return true;
+                };
+            }
+       
 
         }//选择进入
-        function showFindRoomModal()
-        {
+        function showFindRoomModal() {
             $('#FindRoomModal').modal('show');
         }
-        function FindRoom()
-        {
+        function FindRoom() {
             var roomName = $("#roomName").val();
-            if (roomName.length==0) {
+            if (roomName.length == 0) {
                 alert("请输入房间名称");
                 return;
             }
             $(location).attr('href', "/Citys/Rooms/FindeRoomsByName?name=" + roomName);
         }//查找房间
+        function Needpwd(tr)
+        {
+            if ("Y" == tr.find(".needpwd").text()) {
+                return true;
+            }
+            return false;
+        }
+        function IsPassed(linka) {
+            var key = $("#roomkey").val();
+            var url = linka.attr("href") + "&pwd=" + key;
+            $.get(url, function (data) {
+                if ("false" == data) {
+                    alert("密码不正确");
+                    return;
+                }
+                else {
+                    window.location.href = url;
+                }
+            },"text")
+        }
         $(function () {
             $("#createRoom").on("click", CreateRoom);
             $("#joinRoom").on("click", JoinRoom);
             $("#showFindRoomModal").on("click", showFindRoomModal);
             $("#findRoom").on("click", FindRoom);
-            $(".joinRoom").on("click", function (event) {  return JoinChooseRoom(event) });
+            $(".joinRoom").on("click", function (event) { return JoinChooseRoom(event.target) });
+            $("#joinRoomUsekey").on("click", function () { IsPassed(glob_linka);})
         })
-</script>
+    </script>
 }

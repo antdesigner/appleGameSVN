@@ -233,7 +233,6 @@ namespace AntDesigner.GameCityBase.Controllers
         /// <returns></returns>
         public IActionResult CreatGameCity([FromServices]IGameCityService gameCityService, string weixinName = "", string cityName = "游戏城")
         {
-            // managerPlayer.CreatGameCity(CityGameController.GameCityList, weixinName, cityName);
             Player cityManager = _playerService.FindPlayerByName(weixinName);
             gameCityService.CreatGameCity(CityGameController.GameCityList,cityManager, cityName);
             return RedirectToAction("Index", "Citys", new {Area="Citys"});

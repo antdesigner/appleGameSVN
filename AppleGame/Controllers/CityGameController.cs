@@ -28,21 +28,34 @@ namespace AntDesigner.GameCityBase.Controllers
         protected IRoom _room;
         protected IInningeGame _inngeGame;
         protected IGameProject _gameProject;
+        /// <summary>
+        /// 房间加载游戏
+        /// </summary>
+        /// <param name="gameName_">游戏名称</param>
+        /// <returns></returns>
         protected IGameProject LoadGameProject(string gameName_)
         {
             Assembly assembly = Assembly.Load(new AssemblyName(gameName_));
-
             IGameProject gameProject_ = (IGameProject)assembly.CreateInstance("AntDesigner.NetCore.Games." + gameName_ + "." + gameName_);
             gameProject_.Notify = ClientWebsocketsManager.Send;
             gameProject_.NotifyByWebsockLink = ClientWebsocketsManager.SendToWebsocket;
-            // gameProject_.DChangePlayerAccount = _playerService.AdjustAccount;
             gameProject_.DChangePlayerAccount = PlayerService.AdjustAccountForDelegate;
             return gameProject_;
         }
-        public CityGameController(IHttpContextAccessor httpContextAccessor_, IPlayerService playerService) : base(httpContextAccessor_, playerService)
+        public CityGameController( IHttpContextAccessor httpContextAccessor_, IPlayerService playerService) : base(httpContextAccessor_, playerService)
+        {
+            
+            LoadRoomInfo();
+        }
+      
+        /// <summary>
+        /// 检查玩家session保存的房间Id等,初始化房间信息
+        /// </summary>
+        private void LoadRoomInfo()
         {
             string gameCityId_;
             string roomId_;
+            #region session中保存有房间信息就读取,没有就从Request.Query中读取
             if (session.Keys.Contains("RoomId") && session.Keys.Contains("CityId"))
             {
                 gameCityId_ = session.GetString("CityId");
@@ -53,8 +66,8 @@ namespace AntDesigner.GameCityBase.Controllers
                 gameCityId_ = httpContextAccessor.HttpContext.Request.Query["gameCityId"];
                 roomId_ = httpContextAccessor.HttpContext.Request.Query["roomId"];
             }
-
-
+            #endregion
+            #region sesson或Request.Query中有房间信息就使用
             if (gameCityId_ != null && gameCityId_.Length > 0)
             {
                 _gameCity = CityGameController.GameCityList.FindGameCityById(gameCityId_);
@@ -64,24 +77,35 @@ namespace AntDesigner.GameCityBase.Controllers
                 _room = _gameCity.FindRoomById(roomId_);
                 if (_room == null)
                 {
-                    throw new RoomIsNotExistException(player.Id, "房间已经不存在了");
+  throw new RoomIsNotExistException(player.Id, "房间已经不存在了");
                 }
                 _inngeGame = _room.InningGame;
                 _gameProject = _inngeGame.IGameProject;
+#endregion
+            #region 保存玩家websocket对象
                 IPlayerJoinRoom roomPlayer = _room.Players.FirstOrDefault(p => p.Id == player.Id);
                 if (null != roomPlayer)
                 {
                     roomPlayer.WebSocketLink = ClientWebsocketsManager.FindClientWebSocketByPlayerId(player.Id);
                 }
-
+#endregion
             }
         }
+        /// <summary>
+        /// 创建游戏城容器
+        /// </summary>
         static CityGameController()
         {
             GameCityList = new GameCityCollection();
+            LoadGameProjects();
+        }
+        /// <summary>
+        /// 装载游戏项目,以供新建房间时选择项目
+        /// </summary>
+        private static void LoadGameProjects()
+        {
             GameCityList.GameProjects.Add(new GameSimpleCards());
             GameCityList.GameProjects.Add(new GameTiger());
-
         }
         /// <summary>
         /// 玩家离开房间后事件
@@ -105,7 +129,6 @@ namespace AntDesigner.GameCityBase.Controllers
         {
 
         }
-
         /// <summary>
         /// 游戏界面
         /// </summary>
@@ -136,8 +159,10 @@ namespace AntDesigner.GameCityBase.Controllers
             ViewBag.Player = player;
 
         }
+        /// <summary>
+        ///  player.websocket连接激活
+        /// </summary>
         [HttpGet]
-        ///player.websocket连接激活
         public void WebsocketCheck()
         {
             

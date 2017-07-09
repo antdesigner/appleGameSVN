@@ -36,6 +36,9 @@ namespace AntDesigner.NetCore.GameCity
         /// </summary>
 
         public virtual Action<WebsocketSendObjctBase> Notify { get; set; }
+        /// <summary>
+        ///委托websocket方式发送给客户端数据
+        /// </summary>
         public virtual Action<WebsocketSendObjctBase,object> NotifyByWebsockLink { get; set; }
         public Func <string,decimal,string,decimal> DChangePlayerAccount { get; set; }
         public ABGameProject()
@@ -185,7 +188,6 @@ namespace AntDesigner.NetCore.GameCity
         public virtual void AfterSitDown(object inningeGame, EventArgs e)
         {
             var roomMessage = WebscoketSendObjs.RoomMessage(0, "有玩家进入");
-            // Notify?.Invoke(roomMessage);
             NotifyRoomPlayers(roomMessage);
         }
         /// <summary>
@@ -204,7 +206,6 @@ namespace AntDesigner.NetCore.GameCity
         {
             string playerId = ((PlayerEventArgs)e).Player.Id.ToString();
             var roomMessage = WebscoketSendObjs.RoomMessage(0, "玩家" + playerId + "离开了");
-           // Notify?.Invoke(roomMessage);
             NotifyRoomPlayers(roomMessage);
         }
         /// <summary>
@@ -215,7 +216,6 @@ namespace AntDesigner.NetCore.GameCity
         public   virtual   void Stoped(object inningeGame, EventArgs e)
         {
             var myE = (GameStopedEventArgs)e;
-           // Notify?.Invoke(WebscoketSendObjs.Stoped(0,myE.Message));
             NotifyRoomPlayers(WebscoketSendObjs.Stoped(0, myE.Message));
         }
         /// <summary>
@@ -225,7 +225,6 @@ namespace AntDesigner.NetCore.GameCity
         /// <param name="e"></param>
         public  virtual  void GameOver(object inningeGame, EventArgs e)
         {
-           // Notify?.Invoke(WebscoketSendObjs.GameOver(0));
             NotifyRoomPlayers(WebscoketSendObjs.GameOver(0));
         }
         /// <summary>
