@@ -31,7 +31,8 @@ namespace AntDesigner.GameCityBase.Controllers
         
         public GameController( IHttpContextAccessor httpContextAccessor,IPlayerService playerService) : base( httpContextAccessor, playerService)
         {
-            
+
+           
         }
         public IActionResult GameExplain()
         {
@@ -137,47 +138,7 @@ namespace AntDesigner.GameCityBase.Controllers
 
             return View("Index");
         }
-        //[HttpPost]
-        //public IActionResult GetHitBoxs()
-        //{
-
-        //  StreamReader streamReader = new StreamReader(httpContextAccessor.HttpContext.Request.Body, Encoding.UTF8);
-        //  string stackeBoxsStr = streamReader.ReadToEnd();
-        // List<StakeBox> stakeBoxs= JsonConvert.DeserializeObject<List<StakeBox>>(stackeBoxsStr);
-
-        //    if (player.Account.Balance*10< stakeBoxs.Sum(p => p.Stake))
-        //    {
-        //        return null;
-        //    }
-
-        //    BoxsManager boxsManager = new BoxsManager();
-        //    Collection<Box> winningBoxs= boxsManager.WinningResult(stakeBoxs);
-        //    try
-        //    {
-        //        IstoreHouse.SaveChanges();
-        //    }
-        //    catch (DbUpdateConcurrencyException ex)
-        //    {
-        //        foreach (var entry in ex.Entries)
-        //        {
-        //            if (entry.Entity is Account)
-        //            {
-
-        //                decimal databaseValue = IstoreHouse.GetAccountAsNoTracking(player.Account.Id).Balance;
-        //                decimal currentValue = (decimal)entry.Property("balance").CurrentValue;
-        //                entry.Property("balance").CurrentValue = currentValue + ((decimal)entry.Property("balance").OriginalValue - databaseValue);
-        //                entry.Property("balance").OriginalValue = databaseValue;
-        //            }
-        //            else
-        //            {
-        //                throw new NotSupportedException(player.Account.Id + "账户变更冲突");
-        //            }
-        //        }
-        //        IstoreHouse.SaveChanges();
-        //    }
-        //    string hitSakeBoxsJsonarry = ToolsSerialize.SerializeObjectToJson(winningBoxs);
-        //    return Content(hitSakeBoxsJsonarry);
-        //}
+       
         private async void Sigin(Player player_)
         {
             ClaimsPrincipal userPrincipal = CreatePrincipal(player_);

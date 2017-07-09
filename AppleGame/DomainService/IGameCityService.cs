@@ -6,6 +6,6 @@ namespace GameCitys.DomainService
 {
     public interface IGameCityService
     {
-        void CreatGameCity(List<IGameCity> gameCityList, Player cityManager, string cityName = "游戏城");
+        void CreatGameCity(List<IGameCity> gameCityList, Player cityManager, string cityName = "默认游戏城");
     }
 }

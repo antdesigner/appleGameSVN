@@ -40,7 +40,7 @@ namespace AntDesigner.AppleGame
 
             Configuration = builder.Build();
             LoadAppsettings();
-
+          
         }
 
         private void LoadAppsettings()
@@ -101,7 +101,7 @@ namespace AntDesigner.AppleGame
                 options.Filters.Add(new AuthorizeFilter("RequireRole"));
             });
           
-          var newServiceProvicer=newServices.BuildServiceProvider();
+            var newServiceProvicer=newServices.BuildServiceProvider();
           return newServiceProvicer;
         }
 
