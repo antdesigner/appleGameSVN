@@ -158,7 +158,7 @@ namespace AntDesigner.NetCore.Games.GameTiger
         /// <returns>发送到客户端玩家数据</returns>
         public object FreshGameFace(int id)
         {
-            throw new NotImplementedException();
+            return null;
         }
         /// <summary>
         /// 重置游戏后事件
@@ -203,6 +203,10 @@ namespace AntDesigner.NetCore.Games.GameTiger
         {
             player.Account=(decimal)DChangePlayerAccount?.Invoke(player.WeixinName, amount, explain);
         }
-#endregion 
+
+        public ISeat CreatSeat(IInningeGame inningeGame) {
+            return new Seat(inningeGame);
+        }
+        #endregion
     }
 }

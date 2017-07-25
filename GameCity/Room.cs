@@ -425,5 +425,18 @@ namespace AntDesigner.NetCore.GameCity
             InningGame.IGameProject= game;
         }
 
+        public bool IsKeyPassed(int id, string key) {
+            if (id==RoomManager.Id) {
+                return true;
+            }
+            if (SecretKey.Length==0) {
+                return true;
+            }
+            if (SecretKey==key) {
+                return true;
+
+            }
+            return false;
+        }
     }
 }

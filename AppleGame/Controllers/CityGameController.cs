@@ -1,20 +1,13 @@
-﻿using AntDesigner.GameCityBase;
-using AntDesigner.GameCityBase.boxs;
-using AntDesigner.GameCityBase.EF;
-using AntDesigner.GameCityBase.interFace;
+﻿
 using AntDesigner.NetCore.GameCity;
-using AntDesigner.weiXinPay;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using WxPayAPI;
 using AntDesigner.NetCore.Games.GameSimpleCards;
-using AntDesigner.GameCityBase.Controllers;
 using AntDesigner.NetCore.Games.GameTiger;
+using AntDesigner.NetCore.Games.GameThreePokers;
 using System.Reflection;
 using GameCitys.GamCityBase;
 using GameCitys.DomainService;
@@ -42,6 +35,7 @@ namespace AntDesigner.GameCityBase.Controllers
             gameProject_.DChangePlayerAccount = PlayerService.AdjustAccountForDelegate;
             return gameProject_;
         }
+
         public CityGameController( IHttpContextAccessor httpContextAccessor_, IPlayerService playerService) : base(httpContextAccessor_, playerService)
         {
             
@@ -102,10 +96,11 @@ namespace AntDesigner.GameCityBase.Controllers
         /// <summary>
         /// 装载游戏项目,以供新建房间时选择项目
         /// </summary>
-        private static void LoadGameProjects()
-        {
+        private static void LoadGameProjects() {
+            GameCityList.GameProjects.Add(new GameThreePokers());
             GameCityList.GameProjects.Add(new GameSimpleCards());
             GameCityList.GameProjects.Add(new GameTiger());
+          
         }
         /// <summary>
         /// 玩家离开房间后事件

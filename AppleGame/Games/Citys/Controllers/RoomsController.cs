@@ -60,8 +60,11 @@ namespace AppleGame.Games.Romms.Controllers {
             }
             string gameName_ = createRoom["gameProject"].ToString();
             IGameProject gameProject_ = LoadGameProject(gameName_);
-            IInningeGame inningeGame_ = new InningeGame(gameProject_);
+            IInningeGame inningeGame_ = new InningeGame(gameProject_) {
+                DCreatSeat = gameProject_.CreatSeat
+            };
             gameProject_.InningeGame = inningeGame_;
+      
             if (!int.TryParse(createRoom["PlayerCountTopLimit"].ToString(), out int limitCount_)) {
                 limitCount_ = 1;
             }
@@ -124,7 +127,8 @@ namespace AppleGame.Games.Romms.Controllers {
         /// <returns>游戏Index</returns>
         [HttpGet]
         public IActionResult JoinRoom(string pwd) {
-            if (_room.SecretKey.Length != 0 && pwd != _room.SecretKey) {
+            
+            if ( !_room.IsKeyPassed(player.Id,pwd)) {
                 return Content("false");
             }
             else {

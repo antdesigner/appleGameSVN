@@ -104,17 +104,6 @@ namespace AntDesigner.GameCityBase
 
                 return false;
             }
-
-            //try
-            //{
-            //    this.Account.Addmount(-ticketPrice_, cause);
-            //    return true;
-            //}
-            //catch (Exception)
-            //{
-
-            //    return false;
-            //}
         }
         public bool AccountNotEnough(decimal ammount_)
         {

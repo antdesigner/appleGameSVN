@@ -36,6 +36,16 @@
     <Content Include="wwwroot\images\pokers\d.png" />
     <Content Include="wwwroot\images\pokers\h.png" />
     <Content Include="wwwroot\images\pokers\s.png" />
+    <Content Include="wwwroot\lib\jquery-ant-canvas-poker\c.png">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="wwwroot\lib\jquery-ant-canvas-poker\d.png">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="wwwroot\lib\jquery-ant-canvas-poker\h.png">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="wwwroot\lib\jquery-ant-canvas-poker\s.png" />
   </ItemGroup>
   <ItemGroup>
     <None Update="wwwroot\**\*;App_Data\**\*">
@@ -88,7 +98,11 @@
     <Folder Include="Games\GameProjects\Models\" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Games\GameProjects\Views\GameHandler\GameThreePokersGameIndex.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\GameCity\GameCity.csproj" />
+    <ProjectReference Include="..\GameThreePokers\GameThreePokers.csproj" />
     <ProjectReference Include="..\GameTiger\GameTiger.csproj" />
     <ProjectReference Include="..\Game_SimpleCards\GameSimpleCards.csproj">
       <ReferenceOutputAssembly></ReferenceOutputAssembly>

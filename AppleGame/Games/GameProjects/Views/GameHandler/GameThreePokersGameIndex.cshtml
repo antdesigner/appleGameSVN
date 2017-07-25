@@ -1,0 +1,232 @@
+﻿@using AntDesigner.NetCore.GameCity;
+@model IRoom
+@{
+    Layout = "~/Views/Shared/_LayoutGameCityRoom.cshtml";
+}
+@section styles{
+    <style>
+        .my, .other {
+            display: flex;
+            justify-content: space-around;
+            align-items: center
+        }
+
+        .otherContener {
+            flex: 3;
+            display: flex;
+        }
+
+        .my {
+            width: 100%
+        }
+
+        .other {
+            width: 50%
+        }
+
+        #mypokers {
+            flex: 2
+        }
+
+        .my {
+            flex: 1;
+            text-align: center;
+        }
+
+            .my > button {
+            }
+
+        #GamePanel div:nth-child(odd) {
+            background-color: yellowgreen
+        }
+
+        #GamePanel div:nth-child(even) {
+            background-color: yellow
+        }
+
+        #mypokers button {
+            position: absolute;
+            z-index: 50;
+        }
+
+        #mypokers label {
+            position: absolute;
+            z-index: 50;
+        }
+    </style>
+}
+
+<div class="otherContener">
+    <div class="other" style="background-color:red"><canvas id="0" ></canvas></div>
+    <div class="other" style="background-color:black"><canvas id="1" ></canvas></div>
+</div>
+<div class="otherContener">
+    <div class="other" ><canvas id="2"></canvas></div>
+    <div class="other" style="background-color:white"><canvas id="3" ></canvas></div>
+</div>
+<div class="my" id="PublicInfo">账户余额:锅底:轮次:</div>
+<div class="my" id="mypokers" style="background-color:gray"><canvas id="4" style="background-color:red"></canvas><label id="balance">1311<label id="pool"></label>45455</label></div>
+<div class="my"><button id="Deal">发牌</button><button id="Giveup">弃牌</button><button id="PlayerChipin">押底</button><button id="Look">看牌</button></div>
+<div class="my" id="Tool">
+    <button id="Compare">比牌</button>
+    <button id="ChipInLimit">直封</button>
+    <button id="ChipIn">加注</button>
+    <button id="ChipInDouble">加倍</button>
+    <button id="ChipInFollow">跟</button>
+</div>
+@*<button id="LookOthersPoker">天眼查</button>*@
+@section scripts{
+    <script src="~/lib/jquery-ant-canvas-poker/jquery.ant.canvas.poker.js" type="text/javascript">
+    </script>
+    <script>
+        //一张扑克对象
+        function Poker(color, name, comparedValue) {
+            this.CardColor = color;
+            this.Name = name;
+            this.ComparedValue = comparedValue;
+        }
+
+        function SeatsManager() {
+            this.Seats= [];
+            this.FreshAllSeats = function () {
+                $.each(this.Seats, function (n, v) {
+                    $("#"+ v.canvId).drawPoker({ direction: "toRight", pokers: v.PokersShow, size: 50 });
+                })
+              
+            }
+          
+        }
+        function PublicInfo() {
+            this.Info = null;
+            this.Fresh = function () {
+                var infoStr = "当前余额" + this.Info.CurrentTotal;
+                infoStr = infoStr + "锅底" + this.Info.CurrentTotal;
+                infoStr = infoStr + "轮次" + this.Info.CurrentTurn + "/" + this.Info.DefaultTurnCount
+                $("#PublicInfo").text(infoStr);
+
+            }
+
+        }
+        var mySeatsManager = new SeatsManager();
+        var myPublic= new PublicInfo();
+        //根据服务端传来的json对象自定义前端页面刷新
+        function Fresh(gameFace) {
+            if (typeof (mySeatsManager.Seats)!="undefined")
+            {
+
+                mySeatsManager.Seats= gameFace.Seats;
+                myPublic.Info = gameFace.PublicInfo;
+                mySeatsManager.FreshAllSeats();
+                myPublic.Fresh();
+            }
+         
+
+        }
+        //玩家押底
+        function PlayerChipin() {
+            var methodInfo = new MethodInfo("PlayerChipin");
+            InvokeSeverMethodAsync(methodInfo);
+        }
+        //发牌
+        function Deal() {
+            var methodInfo = new MethodInfo("Deal");
+            InvokeSeverMethod(methodInfo);
+        }
+        //玩家看牌
+        function Look() {
+            var methodInfo = new MethodInfo("Look");
+            Poker = InvokeSeverMethod(methodInfo);
+        }
+
+        //玩家天眼查
+        function LookOthersPoker(otherPlayerId) {
+            var methodInfo = new MethodInfo("LookOtherPoker");
+            methodInfo.otherPlayerId = otherPlayerId;
+            Poker = InvokeSeverMethod(methodInfo);
+            ShowOnePokerOfOther(otherPlyerId, Poker);
+        }
+        //玩家表态_暗注
+        function ChipInNoLook() {
+            var methodInfo = new MethodInfo("ChipInNoLook");
+            InvokeSeverMethod(methodInfo);
+        }
+        //玩家表态_跟
+        function ChipInFollow() {
+            var methodInfo = new MethodInfo("ChipInFollow");
+            InvokeSeverMethod(methodInfo);
+        }
+        //玩家放弃
+        function Giveup() {
+            var methodInfo = new MethodInfo("Giveup");
+            InvokeSeverMethod(methodInfo);
+        }
+        //玩家表态_直封
+        function ChipInLimit() {
+            var methodInfo = new MethodInfo("ChipInLimit");
+            InvokeSeverMethod(methodInfo);
+        }
+        //玩家表态_加倍
+        function ChipInDouble() {
+            var methodInfo = new MethodInfo("ChipInDouble");
+            InvokeSeverMethod(methodInfo);
+        }
+        //玩家表态_自定义金额
+        function ChipIn(amount) {
+            var methodInfo = new MethodInfo("ChipIn");
+            metodeInfo.amount = amount;
+            InvokeSeverMethod(methodInfo);
+        }
+        //敲牌
+        function Compare() {
+            var methodInfo = new MethodInfo("Compare");
+            InvokeSeverMethod(methodInfo);
+        }
+        //结算喜钱
+        function SettolAccount() { }
+        //显示一张牌
+        function ShowOnePokerOfOther(playerId, poker) {
+
+
+        }
+        //更牌数据
+        function FreshInfo(info) {
+
+
+        }
+        //检查余额
+        function IsAccountEnougth() {
+            var methodInfo = new MethodInfo("IsAccountEnougth");
+            var rlt = InvokeSeverMethod(methodInfo)
+
+        }
+        $(function () {
+
+            // $("#ChipInLimit").css("display", "none");
+            //绑定事件begain
+            //押底
+            var testpoker = [
+                { Name: 1, CardColor: "s" },
+                { Name: 2, CardColor: "h" },
+                { Name: "", CardColor: "" }]
+            $("#mypokers>canvas").drawPoker({ direction: "toRight", pokers: testpoker, size: 50 });
+            $("#PlayerChipin").on("click", PlayerChipin);
+            //看牌
+            $("#Look").on("click", Look);
+            //放弃
+            $("#Giveup").on("click", Giveup);
+            //天眼查
+       //     $("#LookOthersPoker").on("click", LookOthersPokerook);
+            //跟
+            $("#ChipInFollow").on("click", ChipInFollow);
+            //加倍
+            $("#ChipInDouble").on("click", ChipInDouble);
+            //直封
+            $("#ChipInLimit").on("click", ChipInLimit);
+            //自定义下注金额
+            $("#ChipIn").on("click", ChipIn);
+            $("#Deal").on("click", Deal);
+            $("#Compare").on("click", Compare);
+            //绑定事件end
+        })
+    </script>
+}

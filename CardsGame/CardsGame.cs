@@ -5,10 +5,9 @@ namespace AntDesigner.NetCore.Games
 {/// <summary>
 /// 牌基类类
 /// </summary>
-    public abstract class ABCard : IComparable
-    {/// <summary>
-     /// 比较牌大小依据
-     /// </summary>
+    public abstract class ABCard : IComparable {/// <summary>
+                                                /// 比较牌大小依据
+                                                /// </summary>
         public int ComparedValue { get; protected set; }
         /// <summary>
         /// 花色(例如:红桃)
@@ -22,15 +21,17 @@ namespace AntDesigner.NetCore.Games
         /// 排序依据
         /// </summary>
         internal int Order { get; set; }
-        public virtual int CompareTo(object obj)
-        {
-            return ((IComparable)Order).CompareTo(((ABCard)obj).Order);
+        public virtual int CompareTo(object obj) {
+            if (!(obj is ABCard))
+                throw new InvalidOperationException("CompareTo: Not a ABCard");
+            return ((IComparable)ComparedValue).CompareTo(((ABCard)obj).ComparedValue);
         }
+   
     }
     /// <summary>
     /// 牌类
     /// </summary>
-    public class Card : ABCard
+    public class Card : ABCard,IComparable<Card>
     {
         public Card(int comparedValue_, string CardColor_, string name_)
         {
@@ -41,7 +42,21 @@ namespace AntDesigner.NetCore.Games
         }
         public override int CompareTo(object obj)
         {
-            return ((IComparable)Order).CompareTo(((ABCard)obj).Order);
+            if (!(obj is Card))
+                throw new InvalidOperationException("CompareTo: Not a Card");
+            return ((IComparable)ComparedValue).CompareTo(((Card)obj).ComparedValue);
+  
+    }
+
+        public int CompareTo(Card other) {
+            return CompareTo((object)other);
+        }
+
+        public static bool operator <(Card card1, Card card2) {
+            return card1.CompareTo(card2) < 0;
+        }
+        public static bool operator >(Card card1, Card card2) {
+            return card1.CompareTo(card2) > 0;
         }
     }
     /// <summary>
@@ -55,7 +70,7 @@ namespace AntDesigner.NetCore.Games
         /// <summary>
         /// 牌容器(一副牌)
         /// </summary>
-        protected List<ABCard> CardsList { get; }
+        protected List<Card> CardsList { get; }
         /// <summary>
         /// 罗列牌类名称
         /// </summary>
@@ -85,7 +100,7 @@ namespace AntDesigner.NetCore.Games
         {
             locker = new object();
             ConfigCardsNameAndColor();
-            CardsList = new List<ABCard>();
+            CardsList = new List<Card>();
             Random = new Random();
             BuildNewCards();
             Riffile();
@@ -129,6 +144,17 @@ namespace AntDesigner.NetCore.Games
                 Order = Random.Next(CardNameList.Length)
             };
             CardsList.Add(newCard);
+        }/// <summary>
+        /// 添加一张牌
+        /// </summary>
+        /// <param name="comparedValue">牌的大小比较值</param>
+        /// <param name="color_"></param>
+        /// <param name="name_"></param>
+        protected void AddSinglerCard(int comparedValue,string color_, string name_) {
+            Card newCard = new Card(comparedValue, color_, name_) {
+                Order = Random.Next(CardNameList.Length)
+            };
+            CardsList.Add(newCard);
         }
         /// <summary>
         /// 从已经生成的一幅牌里删除牌
@@ -156,7 +182,10 @@ namespace AntDesigner.NetCore.Games
             {
                 CardsList[i].Order = Random.Next(CardsList.Count);
             }
-            CardsList.Sort();
+            // CardsList.Sort();
+            CardsList.Sort((card1, card2) => {
+                return card1.Order.CompareTo(card2.Order);
+            });
             Indicator = 0;
         }
         /// <summary>
@@ -168,11 +197,11 @@ namespace AntDesigner.NetCore.Games
         /// </summary>
         /// <param name="Count">数量</param>
         /// <returns></returns>
-        public List<ABCard> TackOut(int Count)
+        public List<Card> TackOut(int Count)
         {
             lock (locker)
             {
-                List<ABCard> TackOutCards = new List<ABCard>();
+                List<Card> TackOutCards = new List<Card>();
                 if (Count <= 0)
                 {
                     return TackOutCards;
@@ -197,8 +226,8 @@ namespace AntDesigner.NetCore.Games
         /// </summary>
         protected override void Specific()
         {
-            AddSinglerCard("d", "王"); //小王 调用基类的AddSinglerCard方法单独添加一张牌
-            AddSinglerCard("d", "王");//大王
+            AddSinglerCard("y", "王"); //小王 调用基类的AddSinglerCard方法单独添加一张牌
+            AddSinglerCard("z", "王");//大王
         }
         /// <summary>
         /// 循环定义扑克牌
@@ -240,7 +269,7 @@ namespace AntDesigner.NetCore.Games
         }
 
     }
-    public class PokerWithoutKing:Poker
+    public class PokersWithoutKingManger:Poker
     {
         protected override void Specific()
         {
