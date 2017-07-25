@@ -7,11 +7,11 @@
 <style>
     .buttnMargin {
         margin: 0.3rem;
-    
     }
-    #roomMessage span:nth-child(even){
-        font-weight:bolder;
-        color:red;
+
+    #roomMessage span:nth-child(even) {
+        font-weight: bolder;
+        color: red;
     }
 </style>
 @section styles{
@@ -67,10 +67,10 @@
             </div>
             <div class="modal-body">
                 <label>本局游戏结束</label><br />
-                <button>继续游戏</button><button>离开房间</button>
+                <button id="gameOvergoon" class="btn btn-warning btn-xs  text-center buttnMargin">继续游戏</button><button id="gameOverleave" class="btn btn-warning btn-xs  text-center buttnMargin">离开房间</button>
             </div>
             <div class="modal-footer">
-             @*<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>*@
+                @*<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>*@
             </div>
         </div><!-- /.modal-content -->
     </div><!-- /.modal -->
@@ -84,15 +84,15 @@
             </div>
             <div class="modal-body">
                 <label>游戏异常结束,继续游戏重新开始</label><br />
-                <button>继续游戏</button><button>离开房间</button>
+                <button id="gameStopgoon" class="btn btn-warning btn-xs  text-center buttnMargin">继续游戏</button><button id="gameStopleave" class="btn btn-warning btn-xs  text-center buttnMargin">离开房间</button>
             </div>
             <div class="modal-footer">
-              @*<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>*@
+                @*<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>*@
             </div>
         </div><!-- /.modal-content -->
     </div><!-- /.modal -->
 </div>
-<div id="GamePanel" style="height:calc(100% - 14.6rem);display:flex;flex-direction:column;">
+<div id="GamePanel" style="height:calc(100% - 14.6rem);display:flex;flex-direction:column;flex-wrap:wrap;width:100%">
     @RenderBody()
 </div>
 <div id="roomTools" class="roomInfo" style="display:flex;flex-direction:column;height:14.5rem;text-align:center;margin:auto;position:fixed;bottom:0px;left:0px;text-align:right;width:100%;">
@@ -138,11 +138,27 @@
             })
             return result;
          }
+         function InvokeSeverMethodAsync(methodInfo) {
+            var result;
+            console.debug("invokeSeverMehtod_" + methodInfo.askMethodName);
+            $.ajax({
+                type: "Post",
+                async:true,
+                url: "/GameProjects/GameHandler/WebSocketHandler?gameCityId=@Model.GameCityId&roomId=@Model.Id",
+                data: methodInfo,
+                dataType: "json",
+                success: function (data) {
+                    result = data;
+                }
+            })
+            return result;
+         }
 
         var webSocket = new WebSocket("ws://127.0.0.1:8000/ws");
         webSocket.onopen = function () {
             $.get("/GameProjects/GameHandler/WebsocketCheck");
-         alert(@ViewBag.Player.Id);
+            alert(@ViewBag.Player.Id);
+            _gameFace.Fresh();
         }
         webSocket.onmessage = function (event) {
             var obj = JSON.parse(event.data);
@@ -173,8 +189,8 @@
         ///游戏界面
         function GameFace()
         {
-            this.Seats = [];
-            currentSeats = null;
+           // this.Seats = [];
+           // currentSeats = null;
             this.Fresh = function ()///刷新
             {
                 console.debug("befor_GameFace");
@@ -202,6 +218,7 @@
         //开始新的一局
         function NewInnigeGame()
         {
+
         }
         ///提示信息
         function Alert(AlertContent)
@@ -215,28 +232,40 @@
             $("#gameOverInfo").modal("show");
         }
         //游戏异常中断
-        function Stoped(Message)
-        {
-
+        function Stoped(Message){
             $("#gameStoped").modal("show");
         }
         ///重置游戏
-        function ResetGame()
-        {
+        function ResetGame(){
 
 
         }
+
         //提玩家出房间
-        function Kicket(event)
-        {
+        function Kicket(event){
             var playerId = event.data.playerId;
             console.debug("befor_Kicket");
             $.get("/Citys/Rooms/KickPlayer?playerId=" + playerId +"&gameCityId=@Model.GameCityId&roomId=@Model.Id");
         }
-            function ShowRoomInfo()
-            {
+        function ShowRoomInfo() {//房间信息
                 $('#RoomInfoModal').modal('show');
-        }//房间信息
+        }
+        function GameStopgoon() {
+            $("#gameStoped").modal("hide");
+            if (window.C_GameStopgoon)
+            {
+                C_GameStopgoon();
+            }
+
+        }
+            function GameOvergoon() {
+                $('#gameOverInfo').modal("hide");
+                if (window.C_GameOvergoon)
+                {
+                   C_GameOvergoon();
+                }
+
+            }
             function RoomMessage(name,message)
             {
                 if (name=="0") {
@@ -252,6 +281,14 @@
                 var messageStr = $("#message").val();
                 $.get("/Citys/Rooms/RoomMessage?gameCityId=@Model.GameCityId&roomId=@Model.Id&message="+messageStr);
             }//发送房间消息
+            function RoomSetlayOut()
+            {
+                var canv = $("canvas");
+                $.each(canv, function () {
+                    $(this).attr("width",$(this).parent("div").width());
+                    $(this).attr("height",$(this).parent("div").height())
+                });
+        }
                 wx.config({
             debug: false,
             appId: '@Html.Raw(ViewBag.wxConfig.appId)',
@@ -286,12 +323,20 @@
             });
                 });
         $(function () {
+            RoomSetlayOut();
+            $(window).resize(function () {
+                RoomSetlayOut();
+            });
          $("#StartGame").on("click", StartGame);
          $("#leaveRoom").on("click", LeaveRoom);
          $("#ConfigRoom").on("click", ConfigRoom);
          $("#KickPlayer").on("click", { playerId: "2" }, Kicket);
          $("#ShowRoomInfo").on("click", ShowRoomInfo);
          $("#SendMessage").on("click", SendMessage);
+         $("#gameOvergoon").on("click",GameOvergoon );
+         $("#gameStopgoon").on("click", GameStopgoon );
+         $("#gameOverleave").on("click", LeaveRoom);
+         $("#gameStopleave").on("click", LeaveRoom);
         })
     </script>
     @RenderSection("scripts", required: false)

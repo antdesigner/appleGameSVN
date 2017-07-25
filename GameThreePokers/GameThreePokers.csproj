@@ -4,10 +4,6 @@
     <TargetFramework>netcoreapp1.1</TargetFramework>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>TRACE;NETCOREAPP1_1;DEBUG</DefineConstants>
-  </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\CardsGame\CardsGame.csproj" />
     <ProjectReference Include="..\GameCity\GameCity.csproj" />

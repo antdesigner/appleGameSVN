@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\GameCity\GameCity.csproj" />
     <ProjectReference Include="..\ICityGame\IGameCity.csproj" />
   </ItemGroup>
 

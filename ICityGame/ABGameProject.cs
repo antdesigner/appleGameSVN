@@ -34,7 +34,6 @@ namespace AntDesigner.NetCore.GameCity
         /// <summary>
         ///委托websocket方式发送给客户端数据
         /// </summary>
-
         public virtual Action<WebsocketSendObjctBase> Notify { get; set; }
         /// <summary>
         ///委托websocket方式发送给客户端数据
@@ -86,10 +85,18 @@ namespace AntDesigner.NetCore.GameCity
         
 
             }
-            var obj = methodInfo_.Invoke(this, params_);
-            var jsonResult = JsonConvert.SerializeObject(obj);
 
-            return jsonResult;
+            if (params_.Length>0) {
+              var  obj = methodInfo_.Invoke(this, params_);
+                var jsonResult = JsonConvert.SerializeObject(obj);
+                return jsonResult;
+            }
+            else {
+                var obj = methodInfo_.Invoke(this, null);
+                var jsonResult = JsonConvert.SerializeObject(obj);
+                return jsonResult;
+            }
+         
         }
         /// <summary>
         /// 检查能不能开始
@@ -246,8 +253,17 @@ namespace AntDesigner.NetCore.GameCity
            // Notify?.Invoke(WebscoketSendObjs.ResetGame(0));
             NotifyRoomPlayers(WebscoketSendObjs.ResetGame(0));
         }
-
-        protected  void NotifyRoomPlayers(WebsocketSendObjctBase websocketSendObjctBase)
+        /// <summary>
+        /// 刷新玩家客户端数据
+        /// </summary>
+        /// <param name="playerId">玩家Id</param>
+        /// <returns>发送到客户端玩家数据</returns>
+        /// /// <summary>
+        ///  
+      //  public virtual object FreshGameFace(int playerId) {
+     //       return null;
+     //   }
+            protected  void NotifyRoomPlayers(WebsocketSendObjctBase websocketSendObjctBase)
         {
             
             foreach (IPlayerJoinRoom item in InningeGame.IRoom.Players)
@@ -264,5 +280,6 @@ namespace AntDesigner.NetCore.GameCity
             var myPlayer = InningeGame.IRoom.Players.Find(p => p.Id == playerId);
             NotifyByWebsockLink?.Invoke(websocketSendObjctBase, myPlayer.WebSocketLink);
         }
+
     }
 }

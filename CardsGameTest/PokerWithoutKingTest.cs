@@ -12,7 +12,7 @@ namespace CardsGameTest
         [InlineData("XX")]
         public void Specific_1(string cardName_)
         {
-          PokerWithoutKing poker = new PokerWithoutKing();
+          PokersWithoutKingManger poker = new PokersWithoutKingManger();
             bool hasCardsXXorX=false;
             while (poker.RemaindCount > 0  )
             {
@@ -28,7 +28,7 @@ namespace CardsGameTest
         [InlineData("2")]
         public void Specific_2(string cardName_)
         {
-            PokerWithoutKing poker = new PokerWithoutKing();
+            PokersWithoutKingManger poker = new PokersWithoutKingManger();
             bool hasCardsXXorX =false;
             while (poker.RemaindCount > 0)
             {

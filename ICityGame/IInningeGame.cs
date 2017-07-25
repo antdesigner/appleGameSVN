@@ -31,14 +31,13 @@ namespace AntDesigner.NetCore.GameCity
         /// </summary>
         IRoom IRoom { get; set; }
         /// <summary>
-        /// 一局游戏的公共数据
-        /// </summary>
-        Dictionary<string, List<string>> GameDateStr { get; set; }
-        Dictionary<string, List<object>> GameDateObj { get; set; }
-        /// <summary>
         /// 能否加座位检查
         /// </summary>
         Func<IInningeGame, bool> DCheckAddSeat { get; set; }
+        /// <summary>
+        /// 添加座位委托
+        /// </summary>
+        Func<IInningeGame, ISeat> DCreatSeat { get; set; }
         /// <summary>
         /// 添加座位前事件
         /// </summary>

@@ -21,14 +21,7 @@ namespace AntDesigner.NetCore.GameCity
         /// 一局游戏
         /// </summary>
         IInningeGame IIningeGame { get; }
-        /// <summary>
-        /// 该座位玩家游戏中各种数据
-        /// </summary>
-        Dictionary<string, List<string>> GameDateStr { get; set; }
-        /// <summary>
-        /// 该座位玩家游戏中各种数据
-        /// </summary>
-        Dictionary<string, List<object>> GameDateObj { get; set; }
+
         /// 玩家是否能坐下
         /// </summary>
         Func<IInningeGame, bool> DCheckSitDown { get; set; }

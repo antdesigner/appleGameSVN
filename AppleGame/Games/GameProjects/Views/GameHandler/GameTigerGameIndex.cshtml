@@ -183,16 +183,16 @@
     </div>
 </div>
 <div id="panelStart">
-    <button type="button" class="btn btn-warning  btn-block text-center" id="start" >
+    <button type="button" class="btn btn-warning btn-lg btn-block text-center" id="start" >
         <span class="glyphicon glyphicon-play-circle"></span>启 动 转 盘
     </button>
-    <button type="button" class="btn btn-warning  btn-block  text-center" id="again" >
+    <button type="button" class="btn btn-warning btn-lg btn-block  text-center" id="again" >
         <span class="glyphicon glyphicon-repeat"></span> 重 复 上 次
     </button>
-    <button type="button" class="btn btn-warning  btn-block text-center" id="zero" >
+    <button type="button" class="btn btn-warning  btn-lg text-center" id="zero" >
         <span class="glyphicon glyphicon-trash"></span> 押 分 清 零
     </button>
-    <button type="button" class="btn btn-warning btn-block text-center" id="exitRoom">
+    <button type="button" class="btn btn-warning btn-lg text-center" id="exitRoom">
        退 出 房 间
     </button>
 </div>
@@ -524,7 +524,7 @@
 
 
         $(function () {
-            $(".roomInfo").hide();
+            $(".roomInfo").css("display", "none");
             accountBalance = $("#accountBalance");
             accountResult = $("#accountResult");
             stakeBoxsPanel = $("#stakeBoxs");

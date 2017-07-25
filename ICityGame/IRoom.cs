@@ -152,5 +152,6 @@ namespace AntDesigner.NetCore.GameCity
         /// </summary>
         /// <param name="game"></param>
         void ChangeGame(IGameProject game);
+        bool IsKeyPassed(int id, string key);
     }
 }
