@@ -61,8 +61,8 @@ namespace AntDesigner.NetCore.GameCity {/// <summary>
         /// 让座位上的玩家离开
         /// </summary>
         public void PlayLeave() {
-            BeforPlayerLeaveHandler?.Invoke(IIningeGame, new EventArgs());
             var player = IPlayer;
+            BeforPlayerLeaveHandler?.Invoke(IIningeGame, new PlayerEventArgs(player));
             IPlayer = null;
             IsEmpty = true;
             AfterPlayerLeaveHandler?.Invoke(IIningeGame, new PlayerEventArgs(player));

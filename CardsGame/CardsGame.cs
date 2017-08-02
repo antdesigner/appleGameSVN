@@ -5,9 +5,10 @@ namespace AntDesigner.NetCore.Games
 {/// <summary>
 /// 牌基类类
 /// </summary>
-    public abstract class ABCard : IComparable {/// <summary>
-                                                /// 比较牌大小依据
-                                                /// </summary>
+    public abstract class ABCard : IComparable {
+        /// <summary>
+        /// 比较牌大小依据
+       /// </summary>
         public int ComparedValue { get; protected set; }
         /// <summary>
         /// 花色(例如:红桃)

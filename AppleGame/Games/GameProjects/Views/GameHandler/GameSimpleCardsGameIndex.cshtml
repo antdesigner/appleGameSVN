@@ -93,7 +93,7 @@
         canvas = $("canvas");
         ///还原所有画布
         function CleanTable() {
-            $.each(canvas, function (i, v) { CleanCanv(v)});
+            $.each(canvas, function (i, v) { CleanCanv(v);});
         }
         //出牌比较
         function PlayOutCard() {
@@ -115,11 +115,15 @@
             //   var poker = { "CardColor": "s","name":"7" };
 
         }
-        function CleanCanv(canv) {
-            var context = canv.getContext('2d');
-            context.fillStyle = "palegreen"; //设置填充色
-            context.fillRect(0, 0, canv.width, canv.height);
-        }
+        //function CleanCanv(canv, colr) {
+        //    if (typeof(colr)=="undefined")
+        //    {
+        //        colr = "palegreen";
+        //    }
+        //    var context = canv.getContext('2d');
+        //    context.fillStyle = colr; //设置填充色
+        //    context.fillRect(0, 0, canv.width, canv.height);
+        //}
         $("#payOut").on("click", PlayOutCard);
         $("#getPoker").on("click", GetNewPoker);
         //js控制布局

@@ -45,6 +45,11 @@
     <Content Include="wwwroot\lib\jquery-ant-canvas-poker\h.png">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
+    <Content Include="wwwroot\lib\jquery-ant-canvas-poker\jquery\.bower.json" />
+    <Content Include="wwwroot\lib\jquery-ant-canvas-poker\jquery\dist\jquery.js" />
+    <Content Include="wwwroot\lib\jquery-ant-canvas-poker\jquery\dist\jquery.min.js" />
+    <Content Include="wwwroot\lib\jquery-ant-canvas-poker\jquery\dist\jquery.min.map" />
+    <Content Include="wwwroot\lib\jquery-ant-canvas-poker\jquery\LICENSE.txt" />
     <Content Include="wwwroot\lib\jquery-ant-canvas-poker\s.png" />
   </ItemGroup>
   <ItemGroup>

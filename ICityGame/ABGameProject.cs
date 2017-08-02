@@ -81,9 +81,6 @@ namespace AntDesigner.NetCore.GameCity
                     }
                     
                 }
-
-        
-
             }
 
             if (params_.Length>0) {
@@ -132,7 +129,6 @@ namespace AntDesigner.NetCore.GameCity
         public virtual void GameStart(object inngineGame, EventArgs e)
         {
             InningeGame = (IInningeGame)inngineGame;
-           // Notify?.Invoke(WebscoketSendObjs.RoomMessage(0, "游戏开始了!"));
             NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "游戏开始了!"));
         }
         /// <summary>
@@ -250,7 +246,6 @@ namespace AntDesigner.NetCore.GameCity
         /// </summary>
         public virtual void ResetGame(object inningeGame, EventArgs e)
         {
-           // Notify?.Invoke(WebscoketSendObjs.ResetGame(0));
             NotifyRoomPlayers(WebscoketSendObjs.ResetGame(0));
         }
         /// <summary>
@@ -265,15 +260,17 @@ namespace AntDesigner.NetCore.GameCity
      //   }
             protected  void NotifyRoomPlayers(WebsocketSendObjctBase websocketSendObjctBase)
         {
-            
-            foreach (IPlayerJoinRoom item in InningeGame.IRoom.Players)
-            {
-                if (null!= item.WebSocketLink)
-                {
-                    NotifyByWebsockLink?.Invoke(websocketSendObjctBase, item.WebSocketLink);
+
+            //   foreach (IPlayerJoinRoom item in InningeGame.IRoom.Players)
+            //  {
+            var players = InningeGame.IRoom.Players;
+                for (int i = 0;i < players.Count; i++) {
+                    if (null != players[i].WebSocketLink) {
+                        //  NotifyByWebsockLink?.Invoke(websocketSendObjctBase, item.WebSocketLink);
+                        NotifyByWebsockLink?.Invoke(websocketSendObjctBase, players[i].WebSocketLink);
+                    }
                 }
-               
-            }
+          //  }
         }
         protected void NotifySinglePlayer(WebsocketSendObjctBase websocketSendObjctBase,int playerId)
         {

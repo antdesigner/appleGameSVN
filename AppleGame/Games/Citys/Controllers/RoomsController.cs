@@ -240,7 +240,6 @@ namespace AppleGame.Games.Romms.Controllers {
 
                 }
             }
-            // ClientWebsocketsManager.Send(roomMessage);
         }
 
     }

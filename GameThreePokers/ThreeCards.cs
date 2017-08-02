@@ -174,7 +174,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
     /// <returns></returns>
         private bool IsPairs() {
 
-            if (CardsSort[2].Name==Cards[1].Name&&Cards[2].Name!= CardsSort[0].Name ) {
+            if (CardsSort[2].Name==CardsSort[1].Name&& CardsSort[2].Name!= CardsSort[0].Name ) {
                 return true;
             }
             else if (CardsSort[2].Name!= CardsSort[1].Name&& CardsSort[1].Name== CardsSort[0].Name) {

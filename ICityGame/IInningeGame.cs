@@ -73,11 +73,11 @@ namespace AntDesigner.NetCore.GameCity
         /// <summary>
         /// 异常中断游戏
         /// </summary>
-        void Stoped(string message);
+        void Stoped(string message, bool clearSeatData = true, bool resetGame = true);
         /// <summary>
         /// 正常结束游戏
         /// </summary>
-        void GameOver();
+        void GameOver(bool clearSeatData = true, bool resetGame = true);
         /// <summary>
         /// 添加空座位
         /// </summary>
@@ -129,7 +129,6 @@ namespace AntDesigner.NetCore.GameCity
         /// <summary>
         /// 重置一局游戏
         /// </summary>
-        void Reset();
-
+        void Reset(bool clearSeatData=true);
     }
 }

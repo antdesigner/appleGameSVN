@@ -145,14 +145,15 @@ namespace AntDesigner.GameCityBase.Controllers
         [HttpGet]
         public void Start()
         {
-
-            if (!_room.InningGame.IsStarted)
+            var innigeGame = _room.InningGame;
+            if (!innigeGame.IsStarted)
             {
-                _room.InningGame.Start();
+                innigeGame.Start();
+            }else if(innigeGame.IsGameOver) {
+                innigeGame.Reset();
             }
             ViewBag.GameProject = _room.InningGame.IGameProject;
             ViewBag.Player = player;
-
         }
         /// <summary>
         ///  player.websocket连接激活

@@ -164,6 +164,21 @@
             })
 
     };
+    function toLeft(pokers, pokerHeight, deg, pile, x, y, canv) {
+        var pokerWidth = pokerHeight * aspect;
+        var space = pokerWidth * 0.7;
+        var xx = x - (space*(pokers.length-1))-pokerWidth;
+        var yy = y;
+        $.each(pokers, function (i, n) {
+            drawPoker(canv, xx, yy, n, pokerHeight, deg);
+            if (pile == true) {
+                xx = xx + space;
+            } else {
+                xx = xx +pokerWidth * 1.1;
+            }
+        })
+
+    };
    function toBottom(pokers, pokerHeight, deg, pile, x, y, canv) {
        var pokerWidth = pokerHeight * aspect;
        var space = pokerWidth * 0.7;
@@ -206,7 +221,15 @@
                    settings.x,
                    settings.y,
                    this.get(0))
-           } else {
+           } else if (settings.direction == "toLeft") {
+               toLeft(settings.pokers,
+                   settings.pokerHeight,
+                   settings.deg,
+                   settings.pile,
+                   settings.x,
+                   settings.y,
+                   this.get(0))
+           }else {
                toRight(settings.pokers,
                    settings.pokerHeight,
                    settings.deg,
@@ -224,6 +247,10 @@
        toBottom: function (pokers, pokerHeight, deg, pile, x, y) {
            var canv = this.get(0);
            toBottom(pokers, pokerHeight, deg, pile, x, y, canv);
+       },
+       toLeft: function (pokers, pokerHeight, deg, pile, x, y) {
+           var canv = this.get(0);
+           toRight(pokers, pokerHeight, deg, pile, x, y, canv);
        }
     };
    $.fn.drawPoker = function (direction,pokers, pokerHeight, deg, pile, x, y) {
