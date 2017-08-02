@@ -228,17 +228,22 @@ namespace AntDesigner.NetCore.GameCity {/// <summary>
         /// <summary>
         /// 异常中断游戏
         /// </summary>
-        public void Stoped(string message) {
+        public void Stoped(string message, bool clearSeatData = true, bool resetGame = true) {
             IsStoped = true;
             StoptedHandler?.Invoke(this, new GameStopedEventArgs(message));
-            Reset();
+            if (resetGame) {
+                Reset(clearSeatData);
+            }
+
         }
         /// <summary>
         /// 正常结束游戏
         /// </summary>
-        public void GameOver() {
+        public void GameOver(bool clearSeatData=true, bool resetGame = true) {
             IsGameOver = true;
-            Reset();
+            if (resetGame) {
+                Reset(clearSeatData);
+            }
             GameOverHander?.Invoke(this, new EventArgs());
         }
         /// <summary>
@@ -255,9 +260,11 @@ namespace AntDesigner.NetCore.GameCity {/// <summary>
         /// <summary>
         /// 重置游戏
         /// </summary>
-        public void Reset() {
-            ClearAllSeatInfo();
-            IsStarted = false;
+        public void Reset(bool clearSeatData=true) {
+            if (clearSeatData) {
+                ClearAllSeatInfo();
+            }
+            IsStarted = true;
             IsStoped = false;
             IsGameOver = false;
             AfterResetHander?.Invoke(this, new EventArgs());

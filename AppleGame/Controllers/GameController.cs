@@ -145,7 +145,7 @@ namespace AntDesigner.GameCityBase.Controllers
             await httpContextAccessor.HttpContext.Authentication.SignInAsync("MyCookieMiddlewareInstance", userPrincipal,
                 new AuthenticationProperties
                 {
-                    ExpiresUtc = DateTime.UtcNow.AddMinutes(30),
+                    ExpiresUtc = DateTime.UtcNow.AddMinutes(320),
                     IsPersistent = false,
                     AllowRefresh = false
                 });
