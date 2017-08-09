@@ -48,10 +48,10 @@
             //点数
             var colorImage = "";
            switch (Poker.CardColor) {
-               case"s" :
+               case "h" :
                    colorImage = "♥";
                    break;
-               case "h" :
+               case "s" :
                    colorImage = "♠";
                    break;
                case "d" :
@@ -68,10 +68,13 @@
                default:
                    colorImage = "";
            }
-            var canvasContext = boder.canvasContext;
-            var fontSize = boder.width * 0.4;
+           var canvasContext = boder.canvasContext;
+           var fontSize = boder.width * 0.4;
+           if (Poker.CardColor=="h") {
+               var fontSize = boder.width * 0.38;
+           }
             var x = boder.X + 2;
-            var y = boder.Y + boder.width * 0.4;
+            var y = boder.Y + boder.width * 0.5;//?
             canvasContext.font = (fontSize + "px Arial");
             canvasContext.textAlign = "left";
             canvasContext.textBaseline = "hanging";
@@ -96,7 +99,7 @@
         //位置
 
         var x = boder.X+1;
-        var y = boder.Y+4;
+        var y = boder.Y+5;//?
         canvasContext.font = (fontWeight+" "+fontSize + "px Arial");
         canvasContext.textAlign = "left";
         canvasContext.textBaseline = "hanging";
@@ -106,11 +109,18 @@
     function GetPaintColor(Poker) {
         var color = "red";
         switch (Poker.CardColor) {
-            //   "h", "s", "d", "c" ;//hearts红桃、spades黑桃、diamonds梅花,clubs方块
-            case "s": color = "black"; break;
-            case "d": color = "black"; break;
-            case "y": color = "black"; break;
-            default: color = "red"
+           //hearts红桃、spades黑桃、diamonds梅花,clubs方块
+            case "h": color = "red";
+                break;
+            case "c": color = "red";
+                break;
+            case "s": color = "black";
+                break;
+            case "d": color = "black";
+                break;
+            case "y": color = "black";
+                break;
+            default: color = "red";
         }
         return color;
     }//画花色

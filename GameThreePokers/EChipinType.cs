@@ -10,6 +10,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         Follow,//跟注
         Double,//加倍
         ChipIn,//加注
-        Limit//直封
+        Limit,//直封
+        Compare //开牌
     }
 }

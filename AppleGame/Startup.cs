@@ -92,6 +92,7 @@ namespace AntDesigner.AppleGame
             newServices.AddScoped<IPlayerService, PlayerService>();
             newServices.AddScoped<IMessageService, MessageService>();
             newServices.AddScoped<IGameCityService, GameCityService>();
+            newServices.AddScoped<IPayServiceWeixin, PayServiceWeixin>();
             newServices.AddAuthorization(options => //注册验证条目
             {
                 options.AddPolicy("RequireRole", policy => policy.RequireAuthenticatedUser());
@@ -139,7 +140,7 @@ namespace AntDesigner.AppleGame
             {
                 var webSocketOptions = new WebSocketOptions()
                 {
-                    KeepAliveInterval = TimeSpan.FromSeconds(60),
+                    KeepAliveInterval = TimeSpan.FromSeconds(600),
                     ReceiveBufferSize = 4 * 1024,
 
                 };

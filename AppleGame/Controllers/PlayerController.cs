@@ -31,7 +31,6 @@ namespace AntDesigner.GameCityBase.Controllers
         {
             return View("friends");
         }
-
         public IActionResult Friends([FromServices]IPlayerService playerService)
         {
             IList<Player> friends = playerService.GetPlayersOfPlayer(player);
@@ -107,7 +106,6 @@ namespace AntDesigner.GameCityBase.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-       // public IActionResult CreatOrder(decimal amount)
         public IActionResult CreatOrder(decimal amount,[FromServices]IPayServiceWeixin payServiceWeixin)
         {
             string viewName = payServiceWeixin.RechargeViewName;
@@ -115,10 +113,6 @@ namespace AntDesigner.GameCityBase.Controllers
             {
                 return View(viewName, player.Account);
             }
-            //PayOrder payOrder = new PayOrder(player.WeixinName, amount);
-            //ViewBag.wxJsApiParam = payOrder.CreateWxJsApiParam();
-            //IstoreHouse.AddEntity<PayOrder>(payOrder);
-            //IstoreHouse.SaveChanges();
             var order= payServiceWeixin.CreatPayOrder(player, amount);
             ViewBag.wxJsApiParam =payServiceWeixin.CreateWxJsApiParam(order);
             ViewBag.amount = amount;
