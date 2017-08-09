@@ -32,25 +32,19 @@
     <Compile Remove="Games\GameProjects\Controllers\GameSimpleCardsController.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Data\apiclient_cert.zip" />
+    <None Remove="Data\rootca.pem" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="wwwroot\images\pokers\c.png" />
     <Content Include="wwwroot\images\pokers\d.png" />
     <Content Include="wwwroot\images\pokers\h.png" />
     <Content Include="wwwroot\images\pokers\s.png" />
-    <Content Include="wwwroot\lib\jquery-ant-canvas-poker\c.png">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Include="wwwroot\lib\jquery-ant-canvas-poker\d.png">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Include="wwwroot\lib\jquery-ant-canvas-poker\h.png">
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
     <Content Include="wwwroot\lib\jquery-ant-canvas-poker\jquery\.bower.json" />
     <Content Include="wwwroot\lib\jquery-ant-canvas-poker\jquery\dist\jquery.js" />
     <Content Include="wwwroot\lib\jquery-ant-canvas-poker\jquery\dist\jquery.min.js" />
     <Content Include="wwwroot\lib\jquery-ant-canvas-poker\jquery\dist\jquery.min.map" />
     <Content Include="wwwroot\lib\jquery-ant-canvas-poker\jquery\LICENSE.txt" />
-    <Content Include="wwwroot\lib\jquery-ant-canvas-poker\s.png" />
   </ItemGroup>
   <ItemGroup>
     <None Update="wwwroot\**\*;App_Data\**\*">
@@ -100,6 +94,7 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="App_Data\" />
+    <Folder Include="Data\" />
     <Folder Include="Games\GameProjects\Models\" />
   </ItemGroup>
   <ItemGroup>

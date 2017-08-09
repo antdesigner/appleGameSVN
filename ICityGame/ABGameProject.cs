@@ -207,9 +207,11 @@ namespace AntDesigner.NetCore.GameCity
         /// <param name="e"></param>
         public virtual void AfterPlayerLeave(object inningeGame, EventArgs e)
         {
-            string playerId = ((PlayerEventArgs)e).Player.Id.ToString();
-            var roomMessage = WebscoketSendObjs.RoomMessage(0, "玩家" + playerId + "离开了");
-            NotifyRoomPlayers(roomMessage);
+      
+                string playerId = ((PlayerEventArgs)e).Player.Id.ToString();
+                var roomMessage = WebscoketSendObjs.RoomMessage(0, "有玩家离开了");
+                NotifyRoomPlayers(roomMessage);
+
         }
         /// <summary>
         /// 游戏异常中断

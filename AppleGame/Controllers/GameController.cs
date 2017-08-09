@@ -101,7 +101,7 @@ namespace AntDesigner.GameCityBase.Controllers
             ViewBag.accesstoken = WxPayConfig._access_token.Access_token;
             ViewBag.jsToken = WxPayConfig._jsapi_ticket.Ticket;
         }
-
+        [AllowAnonymous]
         public IActionResult GetWeixinMessage()
         {
             if (httpContextAccessor.HttpContext.Request.Method.ToUpper() == "POST")
@@ -145,7 +145,7 @@ namespace AntDesigner.GameCityBase.Controllers
             await httpContextAccessor.HttpContext.Authentication.SignInAsync("MyCookieMiddlewareInstance", userPrincipal,
                 new AuthenticationProperties
                 {
-                    ExpiresUtc = DateTime.UtcNow.AddMinutes(320),
+                    ExpiresUtc = DateTime.UtcNow.AddMinutes(360),
                     IsPersistent = false,
                     AllowRefresh = false
                 });

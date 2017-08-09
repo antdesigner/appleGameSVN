@@ -61,15 +61,17 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         /// <summary>
         /// 是否结算完期间
         /// </summary>
-        private bool IsWinnerStage { get; set; }
+       // private bool IsWinnerStage { get; set; }
         /// <summary>
         /// 押底关闭
         /// </summary>
-        private bool IsChipinClose { get; set; }
+      //  private bool IsChipinClose { get; set; }
+        private EStage CurrentStage { get; set; }
         /// <summary>
         ///时间
         /// </summary>
         private DateTime CheckDateTime { get; set; }
+        private Thread CheckThead { get; set; }
         #endregion
         public GameThreePokers() {
             #region 初始化时每项游戏必须设置的属性
@@ -84,12 +86,18 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
             DefaultTurnCount = 3;
             LimitAmount = 50;//封顶
             JoinSeats = new List<Seat>();
+            CurrentStage = EStage.Reading;
+            
             #endregion
         }
         #region 覆写ABGameProject方法区域
         public override void GameStart(object inngineGame, EventArgs e) {
             InningeGame = (IInningeGame)inngineGame;
             PokerManager = new PokersWithoutKingManger();
+            if (CurrentStage == EStage.Reading) {
+                CheckThead = new Thread(CheckPlayOverTime);
+                CheckThead.Start();
+            }
             InitPublicInfo();
             if (FirstSeat is null) {
                 FirstSeat = GetRoomSeatByPlayerId(InningeGame.IRoom.RoomManager.Id);
@@ -100,7 +108,30 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
             }
             NotifyRoomPlayers(new FreshGameFace(0));
             NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "游戏开始了!请开始押底!"));
-
+        }
+        /// <summary>
+        /// 检查玩家是否超时
+        /// </summary>
+        /// <param name="obj"></param>
+        private void CheckPlayOverTime(object obj) {
+            int overSeconds=65;
+            do {
+                overSeconds = Math.Abs(overSeconds);
+                Thread.Sleep(TimeSpan.FromSeconds(overSeconds));
+                overSeconds = OverTimeSpan(overSeconds);
+            } while (overSeconds< 0);
+            if (InningeGame.NotEmptySeats().Count > 1&& !(CurrentSeat.IPlayer is null)) {
+                int currentPlayerId = CurrentSeat.IPlayer.Id;
+                do {
+                    NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "有玩家超时,将被自动提出"));
+                    RemoveCurrentPlayer();
+                } while (currentPlayerId == CurrentSeat.IPlayer.Id);
+            }
+                CheckPlayOverTime(obj);
+        }
+        private void RemoveCurrentPlayer() {
+                var room = InningeGame.IRoom;
+                room.RemovePlayer(CurrentSeat.IPlayer);
         }
         public override void GameOver(object inningeGame, EventArgs e) {
             CheckDateTime = DateTime.Now;
@@ -119,7 +150,8 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
             NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "新一局开始!开始押底!"));
         }
         public override void Stoped(object inningeGame, EventArgs e) {
-            if (!IsChipinClose) {
+            //     if (!IsChipinClose) {
+            if (CurrentStage == EStage.CanChipIning) {
                 for (int i = 0; i < JoinSeats.Count(); i++) {
                     var seat = JoinSeats[0];
                     if (seat.IsChipIned) {
@@ -139,6 +171,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         public override void AfterSitDown(object inningeGame, EventArgs e) {
             NotifyRoomPlayers(new FreshSeatIco(InningeGame.NotEmptySeats().Count()));
             base.AfterSitDown(inningeGame, e);
+            NotifyRoomPlayers(new FreshGameFace(0));
         }
         public override void BeforPlayerLeave(object inningeGame, EventArgs e) {
             IPlayerJoinRoom player = ((PlayerEventArgs)e).Player;
@@ -149,37 +182,59 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         }
         private void ChageRole(Seat seat) {
             bool isCurrentSeat = !IsNotCurrentSeat(seat);
-            Seat nextSeat = GetNextSeat(seat);
-            if (IsGameRuningStage()&&isCurrentSeat){
+            Seat nextSeat = GetNextRoomSeat(seat);
+            if (IsGameRuningStage() && isCurrentSeat) {
+                nextSeat = GetNextJoinSeat(seat);
                 MoveToNextSeat(PreSeatAmount, PreSeatIsLook, seat.IPlayer.Id);
-            } else if (isCurrentSeat) {
+                if (FirstSeat == seat) {
+                    FirstSeat = nextSeat;
+                }
+            }
+            else if (isCurrentSeat) {
+                nextSeat = GetNextRoomSeat(seat);
                 CheckDateTime = DateTime.Now;
                 CurrentSeat = nextSeat;
+                if (FirstSeat == seat) {
+                    FirstSeat = nextSeat;
+                }
 
             }
-            if (FirstSeat == seat) {
-                FirstSeat = nextSeat;
-            }
+
         }
-        private  bool IsGameRuningStage() {
-            if (IsChipinClose && (!IsWinnerStage)) {
+        private bool IsGameRuningStage() {
+            if (CurrentStage == EStage.Running) {
                 return true;
             }
             return false;
         }
         public override void AfterPlayerLeave(object inningeGame, EventArgs e) {
-
-            // if (IsChipinClose&& !(WinnerSeat is null)&&JoinSeats.Count()==1) {
-            if (IsChipinClose && (!IsWinnerStage)&& JoinSeats.Count() == 1) {
-                CompareAll();
+            var notEmptySeatsCount = ((IInningeGame)inningeGame).NotEmptySeats().Count();
+            if (notEmptySeatsCount > 0) {
+                if (CurrentStage == EStage.Running && JoinSeats.Count() == 1) {
+                    CompareAll();
+                    NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "有玩家要离开,人数不足,自动结算"));
+                }
+                else if (notEmptySeatsCount==1) {
+                    CurrentStage = EStage.CanChipIning;
+                    if (JoinSeats.Count()==1) {
+                        var onlySeat = JoinSeats[0];
+                        if (onlySeat.IsChipIned) {
+                            onlySeat.IsChipIned = false;
+                            IsDecutMoneySuccess(onlySeat.IPlayer, -onlySeat.ChipinAmount);
+                        }
+                        onlySeat.IsGaveUp = false;
+                        onlySeat.IsLooked = false;
+                        NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "有玩家要离开,人数不足,退还你的押底"));
+                    }
+                    NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "有玩家要离开,人数不足,取消押底"));
+                }
+                base.AfterPlayerLeave(inningeGame, e);
+                NotifyRoomPlayers(new FreshGameFace(0));
             }
-            base.AfterPlayerLeave(inningeGame, e);
-            NotifyRoomPlayers(new FreshGameFace(0));
         }
         private void RemoveFromJoinSeats(Seat seat) {
             JoinSeats.Remove(seat);
         }
-
         /// <summary>
         /// 初始化每局公共信息
         /// </summary>c
@@ -189,8 +244,9 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
             JoinSeats.Clear();//次序控制
             PreSeatIsLook = false;//上家是否看牌
             PreSeatAmount = ChipInAmount;//最近下注积分
-            IsChipinClose = false;
-            IsWinnerStage = false;
+          //  IsChipinClose = false;
+           // IsWinnerStage = false;
+            CurrentStage = EStage.CanChipIning;
             WinnerSeat = null;
             CheckDateTime = DateTime.Now;
         }
@@ -203,7 +259,13 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         /// /// <summary>
         ///  
         public object FreshGameFace(int playerId) {
+           
             List<object> seats = CreatClientSeatsInfo(playerId);
+            decimal myBalance =0;
+            var mySeat = InningeGame.GetSeatByPlayerId(playerId);
+            if (!(mySeat is null || mySeat.IPlayer is null)) {
+               myBalance = mySeat.IPlayer.Account;
+            }
             int winnerid = 0;
             if (!((this.WinnerSeat is null) || (WinnerSeat.IPlayer is null))) {
                 winnerid = WinnerSeat.IPlayer.Id;
@@ -214,15 +276,20 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
             }
             int firstId = 0;
             int currentId = 0;
-            if (!(this.FirstSeat is null)) {
+            if (!(this.FirstSeat is null || FirstSeat.IPlayer is null)) {
                 firstId = FirstSeat.IPlayer.Id;
             }
-            if (!(this.CurrentSeat is null)) {
+            if (!(this.CurrentSeat is null|| CurrentSeat.IPlayer is null )) {
                 currentId = this.CurrentSeat.IPlayer.Id;
             }
             int waitSecond = 0;
+            bool canCompare = false;
+            if (CurrentStage == EStage.Running && GetActiveSeatCount() == 2) {
+                canCompare = true;
+            }
             waitSecond = (DateTime.Now - CheckDateTime).Seconds;
             var PublicInfo = new {
+                MyId = playerId,
                 /// 每次打底(入局)积分
                 ChipInAmount = this.ChipInAmount,
                 /// 封顶积分
@@ -244,15 +311,22 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
                 /// 赢家座位
                 WinnerSeatPlayerId = winnerid,
                 ///是否结算后期间
-                IsWinnerStage = this.IsWinnerStage,
+              //  IsWinnerStage = this.IsWinnerStage,
                 ///打底关闭
-                IsChipinClose = this.IsChipinClose,
+            //    IsChipinClose = this.IsChipinClose,
+
+                //可以比牌
+                CanCompare = canCompare,
+                //阶段
+                CurrentStage = this.CurrentStage,
                 ///房价玩家总数
                 playerCount = this.InningeGame.NotEmptySeats().Count(),
                 ///已打底数
                 playerChipinCount = joinSeatsCount,
                 ///等待玩家操作秒数
-               WaitSecond = waitSecond
+                WaitSecond = waitSecond,
+                //玩家余额
+                Balance = myBalance
             };
             var GameFace = new {
                 PublicInfo = PublicInfo,
@@ -283,7 +357,8 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
                         j = 4;
                         PokersShow = seat.PokersShow;
                     }
-                    if (IsWinnerStage && (!seat.IsGaveUp)) {
+                    // if (IsWinnerStage && (!seat.IsGaveUp)) {
+                    if (CurrentStage==EStage.Computed && (!seat.IsGaveUp)) {
                         PokersShow = seat.Pokers.CardsSort;
                     }
                     var PokerOtherCanSee = new Card(0, "", "");
@@ -319,7 +394,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         private void TakeMyseatToLast(Seat mySeat, List<Seat> tempSeats) {
             for (int i = 0; i < JoinSeats.Count; i++) {
                 var seat = JoinSeats[i];
-                if ((mySeat is null )||( seat.IPlayer.Id != mySeat.IPlayer.Id) ){
+                if ((mySeat is null) || (seat.IPlayer.Id != mySeat.IPlayer.Id)) {
                     tempSeats.Add(seat);
                 }
             }
@@ -336,67 +411,60 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         public ISeat CreatSeat(IInningeGame inningeGame) {
             return new Seat(inningeGame);
         }
-        /// <summary>
-        /// 根据玩家Id获得对应座位
-        /// </summary>
-        /// <param name="playerId"></param>
-        /// <returns></returns>
-        private Seat GetJionSeatByPlayerId(int playerId) {
-
-            return JoinSeats.Find(s => s.IPlayer.Id == playerId);
-        }
-        private Seat GetRoomSeatByPlayerId(int playerId) {
-            return (Seat)InningeGame.GetSeatByPlayerId(playerId);
-        }
         #region 自定义方法区域
         /// <summary>
-        /// 玩家押底
+        /// 发牌
         /// </summary>
-        /// <param name="playerId"></param>
         public void PlayerChipin(int playerId) {
-            if (IsChipinClose) {
-                NotifySinglePlayer(WebscoketSendObjs.RoomMessage(playerId, "游戏已正式开始,不能押底!"), playerId);
+            //  if (IsChipinClose) {
+            if (CurrentStage != EStage.CanChipIning && CurrentStage != EStage.Computed) {
+                NotifySinglePlayer(WebscoketSendObjs.RoomMessage(0, "未开局或结束,不能押底!"), playerId);
                 return;
             }
             Seat seat = GetRoomSeatByPlayerId(playerId);
+            if (seat.IsChipIned) {
+                NotifySinglePlayer(WebscoketSendObjs.RoomMessage(0, "已经押底!"), playerId);
+                NotifyRoomPlayers(new FreshGameFace(0));
+                return;
+            }
+            if (InningeGame.NotEmptySeats().Count < 2) {
+                NotifySinglePlayer(WebscoketSendObjs.RoomMessage(0, "房间人数少于两人,不能押底"), playerId);
+                NotifyRoomPlayers(new FreshGameFace(0));
+                return;
+            }
             lock (seat) {
-                //if (seat.IsChipIned) {
-                //    return;
-                //}
-                //if (IsDecutMoneySuccess(seat.IPlayer, ChipInAmount)) {
-                //    AddPlaySeat(seat);
-                //    seat.IsChipIned = true;
-                //    seat.ChipinAmount = ChipInAmount;
                 if (seat.PlayerChipin(ChipInAmount, IsDecutMoneySuccess)) {
                     AddPlaySeat(seat);
-                    AddCurrentTotal();
+                    AddCurrentTotal(ChipInAmount);
                 }
             }
             CheckDateTime = DateTime.Now;
             NotifyRoomPlayers(new FreshGameFace(0));
-            NotifySinglePlayer(WebscoketSendObjs.RoomMessage(playerId, "已押底,等待庄家发牌!"), playerId);
-        }
-        private void AddCurrentTotal() {
-            lock (LockerForCurrentTotal) {
-                CurrentTotal = CurrentTotal + ChipInAmount;//增加锅底金额
-            }
+            NotifySinglePlayer(WebscoketSendObjs.RoomMessage(0, "已押底,等待庄家发牌!"), playerId);
         }
         /// <summary>
         /// 发牌
         /// </summary>
-        public void Deal() {
-            if (IsChipinClose) {
+        /// <param name="playerId"></param>
+        public void Deal(int playerId) {
+            // if (IsChipinClose) {
+            if (CurrentStage != EStage.CanChipIning) {
+                NotifySinglePlayer(WebscoketSendObjs.RoomMessage(playerId, "不是押底阶段,不能发牌!"), playerId);
                 return;
             }
-            if (JoinSeats.Count() != InningeGame.NotEmptySeats().Count()) {
-                NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "还有玩家未下注,不能发牌"));
+            // if (JoinSeats.Count() != InningeGame.NotEmptySeats().Count()) {
+            if (JoinSeats.Count() < 2) {
+                NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "押底人数不足2人,不能发牌"));
                 return;
             }
-            IsChipinClose = true;
+            //  IsChipinClose = true;//?
             PokerManager.Riffile();
-            for (int i = 0; i < JoinSeats.Count(); i++) {
-                ThreeCards threeCards = new ThreeCards(PokerManager.TackOut(3));
-                JoinSeats[i].Pokers = threeCards;
+            lock (this) {
+                for (int i = 0; i < JoinSeats.Count(); i++) {
+                    ThreeCards threeCards = new ThreeCards(PokerManager.TackOut(3));
+                    JoinSeats[i].Pokers = threeCards;
+                }
+                CurrentStage = EStage.Running;
             }
             CheckDateTime = DateTime.Now;
             NotifyRoomPlayers(new FreshGameFace(0));
@@ -410,7 +478,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         public void Look(int playerId) {
             Seat seat = GetJionSeatByPlayerId(playerId);
             if (seat is null) {
-                NotifySinglePlayer(WebscoketSendObjs.RoomMessage(playerId, "还未押底,不能查看!"), playerId);
+                NotifySinglePlayer(WebscoketSendObjs.RoomMessage(playerId, "没有加入本局,自己无牌!"), playerId);
                 return;
             }
             if (seat.Pokers is null || seat.Pokers.Cards.Count != 3) {
@@ -418,17 +486,6 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
                 return;
             }
             seat.LookOneCard();
-            //int i;
-            //Card card = null;
-            //for (i = 0; i < 3; i++) {
-            //    card = seat.PokersShow[i];
-            //    if (card.Name == "") {
-            //        card = GetSeatGetPokers(seat).Cards[i];
-            //        seat.PokersShow[i] = card;
-            //        break;
-            //    }
-            //}
-            //seat.IsLooked = true;
             NotifySinglePlayer(new FreshGameFace(playerId), playerId);
         }
         /// <summary>
@@ -460,16 +517,10 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
                 return;
             }
             Seat seat = GetJionSeatByPlayerId(playerId);
-            //if (seat.IsLooked || IsNotPassedCheck(seat)) {
-            //    return;
-            //}
-            //if (IsDecutMoneySuccess(seat.IPlayer, amount)) {
-            //    MoveToNextSeat(amount, false,playerId, EChipinType.NoLook);
-            //}
             if (IsNotCurrentSeat(seat)) {
                 return;
             }
-            if (seat.ChipIn(amount,IsDecutMoneySuccess,EChipinType.NoLook)){
+            if (seat.ChipIn(amount, IsDecutMoneySuccess, EChipinType.NoLook)) {
                 MoveToNextSeat(amount, false, playerId, EChipinType.NoLook);
             }
         }
@@ -498,7 +549,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
             //if (IsDecutMoneySuccess(seat.IPlayer, chipInAmount)) {
             //    MoveToNextSeat(chipInAmount, iHadLook,playerId, EChipinType.Follow);
             //}
-            if (seat.ChipIn(chipInAmount,IsDecutMoneySuccess,EChipinType.Follow)) {
+            if (seat.ChipIn(chipInAmount, IsDecutMoneySuccess, EChipinType.Follow)) {
                 MoveToNextSeat(chipInAmount, iHadLook, playerId, EChipinType.Follow);
             }
         }
@@ -514,9 +565,9 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
             // seat.IsGaveUp = true;
             seat.Giveup();
             if (FirstSeat == seat) {
-                FirstSeat = GetNextSeat(seat);
+                FirstSeat = GetNextJoinSeat(seat);
             }
-            MoveToNextSeat(PreSeatAmount, PreSeatIsLook,playerId);
+            MoveToNextSeat(PreSeatAmount, PreSeatIsLook, playerId,EChipinType.GaveUp);
         }
         /// <summary>
         /// 玩家表态_直封
@@ -538,7 +589,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
             //if (IsDecutMoneySuccess(seat.IPlayer, chipInAmount)) {
             //    MoveToNextSeat(chipInAmount, iHadLook,playerId, EChipinType.Limit);
             //}
-            if (seat.ChipIn(chipInAmount,IsDecutMoneySuccess,EChipinType.Limit)) {
+            if (seat.ChipIn(chipInAmount, IsDecutMoneySuccess, EChipinType.Limit)) {
                 MoveToNextSeat(chipInAmount, iHadLook, playerId, EChipinType.Limit);
             }
         }
@@ -567,7 +618,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
             //if (IsDecutMoneySuccess(seat.IPlayer, chipInAmount)) {
             //    MoveToNextSeat(chipInAmount, iHadLook,playerId, EChipinType.Double);
             //}
-            if (seat.ChipIn(chipInAmount,IsDecutMoneySuccess,EChipinType.Double)) {
+            if (seat.ChipIn(chipInAmount, IsDecutMoneySuccess, EChipinType.Double)) {
                 MoveToNextSeat(chipInAmount, iHadLook, playerId, EChipinType.Double);
             }
         }
@@ -576,7 +627,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         /// </summary>
         /// <param name="playerId"></param>
         /// <param name="amount"></param>
-        public object  ChipIn(int playerId, decimal amount) {
+        public object ChipIn(int playerId, decimal amount) {
             Seat seat = GetJionSeatByPlayerId(playerId);
             if (IsNotPassedCheck(seat)) {
                 return new {
@@ -584,15 +635,15 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
                 };
             }
             bool iHadLook = seat.IsLooked;
-            if (PreSeatIsLook&&!iHadLook) {
-                if (IsAmountLessThanPre(amount*2)) {
+            if (PreSeatIsLook && !iHadLook) {
+                if (IsAmountLessThanPre(amount * 2)) {
                     return new {
                         rl = "金额有误,不能低于上家金额"
                     };
                 }
             }
-            if (!PreSeatIsLook&&iHadLook) {
-                if (IsAmountLessThanPre(amount/2)) {
+            if (!PreSeatIsLook && iHadLook) {
+                if (IsAmountLessThanPre(amount / 2)) {
                     return new {
                         rl = "上家是暗注,你金额有误"
                     };
@@ -609,24 +660,21 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
             //if (IsDecutMoneySuccess(seat.IPlayer, amount)) {
             //    MoveToNextSeat(amount, iHadLook,playerId, EChipinType.ChipIn);
             //}
-            if (seat.ChipIn(amount,IsDecutMoneySuccess,EChipinType.ChipIn)) {
+            if (seat.ChipIn(amount, IsDecutMoneySuccess, EChipinType.ChipIn)) {
                 MoveToNextSeat(amount, iHadLook, playerId, EChipinType.ChipIn);
             }
             return new {
                 rl = 1
             };
         }
-        private bool IsAmountLessThanPre(decimal amount) {
-            if (amount < PreSeatAmount) {
-                return true;
-            }
-            return false;
-        }
         /// <summary>
         ///开牌
         /// </summary>
         /// <param name="playerId"></param>
         public void Compare(int playerId) {
+            if (CurrentStage!=EStage.Running) {
+                return;
+            }
             Seat seat = (Seat)GetJionSeatByPlayerId(playerId);
             if (IsNotPassedCheck(seat)) {
                 return;
@@ -652,15 +700,63 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
             if (!IsDecutMoneySuccess(seat.IPlayer, chipInAmount)) {
                 return;
             }
+            AddCurrentTotal(chipInAmount);
+            seat.PreChipInAmount = chipInAmount;
+            seat.PreChipType = EChipinType.Compare;
             WinnerSeat = GetWinner(seat, opponetSeat);
             WinnerSeat.IPlayer.DecutMoney(-CurrentTotal);
-            IsWinnerStage = true;
+           // IsWinnerStage = true;//?
             FirstSeat = WinnerSeat;//新庄家
             CurrentSeat = WinnerSeat;
+            CurrentStage = EStage.Computed;
+            NotifyRoomPlayers(new ChipinAnimation(0, chipInAmount, playerId, EChipinType.Compare));
             NotifyRoomPlayers(new FreshGameFace(0));
             InningeGame.GameOver(false, false);
         }
-        //结算大牌积分
+        /// <summary>
+        /// 根据玩家Id获得对应座位
+        /// </summary>
+        /// <param name="playerId"></param>
+        /// <returns></returns>
+        private Seat GetJionSeatByPlayerId(int playerId) {
+
+            return JoinSeats.Find(s => s.IPlayer.Id == playerId);
+        }
+        /// <summary>
+        /// 更据Id获得在房间的玩家座位
+        /// </summary>
+        /// <param name="playerId"></param>
+        /// <returns></returns>
+        private Seat GetRoomSeatByPlayerId(int playerId) {
+            return (Seat)InningeGame.GetSeatByPlayerId(playerId);
+        }
+        /// <summary>
+        /// 玩家押底
+        /// </summary>
+        /// <param name="playerId"></param>
+        public int OverTimeSpan(int seconds) {
+            var currentTime = DateTime.Now;
+            TimeSpan ts = currentTime.Subtract(CheckDateTime);
+            return ts.Seconds - seconds;
+        }
+        /// <summary>
+        /// 增加底池
+        /// </summary>
+        /// <param name="amount"></param>
+        private void AddCurrentTotal(decimal amount) {
+            lock (LockerForCurrentTotal) {
+                CurrentTotal = CurrentTotal + amount;//增加锅底金额
+            }
+        }
+        private bool IsAmountLessThanPre(decimal amount) {
+            if (amount < PreSeatAmount) {
+                return true;
+            }
+            return false;
+        }
+       /// <summary>
+       /// 
+       /// </summary>
         public void SettolAccount() {
         }
         /// <summary>
@@ -732,8 +828,9 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         /// 到最大轮次自动开牌
         /// </summary>
         private void CompareAll() {
-            //  List<Seat> seats = JoinSeats.Where(s => s.IPlayer.Id != CurrentSeat.IPlayer.Id).ToList();
-            // List<Seat> seats = JoinSeats;
+            if (CurrentStage!=EStage.Running) {
+                return;
+            }
             List<Seat> notGaveupSeats = new List<Seat>();
             if (JoinSeats.Count != 0) {
                 CheckDateTime = DateTime.Now;
@@ -745,10 +842,13 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
                 }
                 WinnerSeat = (notGaveupSeats.OrderByDescending(s => s.Pokers).ToList())[0];
             }
+
             WinnerSeat.IPlayer.DecutMoney(-CurrentTotal);
-            IsWinnerStage = true;
+            // IsWinnerStage = true;//?
             FirstSeat = WinnerSeat;//新庄家
             CurrentSeat = WinnerSeat;
+            CurrentStage = EStage.Computed;
+            NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "超过最大轮次,自动比牌"));
             NotifyRoomPlayers(new FreshGameFace(0));
             InningeGame.GameOver(false, false);//触发游戏结束事件
         }
@@ -775,7 +875,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         /// </summary>
         /// <param name="seat"></param>
         /// <returns></returns>
-        private Seat GetNextSeat(Seat seat) {
+        private Seat GetNextJoinSeat(Seat seat) {
             for (int i = 0; i < JoinSeats.Count; i++) {
                 if (JoinSeats[i] == seat) {
                     if (i == JoinSeats.Count - 1) {
@@ -789,17 +889,38 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
             return null;
         }
         /// <summary>
+        /// 获得房间下一个有玩家的座位
+        /// </summary>
+        /// <param name="seat"></param>
+        /// <returns></returns>
+        private Seat GetNextRoomSeat(Seat seat) {
+            var notEmptySeats = InningeGame.NotEmptySeats();
+            for (int i = 0; i < notEmptySeats.Count; i++) {
+                if (notEmptySeats[i] == seat) {
+                    if (i == notEmptySeats.Count - 1) {
+                        return(Seat)notEmptySeats[0];
+                    }
+                    else {
+                        return (Seat)notEmptySeats[i + 1];
+                    }
+                }
+            }
+            return null;
+        }
+        /// <summary>
         /// 轮到下一个玩家表态
         /// </summary>
-        private void MoveToNextSeat(decimal amount, bool isLook,int playerId, EChipinType chipinType = EChipinType.Nothing) {
+        private void MoveToNextSeat(decimal amount, bool isLook, int playerId, EChipinType chipinType = EChipinType.Nothing) {
             lock (this) {
-               PreSeatAmount = amount;
-               CurrentSeat.PreChipInAmount = amount;
-               CurrentSeat.PreChipType = chipinType;
-                AddCurrentTotal();
+                PreSeatAmount = amount;
+                if (chipinType!=EChipinType.GaveUp) {
+                    CurrentSeat.PreChipInAmount = amount;
+                    CurrentSeat.PreChipType = chipinType;
+                    AddCurrentTotal(amount);
+                }
                 Seat tempSeat = CurrentSeat;
                 do {
-                    tempSeat = GetNextSeat(tempSeat);
+                    tempSeat = GetNextJoinSeat(tempSeat);
                 } while (tempSeat.IsGaveUp);
                 CurrentSeat = tempSeat;
                 PreSeatIsLook = isLook;
@@ -814,7 +935,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
                 }
             }
             CheckDateTime = DateTime.Now;
-            NotifyRoomPlayers(new ChipinAnimation(0,amount, playerId, chipinType));
+            NotifyRoomPlayers(new ChipinAnimation(0, amount, playerId, chipinType));
             NotifyRoomPlayers(new FreshGameFace(0));
         }
         /// <summary>
@@ -849,7 +970,10 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
             if (!seat.IsChipIned || seat.IsGaveUp) {
                 return true;
             }
-            if (IsWinnerStage) {
+            //if (IsWinnerStage) {
+            //    return true;
+            //}
+            if (CurrentStage==EStage.Computed) {
                 return true;
             }
             return false;
@@ -872,6 +996,13 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         /// <returns></returns>
         private List<Seat> GetPlaySeats() {
             return JoinSeats.FindAll(p => p.IsChipIned == true);
+        }
+        /// <summary>
+        /// 没有放弃的玩家数量
+        /// </summary>
+        private int GetActiveSeatCount() {
+            int count = JoinSeats.FindAll(s => s.IsGaveUp == false).Count();
+            return count;
         }
         #endregion
     }
