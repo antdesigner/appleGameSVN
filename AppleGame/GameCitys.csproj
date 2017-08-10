@@ -95,6 +95,7 @@
     <Folder Include="App_Data\" />
     <Folder Include="App_Data\" />
     <Folder Include="Data\" />
+    <Folder Include="Data\" />
     <Folder Include="Games\GameProjects\Models\" />
   </ItemGroup>
   <ItemGroup>
