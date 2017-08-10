@@ -54,7 +54,7 @@ namespace AntDesigner.AppleGame
             WxPayConfig.KEY = Configuration.GetSection("Wx:KEY").Value;
             WxPayConfig.APPSECRET = Configuration.GetSection("Wx:APPSECRET").Value;
             WxPayConfig.SSLCERT_PATH = Configuration.GetSection("Wx:SSLCERT_PATH").Value;
-            WxPayConfig.SSLCERT_PASSWORD = Configuration.GetSection("Wx:SSLCERT_PATH").Value;
+            WxPayConfig.SSLCERT_PASSWORD = Configuration.GetSection("Wx:SSLCERT_PASSWORD").Value;
             WxPayConfig.IP = Configuration.GetSection("Wx:IP").Value;
             WxPayConfig.NOTIFY_URL = WxPayConfig.SiteName + "/weixinPay/getPayResult/";
             WxPayConfig.certName = Configuration.GetSection("Wx:certName").Value;
@@ -93,7 +93,9 @@ namespace AntDesigner.AppleGame
             newServices.AddScoped<IMessageService, MessageService>();
             newServices.AddScoped<IGameCityService, GameCityService>();
             newServices.AddScoped<IPayServiceWeixin, PayServiceWeixin>();
-            newServices.AddAuthorization(options => //注册验证条目
+            newServices.AddScoped<IPayService,PayServiceWeixin>();
+            //注册验证条目
+            newServices.AddAuthorization(options =>
             {
                 options.AddPolicy("RequireRole", policy => policy.RequireAuthenticatedUser());
             });
