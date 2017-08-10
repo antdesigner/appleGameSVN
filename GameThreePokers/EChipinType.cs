@@ -12,5 +12,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         ChipIn,//加注
         Limit,//直封
         Compare //开牌
+        PlayerChipIn,//打底
+        GaveUp//放弃
     }
 }
