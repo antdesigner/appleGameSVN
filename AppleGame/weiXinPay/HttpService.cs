@@ -52,7 +52,7 @@ namespace WxPayAPI
                     X509Store store = new X509Store("My", StoreLocation.LocalMachine);
                     store.Open(OpenFlags.ReadOnly | OpenFlags.OpenExistingOnly);
                     System.Security.Cryptography.X509Certificates.X509Certificate2 cert =
-                    store.Certificates.Find(X509FindType.FindBySubjectName, certName, false)[0];
+                    store.Certificates.Find(X509FindType.FindBySubjectName,certName, false)[0];
                     var handler = new HttpClientHandler();
                     handler.ClientCertificates.Add(cert);
                     using (HttpClient client = new HttpClient(handler))
