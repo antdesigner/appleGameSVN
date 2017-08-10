@@ -78,7 +78,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
                 IsChipIned = true;
                 ChipinAmount = amount;
                 PreChipInAmount = amount;
-                PreChipType = EChipinType.Nothing;
+                PreChipType = EChipinType.PlayerChipIn;
                 return true;
             }
             return false;
