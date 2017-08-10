@@ -59,7 +59,7 @@ namespace WxPayAPI
             //签名
             inputObj.SetValue("sign", inputObj.MakeSign());
             string xml = inputObj.ToXml();
-            string response = HttpService.Post(xml, url, false, timeOut);
+            string response = HttpService.Post(xml, url, false, timeOut,WxPayConfig.certName);
             WxPayData result = new WxPayData();
             result.FromXml(response);
             return result;
@@ -88,7 +88,7 @@ namespace WxPayAPI
             inputObj.SetValue("sign", inputObj.MakeSign());//签名
 
             string xml = inputObj.ToXml();
-            string response = HttpService.Post(xml, url, false, timeOut);//调用HTTP通信接口提交数据
+            string response = HttpService.Post(xml, url, false, timeOut, WxPayConfig.certName);//调用HTTP通信接口提交数据
             //将xml格式的数据转化为对象以返回
             WxPayData result = new WxPayData();
             result.FromXml(response);
@@ -106,7 +106,7 @@ namespace WxPayAPI
             inputObj.SetValue("total_num", 1);
             inputObj.SetValue("sign", inputObj.MakeSign());
             string xml = inputObj.ToXml();
-            string response = HttpService.Post(xml, url, true, timeOut);//调用HTTP通信接口提交数据
+            string response = HttpService.Post(xml, url, true, timeOut, WxPayConfig.certName);//调用HTTP通信接口提交数据
             //将xml格式的数据转化为对象以返回
             WxPayData result = new WxPayData();
             result.FromXml(response);

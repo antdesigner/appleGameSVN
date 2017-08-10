@@ -24,16 +24,13 @@
         }
     }
                     </script>
-
                     <form role="form" class="form-horizontal" action="/Player/withdrawCash/" method="post" onsubmit="return checkAmount()">
                         @Html.AntiForgeryToken()
                         <div class="form-group text-center">
                             <input type="text" class="form-control text-center " placeholder="在此输入申请红包金额" pattern="^(([1-9]\d{0,9})|0)(\.\d{1,2})?$" id="amount" name="amount" />
                             <br />
                             <input type="submit" class="btn btn-primary btn-lg btn-block text-center" value="确定" />
-
                             </div>
                     </form>
-
                     <br /><div>@ViewBag.result</div>
  </div>
