@@ -197,6 +197,7 @@ namespace AntDesigner.NetCore.Games.GameSimpleCards
         /// <returns>发送到客户端玩家数据</returns>
         /// /// <summary>
         ///   
+        [CanVisitByClientAttibue]
         public  object FreshGameFace(int playerId)
         {
             Seat seat = GetSeatByPlayerId(playerId);
@@ -263,6 +264,7 @@ namespace AntDesigner.NetCore.Games.GameSimpleCards
         /// </summary>
         /// <param name="playerId_">玩家Id</param>
         /// <returns>获得的牌</returns>
+        [CanVisitByClientAttibue]
         public ABCard PlayerGetOnePoker(int playerId)
         {
         Seat seat = GetSeatByPlayerId(playerId);
@@ -296,12 +298,7 @@ namespace AntDesigner.NetCore.Games.GameSimpleCards
             return null;
             }
         }
-        /// <summary>
-        /// 出牌或出牌后比较大小
-        /// </summary>
-        /// <param name="playerId">玩家Id</param>
-        /// <param name="card_">一张牌</param>
-        /// <returns>获胜玩家座位</returns>
+        [CanVisitByClientAttibue]
         public void PlayerPlayOutOnePoker(int playerId)
         {
            Seat meSeat = GetSeatByPlayerId(playerId);

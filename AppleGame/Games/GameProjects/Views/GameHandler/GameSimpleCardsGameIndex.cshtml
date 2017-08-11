@@ -64,7 +64,6 @@
             if ((gameFace.myPayOutPoker) != null && gameFace.myPayOutPoker.CardColor.length>0)
             {
                  myPokerPayOut = new Poker(gameFace.myPayOutPoker.CardColor, gameFace.myPayOutPoker.Name);
-                
             }
             if (gameFace.myComparePoker != null && gameFace.myComparePoker.CardColor.length>0)
             {
@@ -80,7 +79,6 @@
             {
                 var myPokerHand = new Poker(gameFace.myPoker.CardColor, gameFace.myPoker.Name);
                 handPoker.drawPoker({ pokers: [myPokerHand], size: 50, x: handPoker.width() / 2 });
-
             } //刷新我手上的牌
             if ((gameFace.otherPlayersPoker) != null && gameFace.otherPlayersPoker.CardColor.length > 0
                 && gameFace.myComparePoker != null && gameFace.myComparePoker.CardColor1.length>0)
@@ -101,8 +99,6 @@
             var methodInfo = new MethodInfo("PlayerPlayOutOnePoker");
             var mySeat = InvokeSeverMethod(methodInfo);
             console.debug("after_PlayOutCard");
-            // var canv = $("#handPoker")[0];
-            //  CleanCanv(canv);
         }
         //获得一张牌
         function GetNewPoker() {
@@ -111,26 +107,12 @@
             var methodInfo = new MethodInfo("PlayerGetOnePoker");
             var poker = InvokeSeverMethod(methodInfo);
             console.debug("after_GetNewPker");
-            // var canv = $("#handPoker")[0];
-            //   var poker = { "CardColor": "s","name":"7" };
-
         }
-        //function CleanCanv(canv, colr) {
-        //    if (typeof(colr)=="undefined")
-        //    {
-        //        colr = "palegreen";
-        //    }
-        //    var context = canv.getContext('2d');
-        //    context.fillStyle = colr; //设置填充色
-        //    context.fillRect(0, 0, canv.width, canv.height);
-        //}
         $("#payOut").on("click", PlayOutCard);
         $("#getPoker").on("click", GetNewPoker);
         //js控制布局
-
         function C_GameStopgoon() {
             alert("继续游戏");
-
         }
         $(function () {
             $(window).resize(function () {

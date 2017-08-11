@@ -53,8 +53,11 @@ namespace AntDesigner.NetCore.GameCity
         public virtual  string ClinetHandler(string askMethodName, Dictionary<string, string> methodParams)
         {
             Type myType_ = this.GetType();
-         
             MethodInfo methodInfo_ = myType_.GetMethod(askMethodName);
+            var attributes = methodInfo_.GetCustomAttribute(typeof(CanVisitByClientAttibue));
+            if (attributes is null) {
+                return null;
+            }
             ParameterInfo[] paramsInfo = methodInfo_.GetParameters();
             if (methodParams.Count != paramsInfo.Length && !methodParams.ContainsKey("playerId"))
             {

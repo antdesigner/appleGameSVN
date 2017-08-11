@@ -258,6 +258,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         /// <returns>发送到客户端玩家数据</returns>
         /// /// <summary>
         ///  
+        [CanVisitByClientAttibue]
         public object FreshGameFace(int playerId) {
            
             List<object> seats = CreatClientSeatsInfo(playerId);
@@ -415,6 +416,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         /// <summary>
         /// 发牌
         /// </summary>
+        [CanVisitByClientAttibue]
         public void PlayerChipin(int playerId) {
             //  if (IsChipinClose) {
             if (CurrentStage != EStage.CanChipIning && CurrentStage != EStage.Computed) {
@@ -446,6 +448,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         /// 发牌
         /// </summary>
         /// <param name="playerId"></param>
+        [CanVisitByClientAttibue]
         public void Deal(int playerId) {
             // if (IsChipinClose) {
             if (CurrentStage != EStage.CanChipIning) {
@@ -463,6 +466,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
                 for (int i = 0; i < JoinSeats.Count(); i++) {
                     ThreeCards threeCards = new ThreeCards(PokerManager.TackOut(3));
                     JoinSeats[i].Pokers = threeCards;
+                    JoinSeats[i].PreChipType = EChipinType.PlayerChipIn;
                 }
                 CurrentStage = EStage.Running;
             }
@@ -475,6 +479,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         /// </summary>
         /// <param name="playerId"></param>
         /// <returns></returns>
+        [CanVisitByClientAttibue]
         public void Look(int playerId) {
             Seat seat = GetJionSeatByPlayerId(playerId);
             if (seat is null) {
@@ -494,6 +499,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         /// <param name="playerId"></param>
         /// <param name="otherPlayerId"></param>
         /// <returns></returns>
+        [CanVisitByClientAttibue]
         public object LookOthersPoker(int playerId, int otherPlayerId) {
             Seat mySeat = GetJionSeatByPlayerId(playerId);
             var Poker = new Poker();
@@ -512,6 +518,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         /// </summary>
         /// <param name="playerId"></param>
         /// <param name="amount"></param>
+        [CanVisitByClientAttibue]
         public void ChipInNoLook(int playerId, decimal amount) {
             if (IsAmountLessThanPre(amount)) {
                 return;
@@ -528,6 +535,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         /// 玩家表态_跟
         /// </summary>
         /// <param name="playerId"></param>
+        [CanVisitByClientAttibue]
         public void ChipInFollow(int playerId) {
             Seat seat = GetJionSeatByPlayerId(playerId);
             if (IsNotPassedCheck(seat)) {
@@ -557,6 +565,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         ///  玩家放弃
         /// </summary>
         /// <param name="playerId"></param>
+        [CanVisitByClientAttibue]
         public void Giveup(int playerId) {
             Seat seat = GetJionSeatByPlayerId(playerId);
             if (IsNotPassedCheck(seat)) {
@@ -573,6 +582,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         /// 玩家表态_直封
         /// </summary>
         /// <param name="playerId"></param>
+        [CanVisitByClientAttibue]
         public void ChipInLimit(int playerId) {
             Seat seat = GetJionSeatByPlayerId(playerId);
             if (IsNotPassedCheck(seat)) {
@@ -597,6 +607,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         /// 玩家表态_加倍
         /// </summary>
         /// <param name="playerId"></param>
+        [CanVisitByClientAttibue]
         public void ChipInDouble(int playerId) {
             Seat seat = GetJionSeatByPlayerId(playerId);
             if (IsNotPassedCheck(seat)) {
@@ -627,6 +638,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         /// </summary>
         /// <param name="playerId"></param>
         /// <param name="amount"></param>
+        [CanVisitByClientAttibue]
         public object ChipIn(int playerId, decimal amount) {
             Seat seat = GetJionSeatByPlayerId(playerId);
             if (IsNotPassedCheck(seat)) {
@@ -671,6 +683,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         ///开牌
         /// </summary>
         /// <param name="playerId"></param>
+        [CanVisitByClientAttibue]
         public void Compare(int playerId) {
             if (CurrentStage!=EStage.Running) {
                 return;
