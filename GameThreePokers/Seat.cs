@@ -64,6 +64,8 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
             IsChipIned = false;
             IsLooked = false;
             IsGaveUp = false;
+            PlayerIdWhichCanSee = 0;
+            PokerOtherCanSee = null;
         }
         private void InitialPokerShow() {
             for (int i = 0; i < 3; i++) {
@@ -104,7 +106,13 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         public void Giveup() {
             IsGaveUp = true;
         }
-
+        public Card GetOtherCanSeePoker() {
+            if (null != this.PokerOtherCanSee) {
+                return this.PokerOtherCanSee;
+            }
+           this.PokerOtherCanSee = this.Pokers.Cards[0];
+            return this.PokerOtherCanSee;
+        }
         public bool ChipIn(decimal amount, Func<IPlayerJoinRoom, decimal, bool> DDecutMoney, EChipinType chipType) {
             if (chipType==EChipinType.NoLook&&this.IsLooked) {
                 return false;

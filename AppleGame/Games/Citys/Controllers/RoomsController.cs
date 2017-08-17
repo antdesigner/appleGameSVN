@@ -1,21 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using AntDesigner.GameCityBase.EF;
-using AntDesigner.GameCityBase.interFace;
 using Microsoft.AspNetCore.Http;
 using AntDesigner.NetCore.GameCity;
-using Game = AntDesigner.NetCore.Games.GameSimpleCards;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using AntDesigner.GameCityBase;
 using AppleGame.Games.Citys.Models;
 using AntDesigner.GameCityBase.Controllers;
-using Microsoft.Extensions.DependencyInjection;
 using GameCitys.GamCityBase;
 using GameCitys.DomainService;
-
+using GameCitys.Tools;
+using System.Text;
+using WxPayAPI;
+using AntDesigner.weiXinPay;
 
 namespace AppleGame.Games.Romms.Controllers {
     [Area("Citys")]
@@ -43,6 +41,7 @@ namespace AppleGame.Games.Romms.Controllers {
         public IActionResult Index_CreateRoom() {
             ViewBag.GameCitys = new SelectList(CityGameController.GameCityList, "Id", "Name");
             ViewBag.GameProjects = new SelectList(CityGameController.GameCityList.GameProjects, "Name", "ShowName");
+            ViewBag.result = "";
             return View();
         }
         /// <summary>
@@ -53,11 +52,20 @@ namespace AppleGame.Games.Romms.Controllers {
         [HttpPost]
         public IActionResult CreateRoom(IFormCollection createRoom) {
             if (session.Keys.Contains("RoomId")) {
-                throw new Exception("已经在一个房间里,不能再建");
+                ViewBag.result = "";
+                return View("Index_CreateRoom");
+              //  throw new Exception("已经在一个房间里,不能再建");
             }
             if (!decimal.TryParse(createRoom["TicketPrice"].ToString(), out decimal ticketPrice_)) {
                 ticketPrice_ = 0;
             }
+            if (ticketPrice_ > 0) {
+                if (player.AccountNotEnough(ticketPrice_)) {
+                    return RedirectToRoute("default", new { controller = "Player", action = "Index_recharge" });
+                }
+                    
+            }
+          
             string gameName_ = createRoom["gameProject"].ToString();
             IGameProject gameProject_ = LoadGameProject(gameName_);
             IInningeGame inningeGame_ = new InningeGame(gameProject_) {
@@ -68,13 +76,28 @@ namespace AppleGame.Games.Romms.Controllers {
             if (!int.TryParse(createRoom["PlayerCountTopLimit"].ToString(), out int limitCount_)) {
                 limitCount_ = 1;
             }
+            if (ticketPrice_>10) {
+                ticketPrice_ = 10;
+            }
+            if (ticketPrice_<0) {
+                ticketPrice_ = 0;
+            }
+            var affiche = createRoom["Affiche"].ToString();
+            if (affiche.Length>=150) {
+                affiche =affiche.Substring(0, 150);
+            }
+            var name = createRoom["Name"].ToString();
+            if (name.Length>=6) {
+                name.Substring(0, 6);
+            }
             IRoomConfig roomConfig_ = new RoomConfig(inningeGame_) {
-                Affiche = createRoom["Affiche"],
-                Name = createRoom["Name"],
+                Affiche = affiche,
+                Name = name,
                 PlayerCountTopLimit = limitCount_,
                 SecretKey = createRoom["SecretKey"],
                 TicketPrice = ticketPrice_
             };
+            player.DecutMoney(ticketPrice_ * 5, "开房");
             IRoom room_ = new Room(player, roomConfig_);
             BoundingEventOfRoom(room_);
             var gameCityId = createRoom["gameCityId"];
@@ -110,6 +133,17 @@ namespace AppleGame.Games.Romms.Controllers {
             }
             ViewBag.manager = ManagePlayer.GetOnlyInstance();
             ViewBag.player = player;
+
+            StringBuilder url = new StringBuilder();
+            url.Append(WxPayConfig.SiteName + "/Citys/Rooms/RoomsList");
+            //url.Append(WxPayConfig.SiteName + "/Citys/Rooms/RoomsList?weixinName=");
+            //url.Append(player.WeixinName);
+            // url.Append("&shareId=");
+            // url.Append(ToolsSecret.EncryptOpenId(player.IntroducerWeixinName));
+            ViewBag.wxConfig = new wxConfig(url.ToString());
+            ViewBag.shareId = ToolsSecret.EncryptOpenId(player.WeixinName);
+            ViewBag.accesstoken = WxPayConfig._access_token.Access_token;
+            ViewBag.jsToken = WxPayConfig._jsapi_ticket.Ticket;
             return View(rooms_);
         }
         [HttpGet]
@@ -140,6 +174,11 @@ namespace AppleGame.Games.Romms.Controllers {
             string gameName_ = null;
             gameName_ = _inngeGame.IGameProject.Name;
             if (!_room.AddPlayer(player)) {
+                session.Remove("RoomId");
+                session.Remove("CityId");
+                if (player.AccountNotEnough(_room.TicketPrice)) {
+                    return RedirectToRoute("default", new { controller = "Player", action = "Index_recharge" });
+                }
                 return RedirectToAction("RoomsList");
             }
             return RedirectToAction("GameIndex", "GameHandler", new { Area = "GameProjects", gameCityId = _gameCity.Id, roomId = _room.Id });
@@ -210,7 +249,7 @@ namespace AppleGame.Games.Romms.Controllers {
         public IActionResult ConfigRoom(ConfigRoomView config) {
             if (player.Id != _room.RoomManager.Id) {
                 return null;
-                throw new Exception("不是房主没有权限修改");
+                throw new Exception("不是房主没有权限");
             }
             ViewBag.GameProjects = new SelectList(CityGameController.GameCityList.GameProjects, "Name", "ShowName");
 
@@ -227,9 +266,13 @@ namespace AppleGame.Games.Romms.Controllers {
         }
         [HttpGet]
         public void RoomMessage(string message) {
+            if (message.Length>30) {
+                message = message.Substring(0, 30);
+            }
+            message = ToolsStrFiler.ForWebClient(message);
             RoomMessage roomMessage = new RoomMessage(0) {
-                Name = player.WeixinName,
-                Message = message
+            Name = player.WeixinName,
+            Message = message
             };
 
             if (null != _room) {

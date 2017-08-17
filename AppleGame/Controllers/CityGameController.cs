@@ -98,7 +98,7 @@ namespace AntDesigner.GameCityBase.Controllers
         /// </summary>
         private static void LoadGameProjects() {
             GameCityList.GameProjects.Add(new GameThreePokers());
-            GameCityList.GameProjects.Add(new GameSimpleCards());
+           // GameCityList.GameProjects.Add(new GameSimpleCards());
             GameCityList.GameProjects.Add(new GameTiger());
           
         }

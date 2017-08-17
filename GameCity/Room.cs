@@ -183,7 +183,7 @@ namespace AntDesigner.NetCore.GameCity
             TicketPrice = config_.TicketPrice;
             InningGame = config_.InningGame;
             InningGame.IRoom = this;
-            if (InningGame.IGameProject.PlayerCountLeast < config_.PlayerCountTopLimit
+            if (InningGame.IGameProject.PlayerCountLeast <= config_.PlayerCountTopLimit
           && config_.PlayerCountTopLimit <= InningGame.IGameProject.PlayerCountLimit)
             {
                 PlayerCountTopLimit = config_.PlayerCountTopLimit;
