@@ -40,6 +40,7 @@
     <Content Include="wwwroot\images\pokers\d.png" />
     <Content Include="wwwroot\images\pokers\h.png" />
     <Content Include="wwwroot\images\pokers\s.png" />
+    <Content Include="wwwroot\images\zhajinghua.jpg" />
     <Content Include="wwwroot\lib\jquery-ant-canvas-poker\jquery\.bower.json" />
     <Content Include="wwwroot\lib\jquery-ant-canvas-poker\jquery\dist\jquery.js" />
     <Content Include="wwwroot\lib\jquery-ant-canvas-poker\jquery\dist\jquery.min.js" />
@@ -110,4 +111,5 @@
     </ProjectReference>
     <ProjectReference Include="..\ICityGame\IGameCity.csproj" />
   </ItemGroup>
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JSONSchema="" /></VisualStudio></ProjectExtensions>
 </Project>

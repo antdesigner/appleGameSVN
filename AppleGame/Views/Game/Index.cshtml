@@ -1,12 +1,39 @@
 ﻿@using WxPayAPI
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
-}<h2>微信小游戏</h2>
-<div style="margin-top:40%;margin: 0px auto;text-align:center;">
+}<h2>微信炸金花</h2>
+<style>
+    #zhajinghua {
+        width: 67px;
+        height: 52px;
+        background-image: url(/images/weixinlog.png);
+        margin: auto;
+        margin-top: 10%
+    }
+    #welcome {
+        margin-top: 20%;
+        margin: 0px auto;
+        text-align: center;
+        
+    }
+    #login {
+        width: 120px;
+        margin: auto;
+        text-decoration: none;
+    }
+    a {
+        color:green;
+    }
+</style>
+<div id="welcome">
     <form action="/Game/loginGame" method="post">
-        <img  src="~/images/weixinlog.png"/><br />
-        <a style="color:blue;text-decoration: none;" href="https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx8329a1e7e3cff76d&redirect_uri=@(Html.Raw(WxPayConfig.SiteName))/Game/LoginByWeixin_&response_type=code&scope=snsapi_base&state=@(Html.Raw(ViewBag.shareId))#wechat_redirect">点击登陆</a>
+        <div id="zhajinghua"> </div>
+            <div id="login">
+                <a href="https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx8329a1e7e3cff76d&redirect_uri=@(Html.Raw(WxPayConfig.SiteName))/Game/LoginByWeixin_&response_type=code&scope=snsapi_base&state=@(Html.Raw(ViewBag.shareId))#wechat_redirect">进入游戏</a>
+            </div>
+       
     </form>
+ 
     <form action="/Game/loginGame" method="post">
         <input type="text" name="weixinName" />
             <button type="submit">登陆</button>

@@ -91,7 +91,7 @@
             align-items: center;
             text-align: center;
             align-content: center;
-            font-size:1.5rem;
+            font-size: 1.5rem;
         }
 
         .chipinAmount {
@@ -149,12 +149,14 @@
             width: 40%;
             height: 3px;
         }
+
         #myBalance {
             position: absolute;
             font-weight: bolder;
             font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
-            color:red;
+            color: red;
         }
+
         .otherLeft .progress {
             left: 1.5rem;
         }
@@ -172,6 +174,11 @@
         .progress-bar {
             width: 99%;
         }
+        #OthersPoker .modal-body>div{
+          height:100px;
+          width:65px;
+          margin:auto;
+        }
     </style>
 }
 <div id="myhead"></div>
@@ -186,7 +193,7 @@
             <span class="glyphicon glyphicon-user"></span>
             <div class="role"></div>
         </div>
-        <canvas></canvas>
+        <canvas class="tableCanv"></canvas>
         <div class="progress">
             <div class="progress-bar" role="progressbar" aria-valuenow="60"
                  aria-valuemin="0" aria-valuemax="100">
@@ -203,7 +210,7 @@
             <span class="glyphicon glyphicon-user"></span>
             <div class="role"></div>
         </div>
-        <canvas></canvas>
+        <canvas class="tableCanv"></canvas>
         <div class="progress">
             <div class="progress-bar" role="progressbar" aria-valuenow="60"
                  aria-valuemin="0" aria-valuemax="100">
@@ -222,7 +229,7 @@
             <span class="glyphicon glyphicon-user"></span>
             <div class="role"></div>
         </div>
-        <canvas></canvas>
+        <canvas class="tableCanv"></canvas>
         <div class="progress">
             <div class="progress-bar" role="progressbar" aria-valuenow="60"
                  aria-valuemin="0" aria-valuemax="100">
@@ -239,7 +246,7 @@
             <span class="glyphicon glyphicon-user"></span>
             <div class="role"></div>
         </div>
-        <canvas></canvas>
+        <canvas class="tableCanv"></canvas>
         <div class="progress">
             <div class="progress-bar" role="progressbar" aria-valuenow="60"
                  aria-valuemin="0" aria-valuemax="100">
@@ -258,7 +265,7 @@
         <span class="glyphicon glyphicon-user">
         </span><div class="role"></div>
     </div>
-    <canvas></canvas>
+    <canvas class="tableCanv"></canvas>
     <div class="progress">
         <div class="progress-bar" role="progressbar" aria-valuenow="60"
              aria-valuemin="0" aria-valuemax="100">
@@ -290,7 +297,7 @@
                 <h4 class="modal-title" id="myModalLabel">加注金额</h4>
             </div>
             <div class="modal-body">
-                <input id="myChipinAmount" type="number" min="1" max="50" /><label id="chipinRel"></label>
+                <input id="myChipinAmount" type="number" min="1" max="30" /><label id="chipinRel"></label>
                 <button id="chipinEnter" class="btn btn-warning btn-xs  text-center buttnMargin">确定</button><button class="btn btn-warning btn-xs  text-center buttnMargin" data-dismiss="modal">取消</button>
             </div>
             <div class="modal-footer">
@@ -298,7 +305,25 @@
         </div><!-- /.modal-content -->
     </div><!-- /.modal -->
 </div>
-@*<button id="LookOthersPoker">天眼查</button>*@
+<!-- 天眼查 -->
+<div class="modal fade" id="OthersPoker" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">天眼查玩家一张牌</h4>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <canvas id="printOtherPoker" width="65" height="100"></canvas>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
 @section scripts{
     <script src="~/lib/jquery-ant-canvas-poker/jquery.ant.canvas.poker.js" type="text/javascript">
     </script>
@@ -307,7 +332,6 @@
         const SEATOFFISETLEFT = 20;
         const SEATOFFISETTOP = 30;
         const TIMELIMIT = 60;
-        //var beforLeaveNoCheck = false;
         var IsCurrentSeat;
         var myTimer;
         var TimeCount = 0;
@@ -339,6 +363,8 @@
         var btn_Deal;
         var btn_Compare;
         var btn_GoOn;
+        var printOtherPoker;
+        var OthersPoker;
         //一张扑克对象
         function Poker(color, name, comparedValue) {
             this.CardColor = color;
@@ -468,7 +494,7 @@
             }
             if (seat.IsLooked) {
                 state = "已看牌";
-            } else if (seat.PreChipInAmount != 0 && seat.ChipinType==7) {
+            } else if (seat.PreChipInAmount != 0 && seat.ChipinType == 7) {
                 state = "未看牌"
             }
             if (seat.IsGaveUp) {
@@ -522,7 +548,7 @@
                 infoStr = infoStr + "  底池";
                 infoStr = infoStr + this.Info.CurrentTotal;
                 allPublicInfo.text(infoStr);
-                if (this.Info.Balance>0) {
+                if (this.Info.Balance > 0) {
                     divMyBalance.text("余额" + this.Info.Balance);
                 }
                 if (this.Info.CurrentStage != 2) {
@@ -627,13 +653,6 @@
             var methodInfo = new MethodInfo("Look");
             Poker = InvokeSeverMethod(methodInfo);
         }
-        //玩家天眼查
-        function LookOthersPoker(otherPlayerId) {
-            var methodInfo = new MethodInfo("LookOtherPoker");
-            methodInfo.otherPlayerId = otherPlayerId;
-            Poker = InvokeSeverMethod(methodInfo);
-            ShowOnePokerOfOther(otherPlyerId, Poker);
-        }
         //玩家表态_暗注
         function ChipInNoLook() {
             var methodInfo = new MethodInfo("ChipInNoLook");
@@ -684,16 +703,31 @@
             var methodInfo = new MethodInfo("Compare");
             InvokeSeverMethod(methodInfo);
         }
-        //结算喜钱
-        function SettolAccount() { }
+        //玩家天眼查
+        function LookOthersPoker(e) {
+            if (typeof ($(e.currentTarget).data("playerId")) =='undefined'){
+                return;
+            }
+            var otherPlayerId = $(e.currentTarget).data("playerId");
+            var methodInfo = new MethodInfo("LookOthersPoker");
+            methodInfo.otherPlayerId = otherPlayerId;
+            var Poker = InvokeSeverMethod(methodInfo);
+            ShowOnePokerOfOther(otherPlayerId, Poker);
+        }
         //显示一张牌
         function ShowOnePokerOfOther(playerId, poker) {
+            var mypokers = [];
+            mypokers[0] = poker;
+            OthersPoker.modal("show");
+            CleanCanv(printOtherPoker.get(0), "white");
+            printOtherPoker.drawPoker({ direction: "toRight", pokers: mypokers, pokerHeight:70,x:5});
         }
-
+        //结算喜钱
+        function SettolAccount() { }
         //检查余额
         function IsAccountEnougth() {
             var methodInfo = new MethodInfo("IsAccountEnougth");
-            var rlt = InvokeSeverMethod(methodInfo)
+            var rlt = InvokeSeverMethod(methodInfo);
         }
         //清除全部画布
         function clearAllCanv() {
@@ -706,10 +740,6 @@
         }
         //按钮状态
         function myButtonShow(seat, publicInfo) {
-            //disableBtn(btn_StartGame);
-            //disableBtn(btn_Deal);
-            //HideChipButtons();
-            //disableBtn(btn_Compare);
             var stage = publicInfo.CurrentStage
             var IsCurrentSeat = false;
             var IsFirstSeat = false;
@@ -837,7 +867,7 @@
         //    return "你是否要离开游戏?"
         //}
         $(function () {
-            allCanv = $("canvas");
+            allCanv = $(".tableCanv");
             allProgresss = $(".progress");
             allLeftProgress = $(".otherLeft .progress");
             allRightProgress = $("otherRight .progress");
@@ -904,6 +934,9 @@
                 c_layOut();
                 _gameFace.Fresh();
             });
+            printOtherPoker = $("#printOtherPoker");
+            OthersPoker = $("#OthersPoker");
+            allSeatInfo.on("click", LookOthersPoker);
             //$(window).on("beforeunload", BeforLeave);
             //$(window).on("unload", function () {
             //    if (!beforLeaveNoCheck) {

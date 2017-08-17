@@ -83,8 +83,8 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
             #region 自定义初始化区域
             LockerForCurrentTotal = new object();
             ChipInAmount = 1;
-            DefaultTurnCount = 3;
-            LimitAmount = 50;//封顶
+            DefaultTurnCount = 15;
+            LimitAmount = 30;//封顶
             JoinSeats = new List<Seat>();
             CurrentStage = EStage.Reading;
             
@@ -365,7 +365,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
                     var PokerOtherCanSee = new Card(0, "", "");
                     if (!(mySeat is null) && seat.IPlayer.Id == mySeat.PlayerIdWhichCanSee) {
                         PokerOtherCanSee = seat.PokerOtherCanSee;
-                        seat.PokersShow[2] = PokerOtherCanSee;
+                      //  seat.PokersShow[2] = PokerOtherCanSee;
                     }
                     var seatInfo = new {
                         canvId = j,
@@ -501,17 +501,24 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         /// <returns></returns>
         [CanVisitByClientAttibue]
         public object LookOthersPoker(int playerId, int otherPlayerId) {
+            var Poker = new Poker("", "", 0);
+            if (CurrentStage!=EStage.Running) {
+                return Poker;
+            }
             Seat mySeat = GetJionSeatByPlayerId(playerId);
-            var Poker = new Poker();
+            Seat otherSeat = GetJionSeatByPlayerId(otherPlayerId);
+           
             if (mySeat.PlayerIdWhichCanSee != 0) {
+                NotifySinglePlayer(new Alert(playerId, "已经查看过一个玩家,不能再查看"), playerId);
                 return Poker;
             }
-            else {
-                Seat otherSeat = GetJionSeatByPlayerId(otherPlayerId);
-                Card card = otherSeat.PokerOtherCanSee;
+            if (IsDecutMoneySuccess(mySeat.IPlayer, 1)) {
+                Card card = otherSeat.GetOtherCanSeePoker();
                 Poker = new Poker(card.CardColor, card.Name, card.ComparedValue);
+                mySeat.PlayerIdWhichCanSee = otherPlayerId;
                 return Poker;
             }
+            return Poker;
         }
         /// <summary>
         /// 玩家表态_暗注
@@ -685,7 +692,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         /// <param name="playerId"></param>
         [CanVisitByClientAttibue]
         public void Compare(int playerId) {
-            if (CurrentStage!=EStage.Running) {
+            if (CurrentStage != EStage.Running) {
                 return;
             }
             Seat seat = (Seat)GetJionSeatByPlayerId(playerId);
@@ -717,14 +724,50 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
             seat.PreChipInAmount = chipInAmount;
             seat.PreChipType = EChipinType.Compare;
             WinnerSeat = GetWinner(seat, opponetSeat);
-            WinnerSeat.IPlayer.DecutMoney(-CurrentTotal);
-           // IsWinnerStage = true;//?
+            decimal playerWinAmount = 0;
+            playerWinAmount = SystemTax(playerWinAmount);
+            WinnerSeat.IPlayer.DecutMoney(-playerWinAmount);
+            // IsWinnerStage = true;//?
             FirstSeat = WinnerSeat;//新庄家
             CurrentSeat = WinnerSeat;
             CurrentStage = EStage.Computed;
             NotifyRoomPlayers(new ChipinAnimation(0, chipInAmount, playerId, EChipinType.Compare));
             NotifyRoomPlayers(new FreshGameFace(0));
             InningeGame.GameOver(false, false);
+        }
+        /// <summary>
+        /// 满足最大轮次等条件时自动开牌
+        /// </summary>
+        private void CompareAll() {
+            if (CurrentStage != EStage.Running) {
+                return;
+            }
+            CheckDateTime = DateTime.Now;
+            List<Seat> notGaveupSeats = new List<Seat>();
+            if (JoinSeats.Count != 0) {
+                CheckDateTime = DateTime.Now;
+                for (int i = 0; i < JoinSeats.Count; i++) {
+                    if (JoinSeats[i].IsGaveUp) {
+                        continue;
+                    }
+                    notGaveupSeats.Add(JoinSeats[i]);
+                }
+                WinnerSeat = (notGaveupSeats.OrderByDescending(s => s.Pokers).ToList())[0];
+            }
+            decimal playerWinAmount = 0;
+            playerWinAmount = SystemTax(playerWinAmount);
+            WinnerSeat.IPlayer.DecutMoney(playerWinAmount);
+            FirstSeat = WinnerSeat;//新庄家
+            CurrentSeat = WinnerSeat;
+            CurrentStage = EStage.Computed;
+            NotifyRoomPlayers(new FreshGameFace(0));
+            InningeGame.GameOver(false, false);//触发游戏结束事件
+        }
+        private decimal SystemTax(decimal playerWinAmount) {
+            if (CurrentTotal > 10) {
+                playerWinAmount = CurrentTotal - 1;
+            }
+            return playerWinAmount;
         }
         /// <summary>
         /// 根据玩家Id获得对应座位
@@ -838,34 +881,6 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
             }
         }
         /// <summary>
-        /// 到最大轮次自动开牌
-        /// </summary>
-        private void CompareAll() {
-            if (CurrentStage!=EStage.Running) {
-                return;
-            }
-            List<Seat> notGaveupSeats = new List<Seat>();
-            if (JoinSeats.Count != 0) {
-                CheckDateTime = DateTime.Now;
-                for (int i = 0; i < JoinSeats.Count; i++) {
-                    if (JoinSeats[i].IsGaveUp) {
-                        continue;
-                    }
-                    notGaveupSeats.Add(JoinSeats[i]);
-                }
-                WinnerSeat = (notGaveupSeats.OrderByDescending(s => s.Pokers).ToList())[0];
-            }
-
-            WinnerSeat.IPlayer.DecutMoney(-CurrentTotal);
-            // IsWinnerStage = true;//?
-            FirstSeat = WinnerSeat;//新庄家
-            CurrentSeat = WinnerSeat;
-            CurrentStage = EStage.Computed;
-            NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "超过最大轮次,自动比牌"));
-            NotifyRoomPlayers(new FreshGameFace(0));
-            InningeGame.GameOver(false, false);//触发游戏结束事件
-        }
-        /// <summary>
         /// 获得被开牌方座位
         /// </summary>
         /// <returns></returns>
@@ -941,6 +956,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
                     CurrentTurn++;
                 }
                 if (CurrentTurn > DefaultTurnCount) {
+                    NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "超过最大轮次,自动比牌"));
                     CompareAll();
                 }
                 if (JoinSeats.Where(s => s.IsGaveUp == false).Count() == 1) {

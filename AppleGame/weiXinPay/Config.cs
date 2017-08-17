@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using WxPayAPI;
 
 namespace WxPayAPI
@@ -66,9 +67,8 @@ namespace WxPayAPI
         public static string NOTIFY_URL ;
         public static string IP;
         public static string certName;
-
         private static DateTime Access_tokenSaveTime { get; set; }
-        private static MyAccess_token access_token_;
+        private  static MyAccess_token access_token_;
         public static MyAccess_token _access_token
         {
 
@@ -90,7 +90,7 @@ namespace WxPayAPI
         }
         private static DateTime Jsapi_ticketSaveTime { get; set; }
         private static Jsapi_ticket jsapi_ticket_;
-        public  static Jsapi_ticket _jsapi_ticket
+        public static Jsapi_ticket _jsapi_ticket
         {
 
             get
@@ -174,10 +174,22 @@ namespace WxPayAPI
             public  string Ticket { get; set; }
             public string Expires_in { get; set; }
         }
+       public  static WeixinIps GetWeixinIps() {
+            string url_token = "https://api.weixin.qq.com/cgi-bin/getcallbackip?access_token=" + WxPayConfig._access_token.Access_token;
+            HttpWebRequest myRequest = (HttpWebRequest)WebRequest.Create(url_token);
+            myRequest.Method = "GET";
+            WebResponse myResponse = myRequest.GetResponseAsync().Result;
+            StreamReader reader = new StreamReader(myResponse.GetResponseStream(), Encoding.UTF8);
+            string content = reader.ReadToEnd();
+            WeixinIps objectFromJsonstr = JsonConvert.DeserializeObject<WeixinIps>(content);
+            reader.Dispose();
+            myRequest.Abort();
+            return objectFromJsonstr;
+        }
+        public class WeixinIps {
+            public string[] ip_list { get; set; }
+        }
     }
-       
-
-   
 
     }
 

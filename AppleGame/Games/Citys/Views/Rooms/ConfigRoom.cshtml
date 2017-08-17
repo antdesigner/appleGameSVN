@@ -4,7 +4,6 @@
     Layout = "~/Views/Shared/_LayoutHaveManue.cshtml";
 }
 <h2>配置房间</h2>
-
 <div style="text-align:center;margin:auto">
     <a href="/Citys/Rooms/RoomsList">返回游戏</a><br />
     <form name="configGameCity" action="/Citys/Rooms/ConfigRoom?gameCityId=@Model.GameCityId&roomId=@Model.Id" method="post">
@@ -12,7 +11,6 @@
         <label> 房间名称</label><input type="text" name="Name" value="@Model.Name" class="inputBoxs" /><br />
         <label> 门票价格</label><input type="text" name="TicketPrice" placeholder="0.00" pattern="^(([1-9]\d{0,9})|0)(\.\d{1,2})?$" value="@Model.TicketPrice" class="inputBoxs" /><br />
         <label> 房间密码</label><input type="text" name="SecretKey" value="@Model.SecretKey" class="inputBoxs" /><br />
-
         <label> 人数上限</label><input type="number" name="PlayerCountTopLimit" value="@Model.PlayerCountTopLimit" class="inputBoxs" /><br />
         <label> 游戏项目</label>@Html.DropDownList("GameProjectName", ViewBag.GameProjects as IEnumerable<SelectListItem>, new { @class = "inputBoxs" })<br />
         <label> 对外开放</label><input type="checkbox" name="IsOpening" @(Model.IsOpening == true ? @"checked" : "") value="true" class="inputBoxs" /><br />

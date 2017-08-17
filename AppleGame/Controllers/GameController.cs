@@ -20,6 +20,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Http.Authentication;
 using GameCitys.DomainService;
 using GameCitys.Tools;
+using Microsoft.Extensions.Logging;
 // For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace AntDesigner.GameCityBase.Controllers
@@ -58,26 +59,19 @@ namespace AntDesigner.GameCityBase.Controllers
             return View("Index");
 
         }
-        [AllowAnonymous]
-        public  IActionResult LoginGame(string weixinName, string shareId,[FromServices]ILoginGame Ilogin)
-        {
+      [AllowAnonymous]
+      public  IActionResult LoginGame(string weixinName, string shareId, [FromServices]ILoginGame Ilogin) {
 
-            // Ilogin.DaddPlayer = IstoreHouse.AddEntity<Player>; _playerService.AddPlayer
             Ilogin.DaddPlayer = _playerService.AddPlayer;
-            //Ilogin.DgetPlayerByWeixianName = IstoreHouse.GetPlayerByName;
             Ilogin.DgetPlayerByWeixianName = _playerService.FindPlayerByName;
-
-            if (shareId == null || shareId == "")
-            {
+            if (shareId == null || shareId == "") {
                 shareId = ToolsSecret.EncryptOpenId(ManagePlayer.GetOnlyInstance().WeixinName);
             }
             Player player = Ilogin.Login(weixinName, ToolsSecret.DecryptOpenId(shareId));
-            if (player != null && base.player != null && base.player.WeixinName != player.WeixinName)
-            {
+            if (player != null && base.player != null && base.player.WeixinName != player.WeixinName) {
 
                 return View("Index");
             }
-            //IstoreHouse.SaveChanges();
             SavePlayerInfoInSession(player);
             base.LoadPlayerInfo();
             Sigin(player);
@@ -102,7 +96,7 @@ namespace AntDesigner.GameCityBase.Controllers
             ViewBag.jsToken = WxPayConfig._jsapi_ticket.Ticket;
         }
         [AllowAnonymous]
-        public IActionResult GetWeixinMessage()
+        public IActionResult GetWeixinMessage([FromServices]ILogger<GameController> logger)
         {
             if (httpContextAccessor.HttpContext.Request.Method.ToUpper() == "POST")
             {
@@ -110,6 +104,10 @@ namespace AntDesigner.GameCityBase.Controllers
             }
             else if (httpContextAccessor.HttpContext.Request.Method.ToUpper() == "GET")
             {
+                bool IsWeiXinServerRequest = IsWeixinSeverIp(logger);
+                if (!IsWeiXinServerRequest) {
+                    return Content("");
+                }
                 string signature = httpContextAccessor.HttpContext.Request.Query["signature"];
                 string timestamp = httpContextAccessor.HttpContext.Request.Query["timestamp"];
                 string nonce = httpContextAccessor.HttpContext.Request.Query["nonce"];
@@ -124,13 +122,14 @@ namespace AntDesigner.GameCityBase.Controllers
         [AllowAnonymous]
         public IActionResult LoginByWeixin_(string code, string state, [FromServices]ILoginGame Ilogin)
         {
-
+   
             string weixinName_ = LoginByWeixin.GetOpenId(code);
-            return RedirectToAction("loginGame", new { weixinName = weixinName_, shareId = state });
+          return RedirectToAction("loginGame", new { weixinName = weixinName_, shareId = state });
 
         }
         public IActionResult LogGameAgain()
         {
+
             if (player != null)
             {
                 return RedirectToAction("loginGame", new { weixinName = player.WeixinName, shareId = ToolsSecret.EncryptOpenId(player.IntroducerWeixinName) });

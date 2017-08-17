@@ -1,8 +1,14 @@
 ﻿
+using System;
 using GameCitys.DomainService;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-
+using System.Net;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
+using WxPayAPI;
+using Microsoft.Extensions.Logging;
 
 namespace AntDesigner.GameCityBase.Controllers
 {
@@ -15,7 +21,11 @@ namespace AntDesigner.GameCityBase.Controllers
         protected IPlayerService _playerService;
         static MyController()
         {
+  
         }
+
+
+
         public MyController(IHttpContextAccessor httpContextAccessor_
             , IPlayerService playerService)
         {
@@ -60,6 +70,19 @@ namespace AntDesigner.GameCityBase.Controllers
             Player myPlayer = _playerService.FindPlayerByName(Dplayer.WeixinName);
             _playerService.AdjustAccount(myPlayer, -amount, cause);
             return myPlayer.Account.Balance;
+        }
+        protected bool IsWeixinSeverIp(ILogger<GameController> logger) {
+            string clientIp = httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
+            var weixinIps = WxPayConfig.GetWeixinIps();
+            var ips = weixinIps.ip_list;
+            logger.LogWarning("客户端Ip:" + clientIp);
+            for (int i = 0; i < ips.Length; i++) {
+                logger.LogWarning("微信severIps:" + ips[i]);
+                if (ips[i] == clientIp) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

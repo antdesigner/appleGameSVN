@@ -140,6 +140,7 @@
 </div>
 @section scripts{
     <script>
+        var messageInput;
         var _gameFace = new GameFace();
         ///服务端方法签名
          function MethodInfo(methodName){
@@ -299,12 +300,15 @@
         //房间消息
             function RoomMessage(name,message){
                 if (window.C_RoomMessage) {
+                    var messageChecked;
+                    messageChecked = "<PRE>" + messageChecked + "</PRE>";
                     C_RoomMessage(name,message);
                 }
             }
         //发送房间消息
-            function SendMessage(message){
-                var messageStr;
+            function SendMessage() {
+                var messageStr = messageInput.text();
+                messageStr = messageStr.replace("", "");
                 if ( typeof(message)!="String"){
                     messageStr = $("#message").val();
                     if (messageStr.length==0) {
@@ -342,10 +346,10 @@
         });
         wx.ready(function () {
             wx.onMenuShareAppMessage({
-                title: '呵护你眼睛的小游戏',
+                title: '来炸金花',
                 desc: '点击进入',
                 link: '@(Html.Raw(WxPayConfig.SiteName))/Game/Index/?state=@(Html.Raw(ViewBag.shareId))',
-                imgUrl: '@(Html.Raw(WxPayConfig.SiteName))/images/AppleBig.png',
+                imgUrl: '@(Html.Raw(WxPayConfig.SiteName))/images/zhajinghua.png',
                 type: '',
                 dataUrl: '',
                 success: function () {
@@ -355,9 +359,9 @@
                 }
             });
             wx.onMenuShareTimeline({
-                title: '呵护你眼睛的小游戏',
+                title: '来炸金花',
                 link: '@(Html.Raw(WxPayConfig.SiteName))/Game/Index/?state=@(Html.Raw(ViewBag.shareId))',
-                imgUrl:'@(Html.Raw(WxPayConfig.SiteName))/images/AppleBig4.png',
+                imgUrl:'@(Html.Raw(WxPayConfig.SiteName))/images/zhajinghua.png',
                 success: function () {
                 },
                 cancel: function () {
@@ -370,6 +374,7 @@
             $(window).resize(function () {
                 RoomSetlayOut();
             });
+         messageInput = $("#message");
          $("#leaveRoom").on("click", LeaveRoom);
          $("#ConfigRoom").on("click", ConfigRoom);
          $("#ShowRoomInfo").on("click", ShowRoomInfo);
