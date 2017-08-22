@@ -38,13 +38,9 @@ namespace AntDesigner.GameCityBase.Controllers
             return View("adjustAccount", player);
         }
         [HttpPost]
-        public IActionResult AdjustAccount(string name, decimal amount)
+        public IActionResult AdjustAccount(string name_, decimal amount)
         {
-
-            //Player player = managerPlayer.FindPlayerByWeixinName(name_);
-            //managerPlayer.AdjustAccountBalance(player.Account, amount);
-            //IstoreHouse.SaveChanges();
-            Player player = _playerService.FindPlayerByName(name);
+            Player player = _playerService.FindPlayerByName(name_);
             _playerService.AdjustAccount(player, amount, "系统");
             return View("adjustAccount", player);
 
