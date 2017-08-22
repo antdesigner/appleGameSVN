@@ -19,7 +19,8 @@ namespace AppleGame.Games.Romms.Controllers {
     [Area("Citys")]
     [RoomIsNotExistExceptionFilter]
     public class RoomsController : CityGameController {
-
+        const decimal TOOMTICKETPRICEMULTIPLE=5;
+        const decimal TOPTICKETPRICE = 10;
         public RoomsController(IGameCityService gameCityService, IHttpContextAccessor httpContextAccessor, IPlayerService playerService) : base(httpContextAccessor, playerService) {
             AddDefualtGameCity(gameCityService);
 
@@ -60,7 +61,7 @@ namespace AppleGame.Games.Romms.Controllers {
                 ticketPrice_ = 0;
             }
             if (ticketPrice_ > 0) {
-                if (player.AccountNotEnough(ticketPrice_)) {
+                if (player.AccountNotEnough(ticketPrice_* TOOMTICKETPRICEMULTIPLE)) {
                     return RedirectToRoute("default", new { controller = "Player", action = "Index_recharge" });
                 }
                     
@@ -76,8 +77,8 @@ namespace AppleGame.Games.Romms.Controllers {
             if (!int.TryParse(createRoom["PlayerCountTopLimit"].ToString(), out int limitCount_)) {
                 limitCount_ = 1;
             }
-            if (ticketPrice_>10) {
-                ticketPrice_ = 10;
+            if (ticketPrice_> TOPTICKETPRICE) {
+                ticketPrice_ = TOPTICKETPRICE;
             }
             if (ticketPrice_<0) {
                 ticketPrice_ = 0;
@@ -97,7 +98,7 @@ namespace AppleGame.Games.Romms.Controllers {
                 SecretKey = createRoom["SecretKey"],
                 TicketPrice = ticketPrice_
             };
-            player.DecutMoney(ticketPrice_ * 5, "开房");
+            player.DecutMoney(ticketPrice_ * TOOMTICKETPRICEMULTIPLE, "开房");
             IRoom room_ = new Room(player, roomConfig_);
             BoundingEventOfRoom(room_);
             var gameCityId = createRoom["gameCityId"];
@@ -136,10 +137,6 @@ namespace AppleGame.Games.Romms.Controllers {
 
             StringBuilder url = new StringBuilder();
             url.Append(WxPayConfig.SiteName + "/Citys/Rooms/RoomsList");
-            //url.Append(WxPayConfig.SiteName + "/Citys/Rooms/RoomsList?weixinName=");
-            //url.Append(player.WeixinName);
-            // url.Append("&shareId=");
-            // url.Append(ToolsSecret.EncryptOpenId(player.IntroducerWeixinName));
             ViewBag.wxConfig = new wxConfig(url.ToString());
             ViewBag.shareId = ToolsSecret.EncryptOpenId(player.WeixinName);
             ViewBag.accesstoken = WxPayConfig._access_token.Access_token;
