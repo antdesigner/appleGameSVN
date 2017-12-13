@@ -29,8 +29,8 @@ namespace AntDesigner.GameCityBase.interFace
         IList<T> GetEntitys<T>(int n) where T : class;
         IList<Player> GetAllPlayers();
         void Attach<T>(T obj) where T : class;
+    
 
-  
         IList<RedPack> GetRedPackgerList(DateTime fromDate, DateTime toDate);
         IList<PayOrder> GetPayOrderList(DateTime fromDate, DateTime toDate);
     }

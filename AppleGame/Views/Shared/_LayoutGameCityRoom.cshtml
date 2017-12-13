@@ -41,7 +41,6 @@
             </div>
             <div class="modal-body">
                 <label>房间名称</label>@Model.Name<br />
-                @*<label>房主昵称</label>@Model.RoomManager.WeixinName<br />*@
                 <label>门票价格</label>@Model.TicketPrice<br />
                 <label>人数上限</label>@Model.Players.Count/@Model.PlayerCountTopLimit<br />
                 <label>到期时间</label>@Model.Timelimit<br />
@@ -178,7 +177,7 @@
             })
             return result;
          }
-        var webSocket = new WebSocket("ws://127.0.0.1:8000/ws");
+         var webSocket = new WebSocket("ws://@(WxPayConfig.SiteNameNopre)/ws");
         webSocket.onopen = function () {
             $.get("/GameProjects/GameHandler/WebsocketCheck");
             _gameFace.Fresh();
@@ -209,7 +208,6 @@
             } else {
                 alert("配置房间功能不可用!");
             }
-               // window.location.href="/Citys/Rooms/ConfigRoom?gameCityId=@Model.GameCityId&roomId=@Model.Id";
         }
         ///游戏界面
          function GameFace() {
@@ -221,8 +219,6 @@
                 Fresh(gameFace);
             }
          }
-      //  var _GameFace = new GameFace();
-
         //开始游戏
         function StartGame(){
             console.debug("befor_StartGame");

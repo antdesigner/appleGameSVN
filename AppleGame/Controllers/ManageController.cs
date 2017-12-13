@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using AntDesigner.weiXinPay;
 using GameCitys.DomainService;
 using GameCitys.Tools;
+using AntDesigner.NetCore.GameCity;
 
 // For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -38,13 +39,17 @@ namespace AntDesigner.GameCityBase.Controllers
             return View("adjustAccount", player);
         }
         [HttpPost]
-        public IActionResult AdjustAccount(string name_, decimal amount)
-        {
+        //public IActionResult AdjustAccount(string name_, decimal amount)
+        //{
+        //    string weixinName=_playerService.
+        //    Player player = _playerService.FindPlayerByName(name_);
+        //    _playerService.AdjustAccount(player, amount, "系统");
+        //    return View("adjustAccount", player);
+        //}
+        public IActionResult AdjustAccount(String name_, decimal amount) {
             Player player = _playerService.FindPlayerByName(name_);
             _playerService.AdjustAccount(player, amount, "系统");
             return View("adjustAccount", player);
-
-
         }
         /// <summary>
         /// 获取全部用户列表
@@ -68,11 +73,11 @@ namespace AntDesigner.GameCityBase.Controllers
         /// <param name="weixinName">名称标记</param>
         /// <param name="playerService"></param>
         /// <returns></returns>
-        public IActionResult FindPlayer(string weixinName,[FromServices]IPlayerService playerService)
+        public IActionResult FindPlayer(int weixinName,[FromServices]IPlayerService playerService)
         {
             //Player player = managerPlayer.FindPlayerByWeixinName(weixinName);
 
-            Player player = playerService.FindPlayerByName(weixinName);
+            Player player = playerService.FindPlayerByAccountId(weixinName);
             return View("findPlayer", player);
         }
         public IActionResult Index_newNotice()
@@ -93,6 +98,7 @@ namespace AntDesigner.GameCityBase.Controllers
             //managerPlayer.PublishNotice(notice);
             //IstoreHouse.SaveChanges();
             noticeService.PublishNotice(notice);
+            GameCity.IsColsed = true;
             return;
         }
         /// <summary>

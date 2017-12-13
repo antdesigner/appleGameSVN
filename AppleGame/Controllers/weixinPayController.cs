@@ -27,7 +27,7 @@ namespace AntDesigner.Controllers
                 return null;
             }
             PayOrder payOrder = payServiceWeixin.CompletePayOrderAndReback(httpContextAccessor.HttpContext, out string successStr);
-            if (payOrder.Success==true)
+            if (!(payOrder is null) && payOrder.Success==true)
             {
                 return Content(successStr);
             }

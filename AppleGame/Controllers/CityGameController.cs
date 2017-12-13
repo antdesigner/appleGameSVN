@@ -8,6 +8,7 @@ using System.Linq;
 using AntDesigner.NetCore.Games.GameSimpleCards;
 using AntDesigner.NetCore.Games.GameTiger;
 using AntDesigner.NetCore.Games.GameThreePokers;
+using AntDesigner.NetCore.Games.GameMajiangDaoDaoHu;
 using System.Reflection;
 using GameCitys.GamCityBase;
 using GameCitys.DomainService;
@@ -100,6 +101,7 @@ namespace AntDesigner.GameCityBase.Controllers
             GameCityList.GameProjects.Add(new GameThreePokers());
            // GameCityList.GameProjects.Add(new GameSimpleCards());
             GameCityList.GameProjects.Add(new GameTiger());
+           // GameCityList.GameProjects.Add(new GameMajiangDaoDaoHu());
           
         }
         /// <summary>

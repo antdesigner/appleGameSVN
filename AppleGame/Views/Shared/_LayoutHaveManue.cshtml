@@ -9,12 +9,12 @@
     @RenderBody()
 </div>
     @section bottomMenue{
-        <nav id="Panel" class="navbar navbar-default " role="navigation">
+        <nav id="Panel" class="navbar navbar-default " role="navigation" style="z-index:90">
             <div class="container-fluid">
                 <div class="navbar-header">
                     <button type="button" style="margin:0px;width:100%;background-color:rgb(255,128,0,.3)" class="navbar-toggle" data-toggle="collapse"
                             data-target="#example-navbar-collapse">
-                        <span class="glyphicon glyphicon-chevron-left"></span>
+                        <span class="glyphicon glyphicon-chevron-left">红包</span>
                     </button>
                 </div>
                 <div class="collapse navbar-collapse" id="example-navbar-collapse">
@@ -27,9 +27,10 @@
                             if (ViewBag.manager != null && ViewBag.manager.Id == ViewBag.player.Id)
                             {
                                 <li><a href="/Manage/Index/">管理游戏</a></li>
-                                }
+                                <li><a href="/Game/Robits/">催化用户</a></li>
                             }
-                        <li><a href="/Game/gameExplain/">玩法介绍</a></li>
+                        }
+                        <li><a href="/Game/gameExplain/">必看玩法</a></li>
                         <li><a href="/Player/friends/">朋友列表</a></li>
                     </ul>
                 </div>

@@ -238,8 +238,11 @@ namespace AntDesigner.GameCityBase
         /// <returns></returns>
         public Account GetAccountAsNoTracking(int accountId)
         {
+           // return Db.Accounts.AsNoTracking().FirstOrDefault(a => a.Id == accountId);
             return Db.Accounts.AsNoTracking().FirstOrDefault(a => a.Id == accountId);
         }
+
+
         /// <summary>
         /// 红包列表
         /// </summary>
@@ -258,10 +261,11 @@ namespace AntDesigner.GameCityBase
         /// <returns></returns>
         public IList<PayOrder> GetPayOrderList(DateTime fromDate, DateTime toDate)
         {
-            return Db.PayOrders.AsNoTracking().Where(r => r.CreateTime >= fromDate && r.CreateTime <= toDate).OrderByDescending(r => r.CreateTime).ToList();
+          
+            return Db.PayOrders.AsNoTracking().Where(r => r.CreateTime >= fromDate && r.CreateTime <= toDate.AddDays(1)).OrderByDescending(r => r.CreateTime).ToList();
 
         }
-#endregion
+        #endregion
 
     }
 }

@@ -5,77 +5,94 @@
     Layout = "~/Views/Shared/_LayoutHaveManue.cshtml";
 }
 <style>
-    h2 img {
-        height: 40px;
-        width: 50px;
+    body {
+        background-image: url("/images/pokers/datingbj.jpg");
+        background-size: cover;
+        background-repeat: no-repeat;
     }
 
     .table-responsive {
-        height: 40%;
+        margin-top: 10px;
+        height: 70%;
         border: 2px solid green;
         border-radius: 10px;
-        background: linear-gradient(to bottom,#FFFFBB,palegreen)
+        background: linear-gradient(to bottom,#FFFFBB,palegreen);
+        color:black;
+        font-size:large;
+        filter: opacity(70%);
+        
     }
 
     th {
-        background-color: green;
-        color: yellow;
+        background-color: white;
+        color: black;
     }
-
+    td{font-weight:bolder}
     #joinTools {
         text-align: center;
         display: flex;
-        height: 50%;
+        height: 15%;
     }
 
         #joinTools div {
             display: flex;
             width: 100%;
             flex: 1;
+            justify-content: center;
         }
 
         #joinTools button {
-            width: 50%;
+            width: 80%;
             height: 3rem;
             border: 5px double green;
             box-shadow: 3px 3px 3px black;
         }
 
-        #joinTools > div:first-child {
-            flex: 1;
-            width: 50%;
-        }
 
-        #joinTools img {
-            width: 100%;
-            align-content: center;
-        }
 
-        #joinTools > div:nth-child(2) {
+        #joinTools > div {
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
 
-            #joinTools > div:nth-child(2) > div {
-                justify-content: center;
-                align-items: center;
-            }
+        #joinTools > div {
+            justify-content: center;
+            align-items: center;
+        }
 
     .amount {
         color: orangered;
     }
+
+    #girl {
+        z-index: 100;
+        position: fixed;
+        left: 0;
+        bottom: 0;
+    }
+    .table {
+        overflow: auto;
+    }
+    .ico {
+        font-size: 1rem;
+    }
+    @@media only screen and (min-width:700px) {
+        .ico {
+            font-size: large;
+        }
+    }
 </style>
-<h2>游戏<img src="~/images/4a.png" />大厅</h2>
+<h2>游戏大厅</h2>
 <div class="table-responsive">
     <table class="table table-striped">
         <tbody>
             <tr>
-                <th>房间</th>
-                <th>门票</th>
-                <th>游戏</th>
-                <th>人数</th>
-                <th>加密</th>
+                <th><div><div><img src="/images/pokers/datingh_03.png"> </div><div></div>房间</div></th>
+                <th><div><div><img src="/images/pokers/datingh_08.png"> </div><div></div>门票</div></th>
+                <th><div><div><img src="/images/pokers/datingh_10.png"> </div><div></div>游戏</div></th>
+                <th><div><div><img src="/images/pokers/datingh_05.png"> </div><div></div>人数</div></th>
+                <th><div><div><img src="/images/pokers/datingh_13.png"> </div><div></div>加密</div></th>
                 <th></th>
             </tr>
             @{
@@ -94,20 +111,24 @@
         </tbody>
     </table>
 </div>
+<div id="girl"><img src="/images/pokers/girl_02.gif"></div>
 <div id="joinTools">
-    <div><img src="~/images/girl3.png" /></div>
+    <div></div>
     <div>
         <div>
-            <button id="createRoom" class="btn btn-warning btn-xs  text-center buttnMargin">开新房间</button>
+            <button id="createRoom" class="btn btn-warning btn-xs  text-center buttnMargin"><span style="color:red;" class="ico">♥</span>开新房间</button>
         </div>
         <div>
-            <button id="showFindRoomModal" class="btn btn-warning btn-xs  text-center buttnMargin">查找房间</button>
+            <button id="showFindRoomModal" class="btn btn-warning btn-xs  text-center buttnMargin"><span style="color:black;" class="ico">♠</span>查找房间</button>
+        </div>
+    </div>
+    <div>
+
+        <div>
+            <button id="joinRoom" class="btn btn-warning btn-xs  text-center buttnMargin"><span style="color:black" class="ico">♣</span>随机选择</button>
         </div>
         <div>
-            <button id="joinRoom" class="btn btn-warning btn-xs  text-center buttnMargin">随机选择</button>
-        </div>
-        <div>
-            <button id="freshRoom" class="btn btn-warning btn-xs  text-center buttnMargin">刷新列表</button>
+            <button id="freshRoom" class="btn btn-warning btn-xs  text-center buttnMargin"><span style="color:red" class="ico">♦</span>刷新列表</button>
         </div>
     </div>
 </div>
@@ -147,11 +168,15 @@
         </div><!-- /.modal-content -->
     </div><!-- /.modal -->
 </div>
+<audio id="vbj" loop="loop">
+    <source src="~/voice/datingbj.wav" >
+</audio>
 @section styles{
 
 }
 @section scripts{
     <script>
+        $("#vbj")[0].play(); 
         glob_linka = new Object();
         function CreateRoom() {
             $(location).attr('href', '/Citys/Rooms/Index_CreateRoom');
@@ -281,7 +306,8 @@
             $("#findRoom").on("click", FindRoom);
             $(".joinRoom").on("click", function (event) { return JoinChooseRoom(event.target) });
             $("#joinRoomUsekey").on("click", function () { IsPassed(glob_linka); })
-            $("#freshRoom").on("click", function () { freshRoom();})
+            $("#freshRoom").on("click", function () { freshRoom(); })
+            $("#vbj")[0].play();
         })
     </script>
 }
