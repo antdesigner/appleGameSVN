@@ -1,16 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using WxPayAPI;
 using AntDesigner.weiXinPay;
 using AntDesigner.GameCityBase;
-using AntDesigner.GameCityBase.EF;
 using AntDesigner.GameCityBase.interFace;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using GameCitys.EF;
-using Microsoft.AspNetCore.Http;
+
 
 namespace GameCitys.DomainService
 {
@@ -64,7 +58,7 @@ namespace GameCitys.DomainService
         /// <returns></returns>
         public virtual IList<RedPack> GetRedPackgeList(DateTime fromDate, DateTime toDate)
         {
-            return _storeHouse.GetRedPackgerList(fromDate, toDate);
+            return _storeHouse.GetRedPackgerList(fromDate, toDate.AddDays(1));
         }
         /// <summary>
         /// 一段时间的支付订单

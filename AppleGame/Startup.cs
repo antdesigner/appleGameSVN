@@ -17,6 +17,9 @@ using GameCitys.GamCityBase;
 using System.Net.WebSockets;
 using System.Threading;
 using GameCitys.DomainService;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace AntDesigner.AppleGame
 {
@@ -47,6 +50,7 @@ namespace AntDesigner.AppleGame
         {
 
            Connection= Configuration.GetConnectionString("mysqlConnectionStr");
+           
             WxPayConfig.SiteName = Configuration.GetSection("Wx:SiteName").Value;
             JsApiPay.body = Configuration.GetSection("Wx:body").Value;
             WxPayConfig.APPID = Configuration.GetSection("Wx:APPID").Value;
@@ -58,7 +62,8 @@ namespace AntDesigner.AppleGame
             WxPayConfig.IP = Configuration.GetSection("Wx:IP").Value;
             WxPayConfig.NOTIFY_URL = WxPayConfig.SiteName + "/weixinPay/getPayResult/";
             WxPayConfig.certName = Configuration.GetSection("Wx:certName").Value;
-
+            WxPayConfig.CheckK= Configuration.GetSection("Wx:CheckK").Value;
+            WxPayConfig.SiteNameNopre = Configuration.GetSection("Wx:SiteNameNopre").Value;
         }
 
         public IConfigurationRoot Configuration { get; set; }
@@ -67,6 +72,7 @@ namespace AntDesigner.AppleGame
         //用来配置用于应用程序内的服务 ,ASP.NET MVC 中的某些功能，需要从 ConfigureServices 中请求某些服务，而这些服务需要在接入请求管道之前先被加入 ConfigureServices 中。
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
+            services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             IServiceCollection newServices = new ServiceCollection();
                foreach (ServiceDescriptor service in services)
                    {
@@ -93,7 +99,7 @@ namespace AntDesigner.AppleGame
             newServices.AddScoped<IMessageService, MessageService>();
             newServices.AddScoped<IGameCityService, GameCityService>();
             newServices.AddScoped<IPayServiceWeixin, PayServiceWeixin>();
-            newServices.AddScoped<IPayService,PayServiceWeixin>();
+           // newServices.AddScoped<IPayService,PayServiceWeixin>();
             //注册验证条目
             newServices.AddAuthorization(options =>
             {
@@ -115,8 +121,10 @@ namespace AntDesigner.AppleGame
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
-            app.UseApplicationInsightsRequestTelemetry();
-
+            //app.UseForwardedHeaders(new ForwardedHeadersOptions {
+            //    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            //});
+            // app.UseApplicationInsightsRequestTelemetry();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -127,7 +135,6 @@ namespace AntDesigner.AppleGame
                 app.UseExceptionHandler("/Home/Error");
             }
             //app.UseExceptionHandler(WxPayConfig.SiteName);//出现错误重定向到主页
-            app.UseApplicationInsightsExceptionTelemetry();
             app.UseStaticFiles();
             app.UseSession();
             app.UseCookieAuthentication(new CookieAuthenticationOptions()

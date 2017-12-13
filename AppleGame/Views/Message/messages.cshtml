@@ -1,0 +1,29 @@
+﻿@using AntDesigner.GameCityBase
+@model IEnumerable<Message>
+@{
+    Layout = "~/Views/Shared/_LayoutHaveManue.cshtml";
+}
+<h2>消息列表</h2>
+@{
+    if (Model != null)
+    {
+        foreach (var message in Model)
+        {
+
+            int n = message.Sender.WeixinName.Length;
+            @:发送者：@message.Sender.WeixinName.Substring(n - 5)
+            @*<a href="/Message/Index_replayMessage/?messageId=@message.id">回复</a>*@
+            @:发送日期：@message.CreateTime<br />
+            @:消息内容：@message.Content<br />
+            @*@:回复内容：@message.replyContent<br />*@
+            <hr />
+
+
+        }
+    }
+    else
+    {
+       @: 没有消息
+
+    }
+}

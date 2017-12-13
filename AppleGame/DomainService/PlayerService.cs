@@ -32,6 +32,15 @@ namespace GameCitys.DomainService
             return _storeHouse.GetPlayerByName(name);
         }
         /// <summary>
+        /// 通过账户Id查找玩家
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public Player FindPlayerByAccountId(int id) {
+            Account account = _storeHouse.GetAccountAsNoTracking(id);
+            return _storeHouse.GetPlayerByName(account.WeixinName);
+        }
+        /// <summary>
         /// 全部玩家
         /// </summary>
         /// <returns></returns>
@@ -74,7 +83,6 @@ namespace GameCitys.DomainService
             player.Account.Addmount(amount, explain);
             var message = new Message(_managePlayer, explain, player);
             _messageService.SendMessage(message);
-           // _storeHouse.SaveChanges();
             return player.Account;
         }
         /// <summary>

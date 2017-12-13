@@ -136,8 +136,6 @@ namespace AntDesigner.NetCore.Games.GameTiger
         public override void Stoped(object inningeGame, EventArgs e)
         {
             var myE = (GameStopedEventArgs)e;
-
-           // Notify?.Invoke(WebscoketSendObjs.Stoped(0,myE.Message));
             NotifyRoomPlayers(WebscoketSendObjs.Stoped(0, myE.Message));
         }
         /// <summary>

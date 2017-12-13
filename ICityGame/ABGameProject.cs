@@ -108,7 +108,6 @@ namespace AntDesigner.NetCore.GameCity
             int playerOnSeatCopunt = innineGame_.NotEmptySeats().Count;
             if (playerOnSeatCopunt < innineGame_.IGameProject.PlayerCountLeast || playerOnSeatCopunt > PlayerCountLimit)
             {
-                //Notify?.Invoke(WebscoketSendObjs.RoomMessage(0, "人数不足,不能启动游戏"));
                 NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "人数不足,不能启动游戏"));
                 return false;
             }
@@ -210,10 +209,13 @@ namespace AntDesigner.NetCore.GameCity
         /// <param name="e"></param>
         public virtual void AfterPlayerLeave(object inningeGame, EventArgs e)
         {
-      
-                string playerId = ((PlayerEventArgs)e).Player.Id.ToString();
-                var roomMessage = WebscoketSendObjs.RoomMessage(0, "有玩家离开了");
-                NotifyRoomPlayers(roomMessage);
+       
+            int playerId = ((PlayerEventArgs)e).Player.Id;
+            var roomMessage = WebscoketSendObjs.RoomMessage(0, "有玩家离开了");
+            InningeGame.IRoom.RemovePlayerById(playerId);
+            NotifyRoomPlayers(roomMessage);
+
+
 
         }
         /// <summary>
@@ -282,6 +284,14 @@ namespace AntDesigner.NetCore.GameCity
             var myPlayer = InningeGame.IRoom.Players.Find(p => p.Id == playerId);
             NotifyByWebsockLink?.Invoke(websocketSendObjctBase, myPlayer.WebSocketLink);
         }
+        protected void NotifyRoomPlayersExcept(WebsocketSendObjctBase websocketSendObjctBase, int playerId) {
+            for (int i = 0; i < InningeGame.IRoom.Players.Count; i++) {
+                var player = InningeGame.IRoom.Players[i];
+                if (player.Id!=playerId) {
+                    NotifyByWebsockLink?.Invoke(websocketSendObjctBase, player.WebSocketLink);
+                }
 
+            }
+        }
     }
 }

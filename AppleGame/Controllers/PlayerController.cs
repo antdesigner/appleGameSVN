@@ -109,7 +109,7 @@ namespace AntDesigner.GameCityBase.Controllers
         public IActionResult CreatOrder(decimal amount,[FromServices]IPayServiceWeixin payServiceWeixin)
         {
             string viewName = payServiceWeixin.RechargeViewName;
-            if (amount>10)
+            if (amount>50)
             {
                 return View(viewName, player.Account);
             }

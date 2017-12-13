@@ -265,7 +265,7 @@
 
                         } else if (n > 1) {
                             boxsColorChangeRuning("yellow", 200);
-                            setTimeout(function () { clearInterval(boxsDefaultRuningTimer); boxsRuningComplex(boxs, prize); }, 2000)
+                            setTimeout(function () { clearInterval(boxsDefaultRuningTimer); boxsRuningComplex(boxs, prize); }, 2500)
 
                         }
 
@@ -283,9 +283,6 @@
                 currentBox.stake = currentBox.stake + 1;
                 var scoreDom = $(event.target).parent().find(".score");
                 scoreDom.html(currentBox.stake);
-                //  scoreDom.data("fen",{stake:currentBox.stake});
-                //$(event.target).parent().find(".score").data("fen",{stake:currentBox.stake});
-                // $(event.target).parent().find(".score").html(currentBox.stake).data("fen",{stake:currentBox.stake});
 
             }
             else {
@@ -519,7 +516,7 @@
                 $("#" + this.name).css("background-color", "yellow").toggleClass("animation3600deg");
                 n++;
                 if (n == boxs.length) {
-                    setTimeout(function () { refreshGame(prize) }, n * 1000 + 5000);
+                    setTimeout(function () { refreshGame(prize) }, n * 300 + 2000);
                     ;
                 }
             })

@@ -59,13 +59,8 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         /// </summary>
         private Seat WinnerSeat { get; set; }
         /// <summary>
-        /// 是否结算完期间
-        /// </summary>
-       // private bool IsWinnerStage { get; set; }
-        /// <summary>
         /// 押底关闭
         /// </summary>
-      //  private bool IsChipinClose { get; set; }
         private EStage CurrentStage { get; set; }
         /// <summary>
         ///时间
@@ -83,7 +78,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
             #region 自定义初始化区域
             LockerForCurrentTotal = new object();
             ChipInAmount = 1;
-            DefaultTurnCount = 15;
+            DefaultTurnCount = 10;
             LimitAmount = 30;//封顶
             JoinSeats = new List<Seat>();
             CurrentStage = EStage.Reading;
@@ -114,30 +109,37 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         /// </summary>
         /// <param name="obj"></param>
         private void CheckPlayOverTime(object obj) {
-            int overSeconds=65;
+            //超时62秒
+            int overSeconds=63;
             do {
                 overSeconds = Math.Abs(overSeconds);
                 Thread.Sleep(TimeSpan.FromSeconds(overSeconds));
                 overSeconds = OverTimeSpan(overSeconds);
-            } while (overSeconds< 0);
+                //if (0<=overSeconds&&overSeconds<5) {
+                //    overSeconds = 5;
+                //}
+            } while (overSeconds< 2);
             if (InningeGame.NotEmptySeats().Count > 1&& !(CurrentSeat.IPlayer is null)) {
                 int currentPlayerId = CurrentSeat.IPlayer.Id;
                 do {
-                    NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "有玩家超时,将被自动提出"));
+                    NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "有玩家超时,将被自动踢出"));
                     RemoveCurrentPlayer();
                 } while (currentPlayerId == CurrentSeat.IPlayer.Id);
             }
                 CheckPlayOverTime(obj);
         }
         private void RemoveCurrentPlayer() {
-                var room = InningeGame.IRoom;
-                room.RemovePlayer(CurrentSeat.IPlayer);
+            var id = CurrentSeat.IPlayer.Id;
+            NotifySinglePlayer(WebscoketSendObjs.LeaveRoom(id), id);
+            var room = InningeGame.IRoom;
+            room.RemovePlayerById(id);
         }
         public override void GameOver(object inningeGame, EventArgs e) {
             CheckDateTime = DateTime.Now;
             NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "本局结束!等待庄家开启新的一局"));
         }
         public override void ResetGame(object inningeGame, EventArgs e) {
+            CheckDateTime = DateTime.Now;
             InitPublicInfo();
             if (FirstSeat is null) {
                 FirstSeat = GetRoomSeatByPlayerId(InningeGame.IRoom.RoomManager.Id);
@@ -147,7 +149,12 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
                 CurrentSeat = FirstSeat;
             }
             NotifyRoomPlayers(new FreshGameFace(0));
-            NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "新一局开始!开始押底!"));
+            if (InningeGame.IRoom.Players.Count>1) {
+                NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "新一局开始!开始押底!"));
+            }
+            else {
+                NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "人数不足,不能开始"));
+            }
         }
         public override void Stoped(object inningeGame, EventArgs e) {
             //     if (!IsChipinClose) {
@@ -174,11 +181,13 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
             NotifyRoomPlayers(new FreshGameFace(0));
         }
         public override void BeforPlayerLeave(object inningeGame, EventArgs e) {
+            CheckDateTime = DateTime.Now;
             IPlayerJoinRoom player = ((PlayerEventArgs)e).Player;
             Seat seat = (Seat)InningeGame.GetSeatByPlayerId(player.Id);
             ChageRole(seat);
             RemoveFromJoinSeats(seat);
             base.BeforPlayerLeave(inningeGame, e);
+
         }
         private void ChageRole(Seat seat) {
             bool isCurrentSeat = !IsNotCurrentSeat(seat);
@@ -199,7 +208,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
                 }
 
             }
-
+            
         }
         private bool IsGameRuningStage() {
             if (CurrentStage == EStage.Running) {
@@ -208,11 +217,13 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
             return false;
         }
         public override void AfterPlayerLeave(object inningeGame, EventArgs e) {
+            IPlayerJoinRoom player = ((PlayerEventArgs)e).Player;
+            int playerId = player.Id;
             var notEmptySeatsCount = ((IInningeGame)inningeGame).NotEmptySeats().Count();
             if (notEmptySeatsCount > 0) {
                 if (CurrentStage == EStage.Running && JoinSeats.Count() == 1) {
                     CompareAll();
-                    NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "有玩家要离开,人数不足,自动结算"));
+                    NotifyRoomPlayersExcept(WebscoketSendObjs.RoomMessage(playerId, "有玩家要离开,人数不足,自动结算"),playerId);
                 }
                 else if (notEmptySeatsCount==1) {
                     CurrentStage = EStage.CanChipIning;
@@ -224,12 +235,14 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
                         }
                         onlySeat.IsGaveUp = false;
                         onlySeat.IsLooked = false;
-                        NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "有玩家要离开,人数不足,退还你的押底"));
+                        NotifyRoomPlayersExcept(WebscoketSendObjs.RoomMessage(playerId, "有玩家要离开,人数不足,退还你的押底"), playerId);
                     }
-                    NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "有玩家要离开,人数不足,取消押底"));
+                    NotifyRoomPlayersExcept(WebscoketSendObjs.RoomMessage(playerId, "有玩家要离开,人数不足,取消押底"), playerId);
                 }
                 base.AfterPlayerLeave(inningeGame, e);
-                NotifyRoomPlayers(new FreshGameFace(0));
+
+                // NotifyRoomPlayers(new FreshGameFace(0));
+                NotifyRoomPlayersExcept(new FreshGameFace(playerId),playerId);
             }
         }
         private void RemoveFromJoinSeats(Seat seat) {
@@ -460,6 +473,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
                 NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "押底人数不足2人,不能发牌"));
                 return;
             }
+            CheckDateTime = DateTime.Now;
             //  IsChipinClose = true;//?
             PokerManager.Riffile();
             lock (this) {
@@ -548,6 +562,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
             if (IsNotPassedCheck(seat)) {
                 return;
             }
+ 
             bool iHadLook = seat.IsLooked;
             decimal chipInAmount = PreSeatAmount;
             if (iHadLook != PreSeatIsLook) {
@@ -561,11 +576,15 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
             if (chipInAmount > LimitAmount) {
                 chipInAmount = LimitAmount;
             }
-            //if (IsDecutMoneySuccess(seat.IPlayer, chipInAmount)) {
-            //    MoveToNextSeat(chipInAmount, iHadLook,playerId, EChipinType.Follow);
-            //}
-            if (seat.ChipIn(chipInAmount, IsDecutMoneySuccess, EChipinType.Follow)) {
-                MoveToNextSeat(chipInAmount, iHadLook, playerId, EChipinType.Follow);
+            EChipinType chipType = EChipinType.Nothing;
+            if (iHadLook) {
+                chipType = EChipinType.Follow;
+            }
+            else {
+                chipType = EChipinType.NoLook;
+            }
+            if (seat.ChipIn(chipInAmount, IsDecutMoneySuccess, chipType)) {
+                MoveToNextSeat(chipInAmount, iHadLook, playerId, chipType);
             }
         }
         /// <summary>
@@ -692,15 +711,16 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         /// <param name="playerId"></param>
         [CanVisitByClientAttibue]
         public void Compare(int playerId) {
+            CheckDateTime = DateTime.Now;
             if (CurrentStage != EStage.Running) {
                 return;
             }
-            Seat seat = (Seat)GetJionSeatByPlayerId(playerId);
+            Seat seat = GetJionSeatByPlayerId(playerId);
             if (IsNotPassedCheck(seat)) {
                 return;
             }
             bool iHadLook = seat.IsLooked;
-            Seat opponetSeat = GetOnlyOpponentSeat();
+            Seat opponetSeat = GetOnlyOpponentSeat(playerId);
             if (null == opponetSeat) {
                 return;
             }
@@ -727,12 +747,15 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
             decimal playerWinAmount = 0;
             playerWinAmount = SystemTax(playerWinAmount);
             WinnerSeat.IPlayer.DecutMoney(-playerWinAmount);
-            // IsWinnerStage = true;//?
             FirstSeat = WinnerSeat;//新庄家
             CurrentSeat = WinnerSeat;
             CurrentStage = EStage.Computed;
+            NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "开牌"));
             NotifyRoomPlayers(new ChipinAnimation(0, chipInAmount, playerId, EChipinType.Compare));
             NotifyRoomPlayers(new FreshGameFace(0));
+            NotifySinglePlayer(WebscoketSendObjs.RoomMessage(0, "你赢了"), WinnerSeat.IPlayer.Id);
+            NotifySinglePlayer(WebscoketSendObjs.RoomMessage(0, playerWinAmount + "分"), WinnerSeat.IPlayer.Id);
+            NotifyRoomPlayersExcept(WebscoketSendObjs.RoomMessage(0, "你输了"), WinnerSeat.IPlayer.Id);
             InningeGame.GameOver(false, false);
         }
         /// <summary>
@@ -756,16 +779,24 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
             }
             decimal playerWinAmount = 0;
             playerWinAmount = SystemTax(playerWinAmount);
-            WinnerSeat.IPlayer.DecutMoney(playerWinAmount);
+            WinnerSeat.IPlayer.DecutMoney(-playerWinAmount);
             FirstSeat = WinnerSeat;//新庄家
             CurrentSeat = WinnerSeat;
             CurrentStage = EStage.Computed;
+            NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "自动开牌"));
             NotifyRoomPlayers(new FreshGameFace(0));
+            NotifySinglePlayer(WebscoketSendObjs.RoomMessage(0, "你赢了"), WinnerSeat.IPlayer.Id);
+            NotifySinglePlayer(WebscoketSendObjs.RoomMessage(0, playerWinAmount+"分"), WinnerSeat.IPlayer.Id);
+            NotifyRoomPlayersExcept(WebscoketSendObjs.RoomMessage(0, "你输了"), WinnerSeat.IPlayer.Id);
+            CheckDateTime = DateTime.Now;
             InningeGame.GameOver(false, false);//触发游戏结束事件
         }
         private decimal SystemTax(decimal playerWinAmount) {
             if (CurrentTotal > 10) {
                 playerWinAmount = CurrentTotal - 1;
+            }
+            else {
+                playerWinAmount = CurrentTotal;
             }
             return playerWinAmount;
         }
@@ -837,6 +868,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
                 return true;
             }
             NotifySinglePlayer(new Alert(player.Id, "账户余额不足"), player.Id);
+            NotifySinglePlayer(WebscoketSendObjs.RoomMessage(player.Id, "账户余额不足"), player.Id);
             return false;
         }
         /// <summary>
@@ -849,6 +881,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
 
             if (player.AccountNotEnough(amount)) {
                 NotifySinglePlayer(WebscoketSendObjs.Alert(player.Id, "账户余额不足"), player.Id);
+                NotifySinglePlayer(WebscoketSendObjs.RoomMessage(WinnerSeat.IPlayer.Id, "账户余额不足"), WinnerSeat.IPlayer.Id);
                 return false;
             }
             return true;
@@ -884,16 +917,19 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         /// 获得被开牌方座位
         /// </summary>
         /// <returns></returns>
-        private Seat GetOnlyOpponentSeat() {
-            List<Seat> seats = JoinSeats.FindAll(s => s.IPlayer.Id != CurrentSeat.IPlayer.Id);
-            List<Seat> notGaveupSeats = new List<Seat>();
-            for (int i = 0; i < seats.Count; i++) {
-                if (seats[i].IsGaveUp) {
-                    continue;
-                }
-                notGaveupSeats.Add(seats[i]);
-            }
-            if (notGaveupSeats.Count != 1) {
+        private Seat GetOnlyOpponentSeat(int playerId) {
+            List<Seat> seats = JoinSeats.FindAll(s => s.IPlayer.Id != playerId&&s.IsGaveUp!=true);
+            //List<Seat> notGaveupSeats = new List<Seat>();
+            //for (int i = 0; i < seats.Count; i++) {
+            //    if (seats[i].IsGaveUp) {
+            //        continue;
+            //    }
+            //    notGaveupSeats.Add(seats[i]);
+            //}
+            //if (notGaveupSeats.Count != 1) {
+            //    return null;
+            //}
+            if (seats.Count!=1) {
                 return null;
             }
             return seats[0];
@@ -939,11 +975,18 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
         /// 轮到下一个玩家表态
         /// </summary>
         private void MoveToNextSeat(decimal amount, bool isLook, int playerId, EChipinType chipinType = EChipinType.Nothing) {
+            CheckDateTime = DateTime.Now;
             lock (this) {
                 PreSeatAmount = amount;
                 if (chipinType!=EChipinType.GaveUp) {
                     CurrentSeat.PreChipInAmount = amount;
-                    CurrentSeat.PreChipType = chipinType;
+                    if (isLook) {
+                        CurrentSeat.PreChipType = chipinType;
+                    }
+                    else {
+                        chipinType = EChipinType.NoLook;
+                        CurrentSeat.PreChipType = EChipinType.NoLook;
+                    }
                     AddCurrentTotal(amount);
                 }
                 Seat tempSeat = CurrentSeat;
@@ -964,7 +1007,7 @@ namespace AntDesigner.NetCore.Games.GameThreePokers {
                 }
             }
             CheckDateTime = DateTime.Now;
-            NotifyRoomPlayers(new ChipinAnimation(0, amount, playerId, chipinType));
+            NotifyRoomPlayers(new ChipinAnimation(0, amount, playerId,chipinType));
             NotifyRoomPlayers(new FreshGameFace(0));
         }
         /// <summary>

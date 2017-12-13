@@ -1,0 +1,18 @@
+﻿
+@model Player
+@using AntDesigner.GameCityBase;
+@{
+    Layout = "~/Views/Shared/_LayoutHaveManue.cshtml";
+}
+@section styles{
+    <style>
+
+    </style>
+}
+
+    <h2>游戏公告</h2>
+    <div>
+        @if (ViewBag.notice != null) {
+            @ViewBag.notice.Content<br />
+        }
+    </div>
