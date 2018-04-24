@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using WxPayAPI;
 
 namespace WxPayAPI
@@ -14,9 +15,8 @@ namespace WxPayAPI
     /**
     * 	配置账号信息
     */
-    public class WxPayConfig
-    {
-   
+    public class WxPayConfig {
+
         //=======【上报信息配置】===================================
         /* 测速上报等级，0.关闭上报; 1.仅错误时上报; 2.全量上报
         */
@@ -63,22 +63,19 @@ namespace WxPayAPI
         public static string SiteName;
         public static string SSLCERT_PATH;
         public static string SSLCERT_PASSWORD;
-        public static string NOTIFY_URL ;
+        public static string NOTIFY_URL;
         public static string IP;
         public static string certName;
-
+        public static string CheckK;
+        public static string SiteNameNopre;
         private static DateTime Access_tokenSaveTime { get; set; }
         private static MyAccess_token access_token_;
-        public static MyAccess_token _access_token
-        {
+        public static MyAccess_token _access_token {
 
-            get
-            {
-                if (access_token_ != null)
-                {
+            get {
+                if (access_token_ != null) {
                     TimeSpan timSpan = DateTime.Now - Access_tokenSaveTime;
-                    if (timSpan.Seconds <7000)
-                    {
+                    if (timSpan.Seconds < 7000) {
                         return access_token_;
                     }
                 }
@@ -90,20 +87,16 @@ namespace WxPayAPI
         }
         private static DateTime Jsapi_ticketSaveTime { get; set; }
         private static Jsapi_ticket jsapi_ticket_;
-        public  static Jsapi_ticket _jsapi_ticket
-        {
+        public static Jsapi_ticket _jsapi_ticket {
 
-            get
-            {
-                if (jsapi_ticket_ != null )
-                {
+            get {
+                if (jsapi_ticket_ != null) {
                     TimeSpan timSpan = DateTime.Now - Jsapi_ticketSaveTime;
-                    if (timSpan.Seconds <7000)
-                    {
+                    if (timSpan.Seconds < 7000) {
                         return jsapi_ticket_;
-                      
+
                     }
-    
+
                 }
                 string url = "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=" + _access_token.Access_token + "&type=jsapi";
                 jsapi_ticket_ = GetWeixinReturnObject<Jsapi_ticket>(url);
@@ -111,6 +104,7 @@ namespace WxPayAPI
                 return jsapi_ticket_;
             }
         }
+        public static WeixinIps WeixinIpsList {get;set;}
         private static T GetWeixinReturnObject<T>(string url)
         {
             HttpWebRequest httpWebRequest = (HttpWebRequest)(HttpWebRequest.Create(url));
@@ -174,10 +168,24 @@ namespace WxPayAPI
             public  string Ticket { get; set; }
             public string Expires_in { get; set; }
         }
+       public  static WeixinIps GetWeixinIps() {
+            if (WeixinIpsList  is null) {
+                string url_token = "https://api.weixin.qq.com/cgi-bin/getcallbackip?access_token=" + WxPayConfig._access_token.Access_token;
+                HttpWebRequest myRequest = (HttpWebRequest)WebRequest.Create(url_token);
+                myRequest.Method = "GET";
+                WebResponse myResponse = myRequest.GetResponseAsync().Result;
+                StreamReader reader = new StreamReader(myResponse.GetResponseStream(), Encoding.UTF8);
+                string content = reader.ReadToEnd();
+                WeixinIpsList = JsonConvert.DeserializeObject<WeixinIps>(content);
+                reader.Dispose();
+                myRequest.Abort();
+            }
+                return WeixinIpsList;
+        }
+        public class WeixinIps {
+            public string[] ip_list { get; set; }
+        }
     }
-       
-
-   
 
     }
 

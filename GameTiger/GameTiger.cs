@@ -136,8 +136,6 @@ namespace AntDesigner.NetCore.Games.GameTiger
         public override void Stoped(object inningeGame, EventArgs e)
         {
             var myE = (GameStopedEventArgs)e;
-
-           // Notify?.Invoke(WebscoketSendObjs.Stoped(0,myE.Message));
             NotifyRoomPlayers(WebscoketSendObjs.Stoped(0, myE.Message));
         }
         /// <summary>
@@ -156,9 +154,10 @@ namespace AntDesigner.NetCore.Games.GameTiger
         /// </summary>
         /// <param name="playerId">玩家Id</param>
         /// <returns>发送到客户端玩家数据</returns>
+        [CanVisitByClientAttibue]
         public object FreshGameFace(int id)
         {
-            throw new NotImplementedException();
+            return null;
         }
         /// <summary>
         /// 重置游戏后事件
@@ -172,7 +171,7 @@ namespace AntDesigner.NetCore.Games.GameTiger
         }
         #region 各个游戏单独定义的内容
         private IPlayerJoinRoom player;
-     
+        [CanVisitByClientAttibue]
         public string GetHitBoxs(string stackeBoxsStr)
         {
 
@@ -203,6 +202,10 @@ namespace AntDesigner.NetCore.Games.GameTiger
         {
             player.Account=(decimal)DChangePlayerAccount?.Invoke(player.WeixinName, amount, explain);
         }
-#endregion 
+
+        public ISeat CreatSeat(IInningeGame inningeGame) {
+            return new Seat(inningeGame);
+        }
+        #endregion
     }
 }

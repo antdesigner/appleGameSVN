@@ -37,7 +37,7 @@
         }
 
         #stakeBoxs {
-            padding-top: 5%;
+            padding-top: 1%;
             clear: both;
         }
 
@@ -69,7 +69,7 @@
             text-align: center;
         }
         #panelStart {
-            margin-top:30%;
+        margin-top:7%;
        
         }
         #start image {
@@ -116,6 +116,9 @@
             position: fixed;
             top: 5px;
             right: 0px;
+        }
+        #roomTools{
+            display:none;
         }
     </style>
 }
@@ -183,16 +186,16 @@
     </div>
 </div>
 <div id="panelStart">
-    <button type="button" class="btn btn-warning  btn-block text-center" id="start" >
+    <button type="button" class="btn btn-warning btn-lg btn-block text-center" id="start" >
         <span class="glyphicon glyphicon-play-circle"></span>启 动 转 盘
     </button>
-    <button type="button" class="btn btn-warning  btn-block  text-center" id="again" >
+    <button type="button" class="btn btn-warning btn-lg btn-block  text-center" id="again" >
         <span class="glyphicon glyphicon-repeat"></span> 重 复 上 次
     </button>
-    <button type="button" class="btn btn-warning  btn-block text-center" id="zero" >
+    <button type="button" class="btn btn-warning  btn-lg btn-block text-center" id="zero" >
         <span class="glyphicon glyphicon-trash"></span> 押 分 清 零
     </button>
-    <button type="button" class="btn btn-warning btn-block text-center" id="exitRoom">
+    <button type="button" class="btn btn-warning btn-lg btn-block text-center" id="exitRoom">
        退 出 房 间
     </button>
 </div>
@@ -262,7 +265,7 @@
 
                         } else if (n > 1) {
                             boxsColorChangeRuning("yellow", 200);
-                            setTimeout(function () { clearInterval(boxsDefaultRuningTimer); boxsRuningComplex(boxs, prize); }, 2000)
+                            setTimeout(function () { clearInterval(boxsDefaultRuningTimer); boxsRuningComplex(boxs, prize); }, 2500)
 
                         }
 
@@ -280,9 +283,6 @@
                 currentBox.stake = currentBox.stake + 1;
                 var scoreDom = $(event.target).parent().find(".score");
                 scoreDom.html(currentBox.stake);
-                //  scoreDom.data("fen",{stake:currentBox.stake});
-                //$(event.target).parent().find(".score").data("fen",{stake:currentBox.stake});
-                // $(event.target).parent().find(".score").html(currentBox.stake).data("fen",{stake:currentBox.stake});
 
             }
             else {
@@ -516,7 +516,7 @@
                 $("#" + this.name).css("background-color", "yellow").toggleClass("animation3600deg");
                 n++;
                 if (n == boxs.length) {
-                    setTimeout(function () { refreshGame(prize) }, n * 1000 + 5000);
+                    setTimeout(function () { refreshGame(prize) }, n * 300 + 2000);
                     ;
                 }
             })
@@ -524,7 +524,7 @@
 
 
         $(function () {
-            $(".roomInfo").hide();
+            $("#roomTools").css("display", "none");
             accountBalance = $("#accountBalance");
             accountResult = $("#accountResult");
             stakeBoxsPanel = $("#stakeBoxs");

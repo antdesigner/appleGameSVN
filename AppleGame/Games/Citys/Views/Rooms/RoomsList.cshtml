@@ -1,43 +1,137 @@
 ﻿@using AntDesigner.NetCore.GameCity;
+@using WxPayAPI;
 @model IEnumerable<IRoom>
 @{
     Layout = "~/Views/Shared/_LayoutHaveManue.cshtml";
 }
+<style>
+    body {
+        background-image: url("/images/pokers/datingbj.jpg");
+        background-size: cover;
+        background-repeat: no-repeat;
+    }
+
+    .table-responsive {
+        margin-top: 10px;
+        height: 70%;
+        border: 2px solid green;
+        border-radius: 10px;
+        background: linear-gradient(to bottom,#FFFFBB,palegreen);
+        color:black;
+        font-size:large;
+        filter: opacity(70%);
+        
+    }
+
+    th {
+        background-color: white;
+        color: black;
+    }
+    td{font-weight:bolder}
+    #joinTools {
+        text-align: center;
+        display: flex;
+        height: 15%;
+    }
+
+        #joinTools div {
+            display: flex;
+            width: 100%;
+            flex: 1;
+            justify-content: center;
+        }
+
+        #joinTools button {
+            width: 80%;
+            height: 3rem;
+            border: 5px double green;
+            box-shadow: 3px 3px 3px black;
+        }
+
+
+
+        #joinTools > div {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        #joinTools > div {
+            justify-content: center;
+            align-items: center;
+        }
+
+    .amount {
+        color: orangered;
+    }
+
+    #girl {
+        z-index: 100;
+        position: fixed;
+        left: 0;
+        bottom: 0;
+    }
+    .table {
+        overflow: auto;
+    }
+    .ico {
+        font-size: 1rem;
+    }
+    @@media only screen and (min-width:700px) {
+        .ico {
+            font-size: large;
+        }
+    }
+</style>
 <h2>游戏大厅</h2>
-<button id="createRoom" class="btn btn-warning btn-xs  text-center buttnMargin">开新房间</button>
-<button id="joinRoom" class="btn btn-warning btn-xs  text-center buttnMargin">随机选择</button>
-<button id="showFindRoomModal" class="btn btn-warning btn-xs  text-center buttnMargin">查找房间</button>
 <div class="table-responsive">
     <table class="table table-striped">
         <tbody>
             <tr>
-                <th>房间</th>
-                <th>门票</th>
-                <th>游戏</th>
-                <th>人数</th>
-                <th>满员</th>
+                <th><div><div><img src="/images/pokers/datingh_03.png"> </div><div></div>房间</div></th>
+                <th><div><div><img src="/images/pokers/datingh_08.png"> </div><div></div>门票</div></th>
+                <th><div><div><img src="/images/pokers/datingh_10.png"> </div><div></div>游戏</div></th>
+                <th><div><div><img src="/images/pokers/datingh_05.png"> </div><div></div>人数</div></th>
+                <th><div><div><img src="/images/pokers/datingh_13.png"> </div><div></div>加密</div></th>
                 <th></th>
             </tr>
             @{
-                foreach (var room in Model)
-                {
+                foreach (var room in Model) {
                     <tr>
-                        <th>@room.Name</th>
-                        <th>@room.TicketPrice<span>元</span></th>
+                        <td>@room.Name</td>
+                        <td class="amount">@room.TicketPrice<span>元</span></td>
                         <td>@room.InningGame.IGameProject.ShowName</td>
-                        <td>@room.Players.Count()<span>/</span>@room.PlayerCountTopLimit</td>
-                        <td>@(room.IsFull==true? "已满":"")</td>
-                       @if (room.IsFull != true)
-                       {
+                        <td>@room.Players.Count()<span>/</span>@room.PlayerCountTopLimit@(room.IsFull == true ? "满" : "")</td>
+                        <td class="needpwd">@(room.SecretKey.Length == 0 ? "N" : "Y")</td>
                         <td><a class="joinRoom" href="/Citys/Rooms/JoinRoom?gameCityId=@room.GameCityId&roomId=@room.Id" value="@room.TicketPrice">进入</a></td>
-                       }
-                        <td></td>
                     </tr>
+
                 }
             }
         </tbody>
     </table>
+</div>
+<div id="girl"><img src="/images/pokers/girl_02.gif"></div>
+<div id="joinTools">
+    <div></div>
+    <div>
+        <div>
+            <button id="createRoom" class="btn btn-warning btn-xs  text-center buttnMargin"><span style="color:red;" class="ico">♥</span>开新房间</button>
+        </div>
+        <div>
+            <button id="showFindRoomModal" class="btn btn-warning btn-xs  text-center buttnMargin"><span style="color:black;" class="ico">♠</span>查找房间</button>
+        </div>
     </div>
+    <div>
+
+        <div>
+            <button id="joinRoom" class="btn btn-warning btn-xs  text-center buttnMargin"><span style="color:black" class="ico">♣</span>随机选择</button>
+        </div>
+        <div>
+            <button id="freshRoom" class="btn btn-warning btn-xs  text-center buttnMargin"><span style="color:red" class="ico">♦</span>刷新列表</button>
+        </div>
+    </div>
+</div>
 <!--查找房间 -->
 <div class="modal fade" id="FindRoomModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -47,7 +141,7 @@
                 <h4 class="modal-title" id="myModalLabel">查找房间</h4>
             </div>
             <div class="modal-body">
-            <label>房间名称</label><input type="text" id="roomName" />
+                <label>房间名称</label><input type="text" id="roomName" />
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
@@ -56,72 +150,164 @@
         </div><!-- /.modal-content -->
     </div><!-- /.modal -->
 </div>
-    @section styles{
+<!--输入密码-->
+<div class="modal fade" id="needPwd" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">进入房间需要密码</h4>
+            </div>
+            <div class="modal-body">
+                <label>输入密码</label><input type="password" id="roomkey" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="joinRoomUsekey">确定</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<audio id="vbj" loop="loop">
+    <source src="~/voice/datingbj.wav" >
+</audio>
+@section styles{
 
-    }
+}
 @section scripts{
     <script>
+        $("#vbj")[0].play(); 
+        glob_linka = new Object();
         function CreateRoom() {
             $(location).attr('href', '/Citys/Rooms/Index_CreateRoom');
         };//新建房间
         function JoinRoom() {
-            var joinRoomLinks = $(".joinRoom");
-            if (joinRoomLinks.length==0) {
+            var joinRooms = $(".joinRoom");
+            var joinRoomLinks = $.grep(joinRooms, function (v, i) {
+                var tr = $(v).parent().parent("tr");
+                return Needpwd(tr);
+            },true);
+            if (joinRoomLinks.length == 0) {
+                alert("没有合适的非加密房间");
                 return;
-            }
+            };
             var index = parseInt(Math.random() * joinRoomLinks.length);
-            var linka= joinRoomLinks.get(index);
+            var linka = joinRoomLinks[index];
             var roomPrice = $(linka).attr("value");
-            if (NoticPrice(roomPrice)!=true) {
+            if (NoticPrice(roomPrice) != true) {
                 return;
-            }
+            };
+            JoinChooseRoom(linka);
             var link = linka.href;
             $(location).attr("href", link);
         }//随机进入
-        function NoticPrice(roomPrice)
-        {
+        function NoticPrice(roomPrice) {
             if (roomPrice > 0) {
-                if (confirm("需要支付门票" + roomPrice + "元才能进入该房间,是否愿意?")) {
+                if (confirm("非房主需要支付门票" + roomPrice + "元才能进入该房间,是否愿意?房主不扣除!")) {
                     return true;
                 } else {
                     return false;
                 }
             }
-            else { return true;}
-            
+            else { return true; }
+
         }//有门票提示
-         function JoinChooseRoom(event)
-        {
-           var linka = event.target;
-           var roomPrice = $(linka).attr("value");
-            if (NoticPrice(roomPrice) != true) {
+
+        function JoinChooseRoom(linka) {
+            glob_linka = $(linka);
+            var tr = $(linka).parent().parent("tr");
+            if (Needpwd(tr)) {
+                $('#needPwd').modal('show');
                 return false;
-           }
-           else
-            {
-                return true;
+            }
+            else {
+                var roomPrice = $(linka).attr("value");
+                if (NoticPrice(roomPrice) != true) {
+                    return false;
+                } else {
+                    return true;
+                };
             }
 
+
         }//选择进入
-        function showFindRoomModal()
-        {
+        function showFindRoomModal() {
             $('#FindRoomModal').modal('show');
         }
-        function FindRoom()
-        {
+        function FindRoom() {
             var roomName = $("#roomName").val();
-            if (roomName.length==0) {
+            if (roomName.length == 0) {
                 alert("请输入房间名称");
                 return;
             }
             $(location).attr('href', "/Citys/Rooms/FindeRoomsByName?name=" + roomName);
         }//查找房间
+        function Needpwd(tr) {
+            if ("Y" == tr.find(".needpwd").text()) {
+                return true;
+            }
+            return false;
+        }
+        function IsPassed(linka) {
+            var key = $("#roomkey").val();
+            var url = linka.attr("href") + "&pwd=" + key;
+            $.get(url, function (data) {
+                if ("false" == data) {
+                    alert("密码不正确");
+                    return;
+                }
+                else {
+                    window.location.href = url;
+                }
+            }, "text")
+        }
+        function freshRoom() {
+
+            $(location).attr("href", "/Citys/Rooms/RoomsList");
+        }
+
+                        wx.config({
+            debug: false,
+            appId: '@Html.Raw(ViewBag.wxConfig.appId)',
+            timestamp: '@Html.Raw(ViewBag.wxConfig.timestamp)',
+            nonceStr: '@Html.Raw(ViewBag.wxConfig.nonceStr)',
+            signature: '@Html.Raw(ViewBag.wxConfig.signature)',
+            jsApiList: ["onMenuShareAppMessage", "onMenuShareTimeline"]
+        });
+        wx.ready(function () {
+            wx.onMenuShareAppMessage({
+                title: '来炸金花',
+                desc: '点击进入',
+                link: '@(Html.Raw(WxPayConfig.SiteName))/Game/Index/?state=@(Html.Raw(ViewBag.shareId))',
+                imgUrl: '@(Html.Raw(WxPayConfig.SiteName))/images/zhajinghua.png',
+                type: '',
+                dataUrl: '',
+                success: function () {
+                },
+                cancel: function () {
+                    alert("求求你分享给朋友吧！主人");
+                }
+            });
+            wx.onMenuShareTimeline({
+                title: '来炸金花',
+                link: '@(Html.Raw(WxPayConfig.SiteName))/Game/Index/?state=@(Html.Raw(ViewBag.shareId))',
+                imgUrl:'@(Html.Raw(WxPayConfig.SiteName))/images/zhajinghua.png',
+                success: function () {
+                },
+                cancel: function () {
+                    alert("求求你分享给朋友吧！主人");
+                }
+            });
+                });
         $(function () {
             $("#createRoom").on("click", CreateRoom);
             $("#joinRoom").on("click", JoinRoom);
             $("#showFindRoomModal").on("click", showFindRoomModal);
             $("#findRoom").on("click", FindRoom);
-            $(".joinRoom").on("click", function (event) {  return JoinChooseRoom(event) });
+            $(".joinRoom").on("click", function (event) { return JoinChooseRoom(event.target) });
+            $("#joinRoomUsekey").on("click", function () { IsPassed(glob_linka); })
+            $("#freshRoom").on("click", function () { freshRoom(); })
+            $("#vbj")[0].play();
         })
-</script>
+    </script>
 }

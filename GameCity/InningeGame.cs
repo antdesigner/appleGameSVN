@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace AntDesigner.NetCore.GameCity
-{/// <summary>
+namespace AntDesigner.NetCore.GameCity {/// <summary>
 /// 一局游戏
 /// </summary>
-    public  class InningeGame : IInningeGame
-    {/// <summary>
-     /// 添加座位后事件
-     /// </summary>
+    public class InningeGame : IInningeGame {
+        /// <summary>
+        /// 添加座位后事件
+        /// </summary>
         public event EventHandler AfterAddSeatHandler;
         /// <summary>
         /// 即将添加座位前事件
@@ -44,7 +43,7 @@ namespace AntDesigner.NetCore.GameCity
         /// <summary>
         /// 游戏开始了?
         /// </summary>
-        public bool IsStarted { get;private  set; }
+        public bool IsStarted { get; private set; }
         /// <summary>
         /// 游戏(不能通过属性更换)
         /// </summary>
@@ -56,14 +55,18 @@ namespace AntDesigner.NetCore.GameCity
         /// <summary>
         /// 委托检查是否可以启动游戏
         /// </summary>
-        public Func<IInningeGame,bool> DCheckStart { get; set; }
+        public Func<IInningeGame, bool> DCheckStart { get; set; }
         /// <summary>
         /// 委托检查能否添加座位
         /// </summary>
-        public Func<IInningeGame, bool> DCheckAddSeat{ get; set; }
-        public Dictionary<string, List<string>> GameDateStr { get ; set ; }
-        public Dictionary<string, List<object>> GameDateObj { get; set; }
-        public IRoom IRoom { get ; set ; }
+        public Func<IInningeGame, bool> DCheckAddSeat { get; set; }
+        public Func<IInningeGame, ISeat> DCreatSeat { get; set; }
+        //public Dictionary<string, List<string>> GameDataStr { get; set; }
+        //public Dictionary<string, List<object>> GameDataObj { get; set; }
+        //public Dictionary<string, List<int>> GameDataInt { get; set; }
+        //public Dictionary<string, List<bool>> GameDataBool { get; set; }
+        //public Dictionary<string, List<decimal>> GameDataDecimal { get; set; }
+        public IRoom IRoom { get; set; }
         /// <summary>
         /// 异常中断标记
         /// </summary>
@@ -76,18 +79,13 @@ namespace AntDesigner.NetCore.GameCity
         /// <summary>
         /// 一般不用
         /// </summary>
-        public InningeGame()
-        {
+        public InningeGame() {
             IsStarted = false;
             IsStoped = false;
             IsGameOver = false;
             Seats = new List<ISeat>();
-            GameDateStr = new Dictionary<string, List<string>>();
-            GameDateObj = new Dictionary<string, List<object>>();
-            
         }
-        public InningeGame(IGameProject gameProject_):this()
-        {
+        public InningeGame(IGameProject gameProject_) : this() {
             IGameProject = gameProject_;
             DCheckAddSeat += IGameProject.CheckAddSeat;
             DCheckStart += IGameProject.CheckStart;
@@ -98,7 +96,6 @@ namespace AntDesigner.NetCore.GameCity
             StoptedHandler += IGameProject.Stoped;
             GameOverHander += IGameProject.GameOver;
             AfterResetHander += IGameProject.ResetGame;
-           
         }
         /// <summary>
         /// 游戏所在房间导航
@@ -108,39 +105,30 @@ namespace AntDesigner.NetCore.GameCity
         /// 开始游戏
         /// </summary>
         /// <returns></returns>
-        public bool Start()
-        {
-            if (CheckStart())
-            {
+        public bool Start() {
+            if (CheckStart()) {
                 BeforGameStartHandler?.Invoke(this, new EventArgs());
-                if (MyStart())
-                {
+                if (MyStart()) {
                     GameStartHandler?.Invoke(this, new EventArgs());
                     return true;
                 }
             }
             return false;
         }
-        private bool CheckStart()
-        {
-            if (IsStarted==true||IsStoped==true||IsGameOver==true)
-            {
+        private bool CheckStart() {
+            if (IsStarted == true || IsStoped == true || IsGameOver == true) {
                 return false;
             }
-            if (DCheckStart!=null) 
-                {
-                    return DCheckStart(this);
-                }
+            if (DCheckStart != null) {
+                return DCheckStart(this);
+            }
             return true;
         }
-        private  bool MyStart()
-        {
-            if (SeatCount==0)
-            {
+        private bool MyStart() {
+            if (SeatCount == 0) {
                 throw new Exception("座位数量不能为零");
             }
-            if (IGameProject.PlayerCountLeast>SeatCount || IGameProject.PlayerCountLimit<SeatCount )
-            {
+            if (IGameProject.PlayerCountLeast > SeatCount || IGameProject.PlayerCountLimit < SeatCount) {
                 IsStarted = false;
                 return false;
             }
@@ -151,14 +139,12 @@ namespace AntDesigner.NetCore.GameCity
         /// 添加座位
         /// </summary>
         /// <param name="n"></param>
-        public ISeat AddSet(int n)
-        {
-            if (CheckAddSeat())
-            {
+        public ISeat AddSet(int n) {
+            if (CheckAddSeat()) {
                 BeforAddSeatHandler?.Invoke(this, new EventArgs());
                 MyAddSet(n);
                 AfterAddSeatHandler?.Invoke(this, new EventArgs());
-              //  return true;
+                //  return true;
             }
             return GetOneEmptySeat();
         }
@@ -166,24 +152,22 @@ namespace AntDesigner.NetCore.GameCity
         /// 能否添加座位检查
         /// </summary>
         /// <returns></returns>
-        private bool CheckAddSeat()
-        {
-            if (DCheckAddSeat != null)
-            {
-               return  DCheckAddSeat(this);
+        private bool CheckAddSeat() {
+            if (DCheckAddSeat != null) {
+                return DCheckAddSeat(this);
             }
             return true;
         }
-        private void MyAddSet(int n)
-        {
-            for (int i = 0; i < n; i++)
-            {
-                if ( IGameProject.PlayerCountLimit == SeatCount)
-                {
-                    throw new Exception("座位已经达到游戏上限,不能再添加");
+        private void MyAddSet(int n) {
+            for (int i = 0; i < n; i++) {
+                if (IGameProject.PlayerCountLimit == SeatCount) {
+                    break;
+                   // throw new Exception("座位已经达到游戏上限,不能再添加");
                 }
-                ISeat seat = new Seat(this);
-
+                ISeat seat = null;
+                if (DCreatSeat != null) {
+                    seat = DCreatSeat(this);
+                }
                 Seats.Add(seat);
             }
         }
@@ -191,19 +175,16 @@ namespace AntDesigner.NetCore.GameCity
         /// 获得全部没有玩家的座位
         /// </summary>
         /// <returns></returns>
-        public List<ISeat> EmptySeats()
-        {
+        public List<ISeat> EmptySeats() {
             return Seats.Where<ISeat>(s => s.IsEmpty == true).ToList();
         }
         /// <summary>
         /// 获得一个空座位
         /// </summary>
         /// <returns></returns>
-        public ISeat GetOneEmptySeat()
-        {
+        public ISeat GetOneEmptySeat() {
             List<ISeat> emptySeats = EmptySeats();
-            if (emptySeats.Count==0)
-            {
+            if (emptySeats.Count == 0) {
                 return null;
             }
             return emptySeats[0];
@@ -212,8 +193,7 @@ namespace AntDesigner.NetCore.GameCity
         /// 有玩家的座位集合
         /// </summary>
         /// <returns></returns>
-        public List<ISeat> NotEmptySeats()
-        {
+        public List<ISeat> NotEmptySeats() {
             return Seats.Where<ISeat>(s => s.IsEmpty == false).ToList();
         }
         /// <summary>
@@ -221,61 +201,57 @@ namespace AntDesigner.NetCore.GameCity
         /// </summary>
         /// <param name="id">玩家Id</param>
         /// <returns></returns>
-        public List<ISeat> NotMyEmtySteats(int id)
-        {
-            return Seats.Where<ISeat>(s => s.IsEmpty == false && s.IPlayer.Id!=id).ToList();
+        public List<ISeat> NotMyEmtySteats(int id) {
+            return Seats.Where<ISeat>(s => s.IsEmpty == false && s.IPlayer.Id != id).ToList();
         }
         /// <summary>
         ///依据玩家Id返回座位
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public ISeat GetSeatByPlayerId(int id)
-        {
-            return Seats.FirstOrDefault(s => s.IPlayer!=null&&s.IPlayer.Id== id);
+        public ISeat GetSeatByPlayerId(int id) {
+            return Seats.FirstOrDefault(s => s.IPlayer != null && s.IPlayer.Id == id);
         }
         /// <summary>
         /// 添加座位坐下
         /// </summary>
         /// <param name="player">玩家</param>
         /// <returns>座位</returns>
-        public ISeat PlaySitDown(IPlayerJoinRoom player)
-        {
+        public ISeat PlaySitDown(IPlayerJoinRoom player) {
             ISeat seat = GetOneEmptySeat();
-            if (seat==null)
-            {
+            if (seat == null) {
                 seat = AddSet(1);
             }
             seat.PlayerSitDown(player);
             return seat;
         }
-       /// <summary>
-       /// 异常中断游戏
-       /// </summary>
-        public void Stoped(string message)
-        {
+        /// <summary>
+        /// 异常中断游戏
+        /// </summary>
+        public void Stoped(string message, bool clearSeatData = true, bool resetGame = true) {
             IsStoped = true;
             StoptedHandler?.Invoke(this, new GameStopedEventArgs(message));
-            Reset();
+            if (resetGame) {
+                Reset(clearSeatData);
+            }
+
         }
         /// <summary>
         /// 正常结束游戏
         /// </summary>
-        public void GameOver()
-        {
+        public void GameOver(bool clearSeatData=true, bool resetGame = true) {
             IsGameOver = true;
-            Reset();
+            if (resetGame) {
+                Reset(clearSeatData);
+            }
             GameOverHander?.Invoke(this, new EventArgs());
         }
         /// <summary>
         /// 游戏进行人数够不够
         /// </summary>
-        public void CheckSeatCountEnoughWhenRunning()
-        {
-            if (IsStarted==true)
-            {
-                if (NotEmptySeats().Count < IGameProject.PlayerCountLeast)
-                {
+        public void CheckSeatCountEnoughWhenRunning() {
+            if (IsStarted == true) {
+                if (NotEmptySeats().Count < IGameProject.PlayerCountLeast) {
                     Stoped("有玩家离开,游戏人数不足");
                 }
             }
@@ -284,10 +260,11 @@ namespace AntDesigner.NetCore.GameCity
         /// <summary>
         /// 重置游戏
         /// </summary>
-        public void Reset()
-        {
-            ClearAllSeatInfo();
-            IsStarted = false;
+        public void Reset(bool clearSeatData=true) {
+            if (clearSeatData) {
+                ClearAllSeatInfo();
+            }
+            IsStarted = true;
             IsStoped = false;
             IsGameOver = false;
             AfterResetHander?.Invoke(this, new EventArgs());
@@ -295,19 +272,10 @@ namespace AntDesigner.NetCore.GameCity
         /// <summary>
         /// 清除本局全部座位游戏数据
         /// </summary>
-        private void ClearAllSeatInfo()
-        {
-            for (int i = 0; i < Seats.Count(); i++)
-            {
-                Seats[i].GameDateObj.Clear();
-                Seats[i].GameDateStr.Clear();
+        private void ClearAllSeatInfo() {
+            for (int i = 0; i < Seats.Count(); i++) {
+                Seats[i].ClearSeatInfo();
             }
-            //foreach (var item in Seats)
-            //{
-            //    Seats.Clear();
-            //}
-            GameDateStr.Clear();
-            GameDateObj.Clear();
         }
     }
 }

@@ -59,7 +59,7 @@
                     <form role="form" class="form-horizontal" action="/Player/creatOrder" method="post" onsubmit="return checkAmount()">
                         @Html.AntiForgeryToken()
                         <div class="form-group text-center">
-                            <input type="text" class="form-control text-center " placeholder="在此输入充值金额" id="amount" pattern="^(([1-9]\d{0,9})|0)(\.\d{1,2})?$" name="amount" />
+                            <input type="text" class="form-control text-center " placeholder="在此输入充值金额" id="amount" pattern="^(([1-9]\d{0,9})|0)(\.\d{1,2})?$" name="amount" required />
                         </div>
                             <br />
                             <input class="btn btn-primary btn-lg btn-block text-center" value="确定" type="submit" />
@@ -76,8 +76,12 @@
                 <script>
     function checkAmount() {
         var redPackAmount = $("#amount").val()
-        if (redPackAmount >10 ) {
-            alert("根据禁止赌博的相关法规,每次最多充值10元");
+         if (redPackAmount< 0.1) {
+                        alert("不得低于0.1");
+                        return false;
+        }
+        if (redPackAmount >50 ) {
+            alert("根据禁止赌博的相关法规,每次最多充值50元");
             return false;
         }
         return true;

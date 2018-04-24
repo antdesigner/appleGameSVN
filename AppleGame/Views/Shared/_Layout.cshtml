@@ -12,7 +12,7 @@
     <link href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
-    <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://cdnjs.gtimg.com/cdnjs/libs/jquery/2.1.1/jquery.min.js"></script>
 
     <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
     <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
@@ -21,27 +21,32 @@
     </script>
     <script>window.history.forward(1);</script>
     <style>
-        html,body{
-            width:100%;
-            height:100%
+        html, body {
+            width: 100%;
+            height: 100%
         }
+
         body {
             margin-top: 0;
             color: green;
             background-color: palegreen;
+<<<<<<< HEAD
             cursor:pointer;
         }
         div{
             cursor:pointer
+=======
+            background: radial-gradient(circle at center top, palegreen,#99FF99);
+>>>>>>> 0ab25e228ae18c02a006ee394e6c2f638d94d1cd
         }
 
         h2 {
             text-align: center;
         }
 
-        table th,table tr, .amount {
+        table th, table tr, .amount {
             text-align: center;
-            font-size:0.5rem;
+            font-size: 0.5rem;
         }
 
         a {
@@ -49,33 +54,37 @@
         }
 
         #Panel {
-          color:red;
+            color: red;
             text-align: center;
             position: fixed;
-           right: 0px;
-           top:0px;
-background: rgba(255, 255, 255, .0);
-border:0px;   }
-#Panel li{
-background: rgba(0, 0, 0, .6);
+            right: 0px;
+            top: 0px;
+            background: rgba(255, 255, 255, .0);
+            border: 0px;
+        }
 
-}
-  #Panel a{
-  color:yellow;
-}
-  .inputBoxs{
-      width:60%;
-      margin:0.3rem;
-      text-align:right;
-  }
-           label{
-               margin-right:0.5rem;
-           }
+            #Panel li {
+                background: rgba(0, 0, 0, .6);
+            }
+
+            #Panel a {
+                color: yellow;
+            }
+
+        .inputBoxs {
+            width: 60%;
+            margin: 0.3rem;
+            text-align: right;
+        }
+
+        label {
+            margin-right: 0.5rem;
+        }
     </style>
     @RenderSection("styles", required: false)
 </head>
 <body>
-    <div  class="container body-content" style="height:100%">
+    <div class="container body-content" style="height:100%">
         @RenderBody()
         <footer>
             @RenderSection("bottomMenue", false)

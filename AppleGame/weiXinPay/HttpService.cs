@@ -19,7 +19,7 @@ namespace WxPayAPI
             //直接确认，否则打不开    
             return true;
         }
-       public static string Post(string xml, string url, bool isUseCert, int timeout)
+       public static string Post(string xml, string url, bool isUseCert, int timeout,string certName)
         {
           //  System.GC.Collect();//垃圾回收，回收没有正常关闭的http连接
             string result = "";//返回结果
@@ -52,7 +52,7 @@ namespace WxPayAPI
                     X509Store store = new X509Store("My", StoreLocation.LocalMachine);
                     store.Open(OpenFlags.ReadOnly | OpenFlags.OpenExistingOnly);
                     System.Security.Cryptography.X509Certificates.X509Certificate2 cert =
-                    store.Certificates.Find(X509FindType.FindBySubjectName, WxPayConfig.certName, false)[0];
+                    store.Certificates.Find(X509FindType.FindBySubjectName,certName, false)[0];
                     var handler = new HttpClientHandler();
                     handler.ClientCertificates.Add(cert);
                     using (HttpClient client = new HttpClient(handler))

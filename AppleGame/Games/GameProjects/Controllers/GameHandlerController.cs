@@ -34,10 +34,10 @@ namespace AppleGame.Games.GameProjects.Controllers
         public override IActionResult GameIndex()
         {
             StringBuilder url = new StringBuilder();
-            url.Append(WxPayConfig.SiteName + "/Game/loginGame?weixinName=");
-            url.Append(player.WeixinName);
-            url.Append("&shareId=");
-            url.Append(ToolsSecret.EncryptOpenId(player.IntroducerWeixinName));
+            url.Append(WxPayConfig.SiteName + "/GameProjects/GameHandler/GameIndex?gameCityId=");
+            url.Append(_gameCity.Id);
+            url.Append("&roomId=");
+            url.Append(_room.Id);
             ViewBag.wxConfig = new wxConfig(url.ToString());
             ViewBag.manager = ManagePlayer.GetOnlyInstance();
             ViewBag.Player = player;

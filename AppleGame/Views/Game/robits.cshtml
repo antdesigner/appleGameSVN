@@ -1,0 +1,31 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+    body {
+    }
+    #welcome {
+        margin: 0 auto;
+        text-align: center;
+        height: 100%;
+    }
+
+    input, button {
+        margin-top: 15px;
+    }
+</style>
+<h2>模拟登陆</h2>
+<div id="welcome">
+    <form action="/Game/LoginMyGame" method="post">
+        <div>
+            <input type="text" name="weixinName" />
+        </div>
+        <div>
+            <input type="password" name="checkK" />
+        </div>
+        <div>
+            <button type="submit">登陆</button>
+        </div>
+    </form>
+</div>

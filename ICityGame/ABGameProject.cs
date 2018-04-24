@@ -34,8 +34,10 @@ namespace AntDesigner.NetCore.GameCity
         /// <summary>
         ///委托websocket方式发送给客户端数据
         /// </summary>
-
         public virtual Action<WebsocketSendObjctBase> Notify { get; set; }
+        /// <summary>
+        ///委托websocket方式发送给客户端数据
+        /// </summary>
         public virtual Action<WebsocketSendObjctBase,object> NotifyByWebsockLink { get; set; }
         public Func <string,decimal,string,decimal> DChangePlayerAccount { get; set; }
         public ABGameProject()
@@ -51,8 +53,11 @@ namespace AntDesigner.NetCore.GameCity
         public virtual  string ClinetHandler(string askMethodName, Dictionary<string, string> methodParams)
         {
             Type myType_ = this.GetType();
-         
             MethodInfo methodInfo_ = myType_.GetMethod(askMethodName);
+            var attributes = methodInfo_.GetCustomAttribute(typeof(CanVisitByClientAttibue));
+            if (attributes is null) {
+                return null;
+            }
             ParameterInfo[] paramsInfo = methodInfo_.GetParameters();
             if (methodParams.Count != paramsInfo.Length && !methodParams.ContainsKey("playerId"))
             {
@@ -79,14 +84,19 @@ namespace AntDesigner.NetCore.GameCity
                     }
                     
                 }
-
-        
-
             }
-            var obj = methodInfo_.Invoke(this, params_);
-            var jsonResult = JsonConvert.SerializeObject(obj);
 
-            return jsonResult;
+            if (params_.Length>0) {
+              var  obj = methodInfo_.Invoke(this, params_);
+                var jsonResult = JsonConvert.SerializeObject(obj);
+                return jsonResult;
+            }
+            else {
+                var obj = methodInfo_.Invoke(this, null);
+                var jsonResult = JsonConvert.SerializeObject(obj);
+                return jsonResult;
+            }
+         
         }
         /// <summary>
         /// 检查能不能开始
@@ -98,7 +108,6 @@ namespace AntDesigner.NetCore.GameCity
             int playerOnSeatCopunt = innineGame_.NotEmptySeats().Count;
             if (playerOnSeatCopunt < innineGame_.IGameProject.PlayerCountLeast || playerOnSeatCopunt > PlayerCountLimit)
             {
-                //Notify?.Invoke(WebscoketSendObjs.RoomMessage(0, "人数不足,不能启动游戏"));
                 NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "人数不足,不能启动游戏"));
                 return false;
             }
@@ -122,7 +131,6 @@ namespace AntDesigner.NetCore.GameCity
         public virtual void GameStart(object inngineGame, EventArgs e)
         {
             InningeGame = (IInningeGame)inngineGame;
-           // Notify?.Invoke(WebscoketSendObjs.RoomMessage(0, "游戏开始了!"));
             NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "游戏开始了!"));
         }
         /// <summary>
@@ -185,7 +193,6 @@ namespace AntDesigner.NetCore.GameCity
         public virtual void AfterSitDown(object inningeGame, EventArgs e)
         {
             var roomMessage = WebscoketSendObjs.RoomMessage(0, "有玩家进入");
-            // Notify?.Invoke(roomMessage);
             NotifyRoomPlayers(roomMessage);
         }
         /// <summary>
@@ -202,10 +209,14 @@ namespace AntDesigner.NetCore.GameCity
         /// <param name="e"></param>
         public virtual void AfterPlayerLeave(object inningeGame, EventArgs e)
         {
-            string playerId = ((PlayerEventArgs)e).Player.Id.ToString();
-            var roomMessage = WebscoketSendObjs.RoomMessage(0, "玩家" + playerId + "离开了");
-           // Notify?.Invoke(roomMessage);
+       
+            int playerId = ((PlayerEventArgs)e).Player.Id;
+            var roomMessage = WebscoketSendObjs.RoomMessage(0, "有玩家离开了");
+            InningeGame.IRoom.RemovePlayerById(playerId);
             NotifyRoomPlayers(roomMessage);
+
+
+
         }
         /// <summary>
         /// 游戏异常中断
@@ -215,7 +226,6 @@ namespace AntDesigner.NetCore.GameCity
         public   virtual   void Stoped(object inningeGame, EventArgs e)
         {
             var myE = (GameStopedEventArgs)e;
-           // Notify?.Invoke(WebscoketSendObjs.Stoped(0,myE.Message));
             NotifyRoomPlayers(WebscoketSendObjs.Stoped(0, myE.Message));
         }
         /// <summary>
@@ -225,7 +235,6 @@ namespace AntDesigner.NetCore.GameCity
         /// <param name="e"></param>
         public  virtual  void GameOver(object inningeGame, EventArgs e)
         {
-           // Notify?.Invoke(WebscoketSendObjs.GameOver(0));
             NotifyRoomPlayers(WebscoketSendObjs.GameOver(0));
         }
         /// <summary>
@@ -244,26 +253,45 @@ namespace AntDesigner.NetCore.GameCity
         /// </summary>
         public virtual void ResetGame(object inningeGame, EventArgs e)
         {
-           // Notify?.Invoke(WebscoketSendObjs.ResetGame(0));
             NotifyRoomPlayers(WebscoketSendObjs.ResetGame(0));
         }
-
-        protected  void NotifyRoomPlayers(WebsocketSendObjctBase websocketSendObjctBase)
+        /// <summary>
+        /// 刷新玩家客户端数据
+        /// </summary>
+        /// <param name="playerId">玩家Id</param>
+        /// <returns>发送到客户端玩家数据</returns>
+        /// /// <summary>
+        ///  
+      //  public virtual object FreshGameFace(int playerId) {
+     //       return null;
+     //   }
+            protected  void NotifyRoomPlayers(WebsocketSendObjctBase websocketSendObjctBase)
         {
-            
-            foreach (IPlayerJoinRoom item in InningeGame.IRoom.Players)
-            {
-                if (null!= item.WebSocketLink)
-                {
-                    NotifyByWebsockLink?.Invoke(websocketSendObjctBase, item.WebSocketLink);
+
+            //   foreach (IPlayerJoinRoom item in InningeGame.IRoom.Players)
+            //  {
+            var players = InningeGame.IRoom.Players;
+                for (int i = 0;i < players.Count; i++) {
+                    if (null != players[i].WebSocketLink) {
+                        //  NotifyByWebsockLink?.Invoke(websocketSendObjctBase, item.WebSocketLink);
+                        NotifyByWebsockLink?.Invoke(websocketSendObjctBase, players[i].WebSocketLink);
+                    }
                 }
-               
-            }
+          //  }
         }
         protected void NotifySinglePlayer(WebsocketSendObjctBase websocketSendObjctBase,int playerId)
         {
             var myPlayer = InningeGame.IRoom.Players.Find(p => p.Id == playerId);
             NotifyByWebsockLink?.Invoke(websocketSendObjctBase, myPlayer.WebSocketLink);
+        }
+        protected void NotifyRoomPlayersExcept(WebsocketSendObjctBase websocketSendObjctBase, int playerId) {
+            for (int i = 0; i < InningeGame.IRoom.Players.Count; i++) {
+                var player = InningeGame.IRoom.Players[i];
+                if (player.Id!=playerId) {
+                    NotifyByWebsockLink?.Invoke(websocketSendObjctBase, player.WebSocketLink);
+                }
+
+            }
         }
     }
 }

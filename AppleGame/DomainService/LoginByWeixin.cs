@@ -38,7 +38,7 @@ namespace AntDesigner.GameCityBase
             {
                 Account account = new Account(name)
                 {
-                    Balance = 1
+                    Balance = 3
                 };
                 Player newPlayer = new Player(name)
                 {

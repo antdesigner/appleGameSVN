@@ -565,7 +565,7 @@
         });
         wx.ready(function () {
             wx.onMenuShareAppMessage({
-                title: '呵护你眼睛的小游戏',
+                title: '苹果机小游戏',
                 desc: '点击进入',
                 link: '@(Html.Raw(WxPayConfig.SiteName))/Game/Index/?state=@(Html.Raw(ViewBag.shareId))',
                 imgUrl: '@(Html.Raw(WxPayConfig.SiteName))/images/AppleBig.png',
@@ -578,7 +578,7 @@
                 }
             });
             wx.onMenuShareTimeline({
-                title: '呵护你眼睛的小游戏',
+                title: '苹果机小游戏',
                 link: '@(Html.Raw(WxPayConfig.SiteName))/Game/Index/?state=@(Html.Raw(ViewBag.shareId))',
                 imgUrl:'@(Html.Raw(WxPayConfig.SiteName))/images/AppleBig4.png',
                 success: function () {

@@ -7,8 +7,7 @@ namespace AntDesigner.NetCore.GameCity
     /// <summary>
     /// 游戏
     /// </summary>
-    public interface IGameProject:INotifyClient, IDChangePlayerAccount
-    {        
+    public interface IGameProject:INotifyClient, IDChangePlayerAccount, IGameCityFactory {        
         /// <summary>
              /// 一局游戏
              /// </summary>

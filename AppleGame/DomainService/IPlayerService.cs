@@ -8,6 +8,7 @@ namespace GameCitys.DomainService
         Player AddPlayer(Player player);
         IList<Player> GetAllPlayers();
         Player FindPlayerByName(string name);
+        Player FindPlayerByAccountId(int name);
         ManagePlayer GetManagerPlayer();
         IList<Player> GetPlayersOfPlayer(Player player);
         void AttachPlayer(Player player);

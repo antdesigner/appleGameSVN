@@ -183,7 +183,7 @@ namespace AntDesigner.NetCore.GameCity
             TicketPrice = config_.TicketPrice;
             InningGame = config_.InningGame;
             InningGame.IRoom = this;
-            if (InningGame.IGameProject.PlayerCountLeast < config_.PlayerCountTopLimit
+            if (InningGame.IGameProject.PlayerCountLeast <= config_.PlayerCountTopLimit
           && config_.PlayerCountTopLimit <= InningGame.IGameProject.PlayerCountLimit)
             {
                 PlayerCountTopLimit = config_.PlayerCountTopLimit;
@@ -425,5 +425,18 @@ namespace AntDesigner.NetCore.GameCity
             InningGame.IGameProject= game;
         }
 
+        public bool IsKeyPassed(int id, string key) {
+            if (id==RoomManager.Id) {
+                return true;
+            }
+            if (SecretKey.Length==0) {
+                return true;
+            }
+            if (SecretKey==key) {
+                return true;
+
+            }
+            return false;
+        }
     }
 }

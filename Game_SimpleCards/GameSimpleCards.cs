@@ -9,7 +9,7 @@ namespace AntDesigner.NetCore.Games.GameSimpleCards
     /// </summary>
     public class GameSimpleCards : ABGameProject, IGameProject
     {
-        #region 和该项游戏相关属性
+        #region 自定义游戏的属性区域
         /// <summary>
         /// 扑克发牌器
         /// </summary>
@@ -19,18 +19,19 @@ namespace AntDesigner.NetCore.Games.GameSimpleCards
         /// </summary>
         public decimal ChipInAmount { get; set; }
         #endregion
-
         public GameSimpleCards()
         {
             #region 初始化时每项游戏必须设置的属性
-            ShowName = "二人比大小";//游戏名称
-            Name = this.GetType().Name;//反射调用名称
-            PlayerCountLimit = 2;//人数上限
-            PlayerCountLeast = 2;//人数下限
+            ShowName = "二人比大小";//游戏名称,可根据游戏项目指定属性值
+            Name = this.GetType().Name;//反射调用名称(勿修改
+            PlayerCountLimit = 2;//人数上限,可根据游戏项目指定属性值
+            PlayerCountLeast = 2;//人数下限,可根据游戏项目指定属性值
             #endregion
+            #region 自定义初始化区域
             ChipInAmount = 1;
+#endregion
         }
-        #region
+        #region 覆写ABGameProject默认方法的区域
         /// <summary>
         /// 检查能不能开始
         /// </summary>
@@ -67,20 +68,18 @@ namespace AntDesigner.NetCore.Games.GameSimpleCards
         {
             InningeGame = (IInningeGame)inngineGame;
             Poker = new Poker();
-            foreach (var seat in InningeGame.NotEmptySeats())
-            {
+            //foreach (var seat in InningeGame.NotEmptySeats())
+            //{
                 
-                seat.GameDateObj.Add("getPokers", new List<object>());
-                seat.GameDateObj.Add("playOutPokers", new List<object>());
-                seat.GameDateObj.Add("compareResult", new List<object>());
-            }
+            //    seat.GameDataObj.Add("getPokers", new List<object>());
+            //    seat.GameDataObj.Add("playOutPokers", new List<object>());
+            //    seat.GameDataObj.Add("compareResult", new List<object>());
+            //}
             foreach (var item in InningeGame.NotEmptySeats())
             {
                 PlayerGetOnePoker(item.IPlayer.Id);
             }
-           // Notify?.Invoke(WebscoketSendObjs.RoomMessage(0, "游戏开始了!"));
              base.GameStart(InningeGame, e);  
-           // NotifyRoomPlayers(WebscoketSendObjs.RoomMessage(0, "游戏开始了!"));
         }
         /// <summary>
         /// 添加座位检查
@@ -172,7 +171,6 @@ namespace AntDesigner.NetCore.Games.GameSimpleCards
         public override void Stoped(object inningeGame, EventArgs e)
         {
             var myE = (GameStopedEventArgs)e;
-            //Notify?.Invoke(WebscoketSendObjs.Stoped(0,myE.Message));
             NotifyRoomPlayers(WebscoketSendObjs.Stoped(0, myE.Message));
         }
         /// <summary>
@@ -182,41 +180,49 @@ namespace AntDesigner.NetCore.Games.GameSimpleCards
         /// <param name="e"></param>
         public override void GameOver(object inningeGame, EventArgs e)
         {
-           // Notify?.Invoke(WebscoketSendObjs.GameOver(0));
             NotifyRoomPlayers(WebscoketSendObjs.GameOver(0));
         }
+        /// 重启游戏
+        /// </summary>
+        /// <param name="inningeGame"></param>
+        /// <param name="e"></param>
+        public override void ResetGame(object inningeGame, EventArgs e) {
+            NotifyRoomPlayers(WebscoketSendObjs.ResetGame(0));
+        }
+        #endregion
         /// <summary>
-        /// 刷新玩家数据
+        /// 刷新玩家客户端数据
         /// </summary>
         /// <param name="playerId">玩家Id</param>
         /// <returns>发送到客户端玩家数据</returns>
-        public object FreshGameFace(int playerId)
+        /// /// <summary>
+        ///   
+        [CanVisitByClientAttibue]
+        public  object FreshGameFace(int playerId)
         {
-            var seat = InningeGame.GetSeatByPlayerId(playerId);
-            //var seats = InningeGame.NotMyEmtySteats(playerId);
+            Seat seat = GetSeatByPlayerId(playerId);
             Dictionary<int, object> otherPlayerPokers = new Dictionary<int, object>();
-            var opponentId = GetOpponentId(playerId);
-            var opponentSeat = InningeGame.GetSeatByPlayerId(opponentId);
+            int opponentId = GetOpponentId(playerId);
+            Seat opponentSeat =GetSeatByPlayerId(opponentId);
             object opponetPoker = new { Name = "", CardColor = "" };
-            if (opponentSeat.GameDateObj["compareResult"].Count == 1)
-            {
-                opponetPoker = opponentSeat.GameDateObj["compareResult"][0];
+                if (null!=opponentSeat.CompareResult ){
+                opponetPoker = opponentSeat.CompareResult;
 
             }
             object myPoker_ = new { Name = "", CardColor = "" };
-            if (seat.GameDateObj["getPokers"].Count == 1)
+            if (null!=seat.GetPoker)
             {
-                myPoker_ = seat.GameDateObj["getPokers"][0];
+                myPoker_ = seat.GetPoker;
             }
             object myComparePoker_ = new { Name = "", CardColor = "" };
-            if (seat.GameDateObj["compareResult"].Count == 1)
+            if (null!=seat.CompareResult)
             {
-                myComparePoker_ = seat.GameDateObj["compareResult"][0];
+                myComparePoker_ = seat.CompareResult;
             }
             object myPayOutPoker_ = new { Name = "", CardColor = "" };
-            if (seat.GameDateObj["playOutPokers"].Count == 1)
+            if (null!=seat.PlayOutPokers)
             {
-                myPayOutPoker_ = seat.GameDateObj["playOutPokers"][0];
+                myPayOutPoker_ = seat.PlayOutPokers;
             }
             var GameFace = new
             {
@@ -227,13 +233,24 @@ namespace AntDesigner.NetCore.Games.GameSimpleCards
             };
             return GameFace;
         }
-        public override void ResetGame(object inningeGame, EventArgs e)
-        {
-           // Notify?.Invoke(WebscoketSendObjs.ResetGame(0));
-            NotifyRoomPlayers(WebscoketSendObjs.ResetGame(0));
+        /// <summary>
+        ///创建游戏项目的特性座位对象,继承自seat
+        /// </summary>
+        /// <param name="inningeGame"></param>
+        /// <returns></returns>
+        public ISeat CreatSeat(IInningeGame inningeGame) {
+            return new Seat(inningeGame);
         }
-        #endregion
-        #region 自定义
+        /// <summary>
+        /// 根据玩家Id获得对应座位
+        /// </summary>
+        /// <param name="playerId"></param>
+        /// <returns></returns>
+        private Seat GetSeatByPlayerId(int playerId) {
+
+            return (Seat)InningeGame.GetSeatByPlayerId(playerId);
+        }
+        #region 自定义方法区域
         /// <summary>
         /// 洗牌
         /// </summary>
@@ -241,25 +258,24 @@ namespace AntDesigner.NetCore.Games.GameSimpleCards
         {
             Poker.Riffile();
         }
-
         private object Locker=new object();
         /// <summary>
         /// 玩家获得一张牌
         /// </summary>
         /// <param name="playerId_">玩家Id</param>
         /// <returns>获得的牌</returns>
+        [CanVisitByClientAttibue]
         public ABCard PlayerGetOnePoker(int playerId)
         {
-            var seat = InningeGame.GetSeatByPlayerId(playerId);
+        Seat seat = GetSeatByPlayerId(playerId);
             var player = seat.IPlayer;
-            var opponentId = GetOpponentId(playerId);
-            var opponentSeat = InningeGame.GetSeatByPlayerId(opponentId);
+            int opponentId = GetOpponentId(playerId);
+            Seat opponentSeat =GetSeatByPlayerId(opponentId);
             if (player.AccountNotEnough(ChipInAmount))
             {
-                //Notify?.Invoke(WebscoketSendObjs.Alert(player.Id, "账户余额不足"));
                 NotifySinglePlayer(WebscoketSendObjs.Alert(player.Id, "账户余额不足"), player.Id);
             }
-            if (seat.GameDateObj["getPokers"].Count > 0)
+            if (null==seat.PlayOutPokers&&null!=seat.GetPoker)
             {
                 return null;
             }
@@ -268,12 +284,11 @@ namespace AntDesigner.NetCore.Games.GameSimpleCards
             { 
             if (Poker.RemaindCount > 0 )
                 {
-                    if (seat.GameDateObj["playOutPokers"].Count == 0)
+                    if (null==seat.PlayOutPokers)
                     {
                         var card = Poker.TackOut(1)[0];
-                        seat.GameDateObj["getPokers"].Add(card);
-                        seat.GameDateObj["compareResult"].Clear();
-                        //  Notify?.Invoke(WebscoketSendObjs.FreshGameFace(player.Id));
+                        seat.GetPoker=card;
+                        seat.CompareResult = null;
                         NotifySinglePlayer(WebscoketSendObjs.FreshGameFace(player.Id), player.Id);
                         return card;
                     }
@@ -283,63 +298,48 @@ namespace AntDesigner.NetCore.Games.GameSimpleCards
             return null;
             }
         }
-        /// <summary>
-        /// 出牌或出牌后比较大小
-        /// </summary>
-        /// <param name="playerId">玩家Id</param>
-        /// <param name="card_">一张牌</param>
-        /// <returns>获胜玩家座位</returns>
+        [CanVisitByClientAttibue]
         public void PlayerPlayOutOnePoker(int playerId)
         {
-            var meSeat = InningeGame.GetSeatByPlayerId(playerId);
-            var opponentId = GetOpponentId(playerId);
-            var opponentSeat = InningeGame.GetSeatByPlayerId(opponentId);
-            var opponentPayOut = opponentSeat.GameDateObj["playOutPokers"];
-            var opponentCompareResult = opponentSeat.GameDateObj["compareResult"];
-            object card = null;
-            //var card = CheckCardExist(playerId, card_);
-            if (meSeat.GameDateObj["getPokers"].Count == 0)
+           Seat meSeat = GetSeatByPlayerId(playerId);
+            int opponentId = GetOpponentId(playerId);
+            Seat opponentSeat = GetSeatByPlayerId(opponentId);
+            var opponentPayOut = opponentSeat.PlayOutPokers;
+            var opponentCompareResult = opponentSeat.CompareResult;
+           ABCard  card = null;
+            if (null==meSeat.GetPoker)
             {
                 return;
             }
-            var mePoker = meSeat.GameDateObj["getPokers"];
-            card = mePoker[0];
-            var mePayOut = meSeat.GameDateObj["playOutPokers"];
-            var meCompareResult = meSeat.GameDateObj["compareResult"];
+            card = meSeat.GetPoker;
+            var meCompareResult = meSeat.CompareResult;
             ISeat winPlayer = null;
             if (card != null)
             {
                 lock (Locker) 
-                { 
-                mePoker.Remove(card);
-                mePayOut.Add(card);
-                if (opponentPayOut.Count > 0)
                 {
-                    if (((ABCard)mePayOut[0]).ComparedValue > ((ABCard)opponentPayOut[0]).ComparedValue)
-                    {
+                    meSeat.GetPoker = null;
+                    meSeat.PlayOutPokers = card;
+                if (opponentPayOut!=null)
+                {
+                        if (meSeat.PlayOutPokers.ComparedValue >opponentSeat.PlayOutPokers.ComparedValue) {
                         winPlayer = meSeat;
                     }
                     else
                     {
                         winPlayer = opponentSeat;
                     }
-                    mePayOut.Remove(card);
-                    meCompareResult.Add(card);
-                    opponentCompareResult.Add(opponentPayOut[0]);
-                    opponentPayOut.Clear();
+                        meSeat.PlayOutPokers = null;
+                        meSeat.CompareResult = card;
+                        opponentSeat.CompareResult = opponentSeat.PlayOutPokers;
+                        opponentSeat.PlayOutPokers = null;
                     winPlayer.IPlayer.DecutMoney(-ChipInAmount);
                     foreach (var item in InningeGame.NotEmptySeats())//通知全部客户端刷新
                     {
-                        // Notify?.Invoke(item.IPlayer.Id, "FreshGameFace");
-                      // Notify?.Invoke(WebscoketSendObjs.FreshGameFace(item.IPlayer.Id));
                             NotifySinglePlayer(WebscoketSendObjs.FreshGameFace(item.IPlayer.Id), item.IPlayer.Id);
-                         
-                          //  NotifyRoomPlayers(WebscoketSendObjs.FreshGameFace(item.IPlayer.Id));
-                    }// ClearPayOut(opponentPayOut, mePayOut);
+                    }
                 }
-               // Notify?.Invoke(WebscoketSendObjs.FreshGameFace(playerId));
-                    NotifySinglePlayer(WebscoketSendObjs.FreshGameFace(playerId), playerId);
-                  //  NotifyRoomPlayers(WebscoketSendObjs.FreshGameFace(playerId));
+         NotifySinglePlayer(WebscoketSendObjs.FreshGameFace(playerId), playerId);
                 return;
                 }
             }
@@ -352,10 +352,10 @@ namespace AntDesigner.NetCore.Games.GameSimpleCards
         /// <param name="mePayOut_"></param>
         private void ClearPayOut()
         {
-            var seats = InningeGame.NotEmptySeats();
+           var seats = InningeGame.NotEmptySeats();
             foreach (var item in seats)
             {
-                item.GameDateObj["playOutPokers"].Clear();
+                ((Seat)item).PlayOutPokers = null;
             }
         }
         /// <summary>
@@ -366,15 +366,10 @@ namespace AntDesigner.NetCore.Games.GameSimpleCards
         /// <returns></returns>
         private ABCard CheckCardExist(int playerId_, ABCard card_)
         {
-            var seat = InningeGame.GetSeatByPlayerId(playerId_);
+            Seat  seat =GetSeatByPlayerId(playerId_);
             ABCard card = null;
-            foreach (ABCard item in seat.GameDateObj["getPokers"])
-            {
-                if (item.Name == card_.Name && item.CardColor == card_.CardColor)
-                {
-                    card = item;
-                    break;
-                }
+                if (seat.GetPoker.Name == card_.Name && seat.GetPoker.CardColor == card_.CardColor) {
+                card = seat.GetPoker;
             }
             return card;
         }
@@ -397,10 +392,6 @@ namespace AntDesigner.NetCore.Games.GameSimpleCards
             }
             return opponentid;
         }
-        /// <summary>
-        /// 重置游戏,以开始新的一局
-        /// </summary>
- 
         #endregion
 
     }

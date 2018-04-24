@@ -40,7 +40,7 @@ namespace GameCitys.DomainService
         {
             WxPayData wxPayData = (WxPayData)obj;
             string out_trade_no = wxPayData.GetValue("out_trade_no").ToString();
-            string openid = wxPayData.GetValue("openid").ToString();
+          //  string openid = wxPayData.GetValue("openid").ToString();
             decimal total_fee = (int.Parse(wxPayData.GetValue("total_fee").ToString())) / 100;
 
             return _storeHoseForWeixin.FindPayOrder(out_trade_no);
@@ -58,7 +58,7 @@ namespace GameCitys.DomainService
                 {
                     //  player_.Account.Addmount(payOrder.Amount, "充值");
                     _playerService.AdjustAccount(player, payOrder.Amount, "充值");
-                    if (ManagePlayer.GetOnlyInstance().WeixinName == player.IntroducerWeixinName && payOrder.Amount <= 10)
+                    if (ManagePlayer.GetOnlyInstance().WeixinName == player.IntroducerWeixinName && payOrder.Amount <= 100)
                     {
                         _playerService.AdjustAccount(player,payOrder.Amount * (decimal)0.02, "随机奖励");
                     }

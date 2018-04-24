@@ -1,0 +1,1136 @@
+﻿@using AntDesigner.NetCore.GameCity;
+@model IRoom
+@{
+    Layout = "~/Views/Shared/_LayoutGameCityRoom.cshtml";
+}
+@section styles{
+    <style>
+        #myhead {
+            width: 100%;
+            height: 4rem;
+        }
+
+        .my, .other {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            position: relative;
+        }
+
+        .otherContener {
+            flex: 3;
+            display: flex;
+        }
+
+        .my {
+            width: 100%
+        }
+
+        .other {
+            width: 50%
+        }
+
+        .my {
+            flex: 1;
+            text-align: center;
+        }
+
+            .my button {
+                border-radius: 5px;
+                font-size: 1.5rem;
+                border: 1px solid black;
+            }
+
+        .backgroudLinerA {
+            background: linear-gradient(to bottom,#FFFF33 10%,#FFFF33, #CCFF33, #99FF33);
+            box-shadow: 5px 3px;
+        }
+
+        .backgroudLinerB {
+            background-color: yellowgreen;
+        }
+
+        #c4 {
+            flex: 3;
+        }
+
+        .seatInfo, .seatIco {
+            position: absolute;
+            z-index: 100;
+            top: 0;
+            font-size: 1rem;
+        }
+
+        .otherLeft .seatIco {
+            left: 0;
+        }
+
+        .otherRight .seatIco {
+            right: 0;
+        }
+
+        .my .seatIco {
+            left: 0;
+        }
+
+        .seatInfo div {
+            display: inline;
+            text-align: center;
+            margin: 3px;
+        }
+
+        .role {
+            border: 1px solid green;
+            border-radius: 3px;
+            background-color: grey;
+            color: white;
+        }
+
+        .seatInfo {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            align-content: center;
+            font-size: 1.5rem;
+            font-weight:bolder;
+        }
+
+        .chipinAmount {
+            background-color: yellow;
+            border-radius: 15px;
+            font-weight: bolder;
+            font-size: 20px;
+            width: 25px;
+        }
+        #PublicInfo {
+            width: 100%;
+            background-color: sandybrown;
+            margin: auto;
+            margin-bottom: 10px;
+            border-radius: 30px;
+            border: 5px double green;
+            box-shadow: yellow 3px 3px initial;
+            background-image: radial-gradient(yellow,green);
+            font-weight: bolder;
+        }
+
+        #totalAmount {
+            font-size: 1.5rem;
+            color: yellow;
+        }
+
+        #myMessage {
+            position: absolute;
+            z-index: 99;
+            top: 5%;
+            left: 50%;
+            width: 50%;
+            height: 80%;
+            background-color: palegreen;
+            word-break: break-all;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            overflow-y: auto;
+            border: 1px solid white;
+            border-radius: 10px;
+            text-align: left;
+            font-size: 1rem;
+            padding: 5px;
+            box-shadow: 3px 5px;
+        }
+
+        .sys:first-child {
+            color: red;
+            font-weight: bolder;
+        }
+
+        .progress {
+            position: absolute;
+            width: 40%;
+            height: 3px;
+        }
+
+        #myBalance {
+            position: absolute;
+            font-weight: bolder;
+            font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+            color: red;
+        }
+
+        .otherLeft .progress {
+            left: 1.5rem;
+        }
+
+        .otherRight .progress {
+            right: 1.5rem;
+            transform: rotate(-180deg);
+        }
+
+        .my .progress {
+            left: 1.5rem;
+            width: 12%;
+        }
+
+        .progress-bar {
+            width: 99%;
+        }
+
+        #OthersPoker .modal-body > div {
+            height: 100px;
+            width: 65px;
+            margin: auto;
+        }
+        .modal button{margin-left:20px}
+    </style>
+}
+<div id="myhead"></div>
+<div class="otherContener">
+    <div class="other otherLeft" id="c0">
+        <div class="seatInfo">
+            <div class="state"></div>
+            <div class="chipinType"></div>
+            <div class="chipinAmount"></div>
+        </div>
+        <div class="seatIco">
+            <span class="glyphicon glyphicon-user"></span>
+            <div class="role"></div>
+        </div>
+        <canvas class="tableCanv"></canvas>
+        <div class="progress">
+            <div class="progress-bar" role="progressbar" aria-valuenow="60"
+                 aria-valuemin="0" aria-valuemax="100">
+            </div>
+        </div>
+    </div>
+    <div class="other otherRight" id="c1">
+        <div class="seatInfo ">
+            <div class="chipinAmount"></div>
+            <div class="chipinType"></div>
+            <div class="state"></div>
+        </div>
+        <div class="seatIco">
+            <span class="glyphicon glyphicon-user"></span>
+            <div class="role"></div>
+        </div>
+        <canvas class="tableCanv"></canvas>
+        <div class="progress">
+            <div class="progress-bar" role="progressbar" aria-valuenow="60"
+                 aria-valuemin="0" aria-valuemax="100">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="otherContener">
+    <div class="other otherLeft" id="c2">
+        <div class="seatInfo">
+            <div class="state"></div>
+            <div class="chipinType"></div>
+            <div class="chipinAmount"></div>
+        </div>
+        <div class="seatIco">
+            <span class="glyphicon glyphicon-user"></span>
+            <div class="role"></div>
+        </div>
+        <canvas class="tableCanv"></canvas>
+        <div class="progress">
+            <div class="progress-bar" role="progressbar" aria-valuenow="60"
+                 aria-valuemin="0" aria-valuemax="100">
+            </div>
+        </div>
+    </div>
+    <div class="other otherRight" id="c3">
+        <div class="seatInfo">
+            <div class="chipinAmount"></div>
+            <div class="chipinType"></div>
+            <div class="state"></div>
+        </div>
+        <div class="seatIco">
+            <span class="glyphicon glyphicon-user"></span>
+            <div class="role"></div>
+        </div>
+        <canvas class="tableCanv"></canvas>
+        <div class="progress">
+            <div class="progress-bar" role="progressbar" aria-valuenow="60"
+                 aria-valuemin="0" aria-valuemax="100">
+            </div>
+        </div>
+    </div>
+</div>
+<div class="my" id="PublicInfo">庄家开局后开始押底</div>
+<div class="my" id="c4">
+    <div class="seatInfo">
+        <div class="state"></div>
+        <div class="chipinType"></div>
+        <div class="chipinAmount"></div>
+    </div>
+    <div class="seatIco">
+        <span class="glyphicon glyphicon-user">
+        </span><div class="role"></div>
+    </div>
+    <canvas class="tableCanv"></canvas>
+    <div class="progress">
+        <div class="progress-bar" role="progressbar" aria-valuenow="60"
+             aria-valuemin="0" aria-valuemax="100">
+        </div>
+    </div>
+    <div id="myBalance"></div>
+    <div id="myMessage">
+    </div>
+</div>
+<div class="my tool">
+    <button id="StartGame">开局</button>
+    <button id="Deal">发牌</button>
+    <button id="PlayerChipin">押底</button>
+    <button id="Giveup">弃牌</button>
+    <button id="Look">看牌</button>
+</div>
+<div class="my tool">
+    <button id="Compare">比牌</button>
+    <button id="ChipInLimit">直封</button>
+    <button id="ChipIn">加注</button>
+    <button id="ChipInDouble">加倍</button>
+    <button id="ChipInFollow">跟注</button>
+</div>
+<div class="modal fade" id="chipinInfo" tabindex="-1" role="dialog" aria-
+     labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-
+                        hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="myModalLabel">加注金额</h4>
+            </div>
+            <div class="modal-body">
+                <input id="myChipinAmount" type="number" min="1" max="30" />
+                <button id="chipinEnter" class="btn btn-warning btn-xs  text-center
+buttnMargin">
+                    确定
+                </button><button class="btn btn-warning btn-xs  text-center buttnMargin"
+                                 data-dismiss="modal">
+                    取消
+                </button><br />
+                <label id="chipinRel"></label>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<!-- 天眼查 -->
+<div class="modal fade" id="OthersPoker" tabindex="-1" role="dialog" aria-
+     labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-
+                        hidden="true"></button>
+                <h4 class="modal-title" id="myModalLabel">天眼查玩家一张牌</h4>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <canvas id="printOtherPoker" width="65" height="100"></canvas>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">
+                    关闭
+                </button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<audio id="v1">
+    <source src="~/voice/jinhua/请开始下注.wav">
+</audio>
+<audio id="v2">
+    <source src="~/voice/jinhua/跟.wav">
+</audio>
+<audio id="v3">
+    <source src="~/voice/jinhua/你钱不够了吧.wav">
+</audio>
+<audio id="v4">
+    <source src="~/voice/jinhua/加倍.wav">
+</audio>
+<audio id="v5">
+    <source src="~/voice/jinhua/加注.wav">
+</audio>
+<audio id="v6">
+    <source src="~/voice/jinhua/开牌.wav">
+</audio>
+<audio id="v7">
+    <source src="~/voice/jinhua/我弃牌.wav">
+</audio>
+<audio id="v8">
+    <source src="~/voice/jinhua/有玩家离开.wav">
+</audio>
+<audio id="v9">
+    <source src="~/voice/jinhua/有玩家进入.wav">
+</audio>
+<audio id="v10">
+    <source src="~/voice/jinhua/直封.wav">
+</audio>
+<audio id="v11">
+    <source src="~/voice/jinhua/你赢了.wav">
+</audio>
+<audio id="v12">
+    <source src="~/voice/jinhua/你输了.wav">
+</audio>
+<audio id="v13">
+    <source src="~/voice/jinhua/暗注.wav">
+</audio>
+<audio id="v14">
+    <source src="~/voice/jinhua/游戏开始了请开始押底.wav">
+</audio>
+<audio id="v15">
+    <source src="~/voice/jinhua/有玩家超时将被自动踢出.wav">
+</audio>
+<audio id="v16">
+    <source src="~/voice/jinhua/新的一局开始开始押底.wav">
+</audio>
+<audio id="v17">
+    <source src="~/voice/jinhua/已押底等待庄家发牌.wav">
+</audio>
+<audio id="v18">
+    <source src="~/voice/jinhua/发牌完毕庄家开始下注.wav">
+</audio>
+<audio id="v19">
+    <source src="~/voice/jinhua/押底人数不足2人不能发牌.wav">
+</audio>
+<audio id="v20">
+    <source src="~/voice/jinhua/自动开牌.wav">
+</audio>
+<audio id="v21">
+    <source src="~/voice/jinhua/人数不足不能开始.wav">
+</audio>
+@section scripts{
+    <script src="~/lib/jquery-ant-canvas-poker/jquery.ant.canvas.poker.js"
+            type="text/javascript">
+    </script>
+    <script>
+        const POKERHEIGHT = 55;
+        const SEATOFFISETLEFT = 20;
+        const SEATOFFISETTOP = 30;
+        const TIMELIMIT = 60;
+        var IsCurrentSeat;
+        var myTimer;
+        var TimeCount = 0;
+        var allCanv;
+        var allProgresss;
+        var allLeftProgress;
+        var allRightProgress;
+        var allState;
+        var allSeatInfo;
+        var allLeftSeatInfo;
+        var allRightSeatInfo;
+        var mySeat;
+        var mySeatInfo;
+        var allChipinType;
+        var allChipinAmount;
+        var allPublicInfo;
+        var allRoles;
+        var allSeatIco;
+        var divMyBalance;
+        var divMyMessage;
+        var btn_StartGame;
+        var btn_PlayerChipin;
+        var btn_Look;
+        var btn_Giveup;
+        var btn_ChipInFollow;
+        var btn_ChipInDouble;
+        var btn_ChipInLimit;
+        var btn_ChipIn;
+        var btn_Deal;
+        var btn_Compare;
+        var btn_GoOn;
+        var printOtherPoker;
+        var OthersPoker;
+        var v1;
+        var v2;
+        var v3;
+        var v4;
+        var v5;
+        var v6;
+        var v7;
+        var v8;
+        var v9;
+        var v10;
+        var v11;
+        var v12;
+        var v13;
+        var v14;
+        var v15;
+        var v16;
+        var v17;
+        var v18;
+        var v19;
+        var v20;
+        var v21;
+        //一张扑克对象
+        function Poker(color, name, comparedValue) {
+            this.CardColor = color;
+            this.Name = name;
+            this.ComparedValue = comparedValue;
+        }
+        function C_RoomMessage(name, message) {
+            if (name == "0") {
+                name = "系统";
+                var myClass = "sys";
+                switch (message) {
+                    case "有玩家进入": v9[0].play()
+                        break;
+                    case "人数不足,不能开始": v21[0].play()
+                        break;
+                    case "你赢了": v11[0].play()
+                        break;
+                    case "你输了": v12[0].play()
+                        break;
+                    case "游戏开始了!请开始押底!": v14[0].play()
+                        break;
+                    case "有玩家超时,将被自动踢出": v15[0].play()
+                        break;
+                    case "新一局开始!开始押底!": v16[0].play()
+                        break;
+                    case "已押底,等待庄家发牌!": v17[0].play()
+                        break;
+                    case "发牌完毕,庄家开始下注": v18[0].play()
+                        break;
+                    case "押底人数不足2人,不能发牌": v19[0].play()
+                        break;
+                    case "自动开牌": v20[0].play()
+                        break;
+                    case "开牌": v6[0].play()
+                        break;
+                    case "账户余额不足": v3[0].play()
+                        break;
+                    default:
+                }
+            } else {
+                name = "玩家"
+            }
+            var myDate = new Date();
+            var time = myDate.getMinutes();
+            var $messageElement = $("<div class=" + myClass + "><span>" + name + ":</span>"
+
+                + "<span>" + message + "</span><div>")
+            $("#myMessage").prepend($messageElement);
+            $("#myMessage").scrollTop(0);
+
+        }
+        function SeatsManager() {
+            this.Seats = [];
+            this.getMySeat = function () {
+                var mySeat = null;
+                $.each(this.Seats, function (n, v) {
+                    if (v.canvId == 4) {
+                        mySeat = this;
+                        return false;
+                    }
+                });
+                return mySeat;
+            }
+            this.FreshAllSeatsCards = function () {
+                clearAllCanv();
+                $.each(this.Seats, function (n, v) {
+                    if (v.canvId == 1 || v.canvId == 3) {
+                        var thisCanvs = $("#c" + v.canvId).find("canvas");
+                        thisCanvs.drawPoker({
+                            direction: "toLeft", pokers: v.PokersShow,
+
+                            pokerHeight: POKERHEIGHT, x: (thisCanvs.width() -
+
+                                SEATOFFISETLEFT), y: SEATOFFISETTOP
+                        });
+                    } else {
+                        $("#c" + v.canvId).find("canvas").drawPoker({
+                            direction: "toRight",
+
+                            pokers: v.PokersShow, pokerHeight: POKERHEIGHT, x:
+
+                            SEATOFFISETLEFT, y: SEATOFFISETTOP
+                        });
+                    }
+
+                })
+
+            }
+            this.FreshAllSeatsInfo = function (publicManager) {
+                clearAllSeatsInfo();
+                if (this.Seats.length == 1) {
+                    ShowStartBtn();
+                    if (publicManager.Info.CurrentStage == 1) {
+                        ShowPlayerChipBtn();
+                    }
+                }
+                $.each(this.Seats, function (n, v) {
+                    var my = $("#c" + v.canvId);
+                    my.find(".seatInfo").data("playerId", this.playerId);
+                    my.find(".state").html(GetState(this));
+                    my.find(".chipinType").html(getChipinType(this.ChipinType));
+                    my.find(".chipinAmount").html(this.PreChipInAmount == 0 ? "" :
+
+                        this.PreChipInAmount);
+                    my.find(".role").html(GetRoles(this.playerId, publicManager.Info));
+                    if (v.canvId == 4) {
+                        myButtonShow(this, publicManager.Info);
+                        isMeLooked = this.IsLooked;
+                    }
+                    var myprogress = my.find(".progress");
+                    if ((publicManager.Info.CurrentStage == 2 ||
+
+                        publicManager.Info.CurrentStage == 3) && this.playerId ==
+
+                        publicManager.Info.CurrentSeatPlayId) {
+                        StartTimer(myprogress, publicManager.Info.WaitSecond, false);
+                    }
+
+                })
+
+                if (publicManager.Info.playerCount == 1) {
+                    publicManager.ResetGameFace();
+                    ShowPlayerChipBtn();
+                }
+                var myseatinfo = mySeatsManager.getMySeat();
+                if (publicManager.Info.CurrentStage == 1) {
+                    if (this.Seats.length < 1) {
+                        publicManager.ResetGameFace();
+                    } else if (publicManager.IsMyFirst() && myseatinfo != null &&
+
+                        myseatinfo.IsChipIned) {
+                        var myprogress = mySeat.find(".progress");
+                        StartTimer(myprogress, publicManager.Info.WaitSecond, false);
+                    } else if (myseatinfo == null || !myseatinfo.IsChipIned) {
+                        var myprogress = mySeat.find(".progress");
+                        StartTimer(myprogress, publicManager.Info.WaitSecond, true);
+                    } else if (myseatinfo.IsChipIned) {
+                        StopTimer();
+
+                    }
+                    mySeat.find(".role").html(GetRoles(publicManager.Info.MyId,
+
+                        publicManager.Info));
+                }
+            }
+        }
+        function ChipinAnimation(amount, playerId, chipinType) {
+            $.each(allSeatInfo, function (n, v) {
+                var my = $(this);
+                if (my.data("playerId") == playerId) {
+                    var type = getChipinType(parseInt(chipinType));
+                    switch (type) {
+                        case "暗注": v13[0].play()
+                            break;
+                        case "跟注": v2[0].play()
+                            break;
+                        case "加倍": v4[0].play()
+                            break;
+                        case "加注": v5[0].play()
+                            break;
+                        case "直封": v10[0].play()
+                            break;
+                        case "开牌": v6[0].play()
+                            break;
+                        case "放弃": v7[0].play()
+                            break;
+                        default:
+                    }
+                    my.find(".chipinType").html(type);
+                    my.find(".chipinAmount").html(amount);
+                    my.animate({ fontSize: "2rem" }, 1000, "swing");
+                    my.animate({ fontSize: "1.5rem", fontweight:"bolder"}, 500, "swing");
+                }
+            })
+
+        }
+        function GetRoles(playerid, publicInfo) {
+            var winerid = publicInfo.WinnerSeatPlayerId;
+            var stage = publicInfo.CurrentStage;
+            if (winerid == 0 && stage != 3) {
+                if (playerid == publicInfo.FirstSeatPlayerId) {
+                    return "庄";
+                }
+                return "闲";
+            } else if (winerid == playerid) {
+                return "赢";
+            }
+            return "输";
+        }
+        function GetState(seat) {
+            var state = "准备中";
+            if (seat.IsChipIned) {
+                state = "已押底";
+            }
+            if (seat.IsLooked) {
+                state = "已看牌";
+            } else if (seat.PreChipInAmount != 0 && seat.ChipinType == 1) {
+                state = "未看牌"
+            }
+            if (seat.IsGaveUp) {
+
+                state = "已放弃";
+            }
+            return state;
+        }
+        function getChipinType(typeString) {
+            var chipinType;
+            switch (typeString) {
+                case 1: chipinType = "暗注"
+                    break;
+                case 2: chipinType = "跟注"
+                    break;
+                case 3: chipinType = "加倍"
+                    break;
+                case 4: chipinType = "加注"
+                    break;
+                case 5: chipinType = "直封"
+                    break;
+                case 6: chipinType = "开牌"
+                    break;
+                case 8: chipinType = "放弃"
+                    break;
+                default: "?"
+            }
+            return chipinType;
+        }
+
+        function PublicInfoManager() {
+            this.Info = null;
+            this.ResetGameFace = ResetGameFace;
+            this.IsMyTurn = function () {
+                if (this.Info.MyId == this.Info.CurrentSeatPlayId) {
+                    return true;
+                }
+                return false;
+            }
+            this.IsMyFirst = function () {
+                if (this.Info.FirstSeatPlayerId == this.Info.MyId) {
+                    return true;
+                }
+                return false;
+            }
+            this.Fresh = function () {
+                FreshSeatIco(this.Info.playerCount);
+                var infoStr = "人数";
+                infoStr = infoStr + this.Info.playerCount;
+                infoStr = infoStr + "  轮次";
+                infoStr = infoStr + this.Info.CurrentTurn;
+                infoStr = infoStr + "/";
+                infoStr = infoStr + this.Info.DefaultTurnCount;
+                infoStr = infoStr + "  底池";
+                infoStr = infoStr + this.Info.CurrentTotal;
+                allPublicInfo.text(infoStr);
+                if (this.Info.Balance > 0) {
+                    divMyBalance.text("余额" + this.Info.Balance);
+                }
+                if (this.Info.CurrentStage != 2) {
+                    enableBtn(btn_PlayerChipin);
+                    disableBtn(btn_Look);
+                } else {
+                    enableBtn(btn_Look);
+                }
+            }
+
+        }
+        //服务端也调用
+        function FreshSeatIco(n) {
+            allSeatIco.hide();
+            var m = n - 1;
+            for (var i = 0; i < m; i++) {
+                $(allSeatIco[i]).show();
+            }
+            $(allSeatIco[4]).show();
+        }
+        var myPublicManger = new PublicInfoManager();
+        var mySeatsManager = new SeatsManager();
+
+        //根据服务端传来的json对象自定义前端页面刷新
+        function Fresh(gameFace) {
+            if (typeof (mySeatsManager.Seats) != "undefined") {
+
+                mySeatsManager.Seats = gameFace.Seats;
+                myPublicManger.Info = gameFace.PublicInfo;
+                if (myPublicManger.IsMyTurn()) {
+                    IsCurrentSeat = true;
+                } else { IsCurrentSeat = false; }
+
+                if (myPublicManger.Info.CurrentStage == 2 ||
+
+                    myPublicManger.Info.CurrentStage == 3) {
+                    mySeatsManager.FreshAllSeatsCards();
+                }
+                myPublicManger.Fresh();
+                mySeatsManager.FreshAllSeatsInfo(myPublicManger);
+
+            }
+        }
+        function ResetGameFace() {
+            clearAllCanv();
+            StopTimer();
+            hideAllProgress();
+        }
+        //隐藏全部进度条
+        function hideAllProgress() {
+            allProgresss.hide();
+        }
+        //终止进度条定时器
+        function StopTimer() {
+            clearInterval(myTimer);
+            hideAllProgress();
+        }
+        //开启定时器
+        function StartTimer(progress, waitsecond, activeAll) {
+            hideAllProgress();
+            var progressBar = progress.find(".progress-bar");
+            progressBar.css("width", "0%");
+            progress.show();
+            clearInterval(myTimer);
+            TimeCount = waitsecond;
+            myTimer = setInterval(function () {
+                CheckTimer(progressBar, activeAll)
+            }, 1000);
+        }
+        //定时
+        function CheckTimer(progressBar, activeAll) {
+            if (TimeCount > TIMELIMIT + 5) {
+                if (activeAll) {
+                    LeaveRoom();
+                    clearInterval(myTimer);
+                } else if (IsCurrentSeat) {
+                    LeaveRoom();
+                    clearInterval(myTimer);
+                }
+            } else {
+                TimeCount++;
+                m = parseInt(TimeCount / TIMELIMIT * 100);
+                reportProgress(progressBar, m);
+            }
+        }
+        //更新进度条
+        function reportProgress(progressBar, m) {
+            progressBar.css("width", m + "%");
+        }
+        //玩家押底
+        function PlayerChipin() {
+            clearAllSeatsInfo();
+            clearAllCanv();
+            var methodInfo = new MethodInfo("PlayerChipin");
+            InvokeSeverMethod(methodInfo);
+        }
+        //发牌
+        function Deal() {
+            var methodInfo = new MethodInfo("Deal");
+            InvokeSeverMethod(methodInfo);
+        }
+        //玩家看牌
+        function Look() {
+            var methodInfo = new MethodInfo("Look");
+            Poker = InvokeSeverMethod(methodInfo);
+        }
+        //玩家表态_暗注
+        function ChipInNoLook() {
+            var methodInfo = new MethodInfo("ChipInNoLook");
+            InvokeSeverMethod(methodInfo);
+        }
+        //玩家表态_跟
+        function ChipInFollow() {
+            var methodInfo = new MethodInfo("ChipInFollow");
+            InvokeSeverMethod(methodInfo);
+        }
+        //玩家放弃
+        function Giveup() {
+            var methodInfo = new MethodInfo("Giveup");
+            InvokeSeverMethod(methodInfo);
+        }
+        //玩家表态_直封
+        function ChipInLimit() {
+            var methodInfo = new MethodInfo("ChipInLimit");
+            InvokeSeverMethod(methodInfo);
+        }
+        //玩家表态_加倍
+        function ChipInDouble() {
+            var methodInfo = new MethodInfo("ChipInDouble");
+            InvokeSeverMethod(methodInfo);
+        }
+        function ChipInShow() {
+            $("#chipinRel").text("");
+            $("#chipinInfo").modal("show");
+        }
+        function chipinEnter() {
+            var amount = $("#myChipinAmount").val();
+            var obj = ChipIn(amount);
+            if (obj.rl == 1) {
+                $("#chipinInfo").modal("hide");
+            }
+            else {
+                $("#chipinRel").text(obj.rl);
+            }
+        }
+        //玩家表态_自定义金额
+        function ChipIn(amount) {
+            var methodInfo = new MethodInfo("ChipIn");
+            methodInfo.amount = amount;
+            return InvokeSeverMethod(methodInfo);
+        }
+        //敲牌
+        function Compare() {
+            var methodInfo = new MethodInfo("Compare");
+            InvokeSeverMethod(methodInfo);
+        }
+        //玩家天眼查
+        function LookOthersPoker(e) {
+            if (typeof ($(e.currentTarget).data("playerId")) == 'undefined') {
+                return;
+            }
+            var otherPlayerId = $(e.currentTarget).data("playerId");
+            var methodInfo = new MethodInfo("LookOthersPoker");
+            methodInfo.otherPlayerId = otherPlayerId;
+            var Poker = InvokeSeverMethod(methodInfo);
+            ShowOnePokerOfOther(otherPlayerId, Poker);
+        }
+        //显示一张牌
+        function ShowOnePokerOfOther(playerId, poker) {
+            var mypokers = [];
+            mypokers[0] = poker;
+            OthersPoker.modal("show");
+            CleanCanv(printOtherPoker.get(0), "white");
+            printOtherPoker.drawPoker({
+                direction: "toRight", pokers: mypokers,
+                pokerHeight: 70, x: 5
+            });
+        }
+        //结算喜钱
+        function SettolAccount() { }
+        //检查余额
+        function IsAccountEnougth() {
+            var methodInfo = new MethodInfo("IsAccountEnougth");
+            var rlt = InvokeSeverMethod(methodInfo);
+        }
+        //清除全部画布
+        function clearAllCanv() {
+            $.each(allCanv, function (i, v) { CleanCanv(v); });
+        }
+        //清除状态
+        function clearAllSeatsInfo() {
+            allSeatInfo.find("div").html("");
+            allRoles.html("");
+        }
+        //按钮状态
+        function myButtonShow(seat, publicInfo) {
+            var stage = publicInfo.CurrentStage
+            var IsCurrentSeat = false;
+            var IsFirstSeat = false;
+            if (seat.playerId == publicInfo.CurrentSeatPlayId) {
+                IsCurrentSeat = true;
+            }
+            if (seat.playerId == publicInfo.FirstSeatPlayerId) {
+                IsFirstSeat = true;
+            }
+            if (stage == 2) {
+                if (IsCurrentSeat) {
+                    ShowChipButtons();
+                    if (publicInfo.CanCompare) {
+                        ShowCompareBtn();
+                    }
+                } else {
+                    HideAllBtn();
+                }
+                return;
+            }
+            if (stage == 1) {
+                if (IsCurrentSeat) {
+                    ShowPlayerChipBtn();
+                    enableBtn(btn_Deal);
+                } else {
+                    ShowPlayerChipBtn();
+                }
+                return;
+            }
+            if (stage == 3) {
+                if (IsFirstSeat) {
+                    ShowStartBtn();
+                } else {
+                    HideAllBtn();
+                }
+                return;
+            }
+            if (stage == 0) {
+                ShowStartBtn();
+                return;
+            }
+
+        }
+
+        function ShowStartBtn() {
+            enableBtn(btn_StartGame);
+            disableBtn(btn_Deal);
+            disableBtn(btn_PlayerChipin);
+            disableBtn(btn_Compare);
+            HideChipButtons();
+        }
+        function ShowDealBtn() {
+            enableBtn(btn_Deal);
+            disableBtn(btn_StartGame);
+            disableBtn(btn_PlayerChipin);
+            disableBtn(btn_Compare);
+            HideChipButtons();
+        }
+        function ShowPlayerChipBtn() {
+            enableBtn(btn_PlayerChipin);
+            disableBtn(btn_StartGame);
+            disableBtn(btn_Deal);
+            disableBtn(btn_Compare);
+            HideChipButtons();
+        }
+        function ShowCompareBtn() {
+            enableBtn(btn_Compare);
+            disableBtn(btn_StartGame);
+            disableBtn(btn_Deal);
+            disableBtn(btn_PlayerChipin);
+            ShowChipButtons();
+        }
+        function HideAllBtn() {
+            disableBtn(btn_StartGame);
+            disableBtn(btn_Deal);
+            disableBtn(btn_PlayerChipin);
+            disableBtn(btn_Compare);
+            HideChipButtons();
+        }
+        function HideChipButtons() {
+            disableBtn(btn_Giveup);
+            disableBtn(btn_ChipIn);
+            disableBtn(btn_ChipInDouble);
+            disableBtn(btn_ChipInFollow);
+            disableBtn(btn_ChipInLimit);
+            disableBtn(btn_Compare);
+        }
+        function ShowChipButtons() {
+            enableBtn(btn_Giveup);
+            enableBtn(btn_ChipIn);
+            enableBtn(btn_ChipInDouble);
+            enableBtn(btn_ChipInFollow);
+            enableBtn(btn_ChipInLimit);
+            disableBtn(btn_StartGame);
+            disableBtn(btn_Deal);
+            disableBtn(btn_PlayerChipin);
+        }
+        function enableBtn(btn) {
+            btn.removeAttr("disabled");
+            btn.removeClass("backgroudLinerB");
+            btn.addClass("backgroudLinerA");
+            //btn.css("background-color", "yellow");
+        }
+        function disableBtn(btn) {
+            btn.attr('disabled', "true");
+            btn.removeClass("backgroudLinerA");
+            btn.addClass("backgroudLinerB");
+            //btn.css("background-color", "yellowgreen");
+        }
+        function c_layOut() {
+
+            allLeftSeatInfo.css("left", SEATOFFISETLEFT);
+            allRightSeatInfo.css("right", SEATOFFISETLEFT);
+            allLeftProgress.css("left", SEATOFFISETLEFT);
+            allRightProgress.css("right", -SEATOFFISETLEFT);
+            allProgresss.css("top", SEATOFFISETTOP + POKERHEIGHT + 3);
+            divMyBalance.css("top", SEATOFFISETTOP + POKERHEIGHT + 8)
+            divMyBalance.css("left", SEATOFFISETLEFT)
+            mySeatInfo.css("left", SEATOFFISETLEFT);
+            allProgresss.width(POKERHEIGHT * 1.5);
+
+        }
+        $(function () {
+            allCanv = $(".tableCanv");
+            allProgresss = $(".progress");
+            allLeftProgress = $(".otherLeft .progress");
+            allRightProgress = $("otherRight .progress");
+            allSeatInfo = $(".seatInfo");
+            allLeftSeatInfo = $(".otherLeft").find(".seatInfo");
+            allRightSeatInfo = $(".otherRight").find(".seatInfo");
+            mySeat = $("#c4");
+            mySeatInfo = mySeat.find(".seatInfo");
+            allState = allSeatInfo.find(".state");
+            allChipinType = allSeatInfo.find(".chipinType");
+            allChipinAmount = allSeatInfo.find(".chipinAmount");
+            allPublicInfo = $("#PublicInfo");
+            allSeatIco = $(".seatIco");
+            allRoles = allSeatIco.find(".role");
+            v1 = $("#v1");
+            v2 = $("#v2");
+            v3 = $("#v3");
+            v4 = $("#v4");
+            v5 = $("#v5");
+            v6 = $("#v6");
+            v7 = $("#v7");
+            v8 = $("#v8");
+            v9 = $("#v9");
+            v10 = $("#v10");
+            v11 = $("#v11");
+            v12 = $("#v12");
+            v13 = $("#v13");
+            v14 = $("#v14");
+            v15 = $("#v15");
+            v16 = $("#v16");
+            v17 = $("#v17");
+            v18 = $("#v18");
+            v19 = $("#v19");
+            v20 = $("#v20");
+            v21 = $("#v21");
+            //绑定事件begain
+            divMyBalance = $("#myBalance");
+            divMyMessage = $("#myMessage");
+            btn_StartGame = $("#StartGame");
+            btn_StartGame.on("click", StartGame);
+            //押底
+            btn_PlayerChipin = $("#PlayerChipin");
+            btn_PlayerChipin.on("click", PlayerChipin);
+            //看牌
+            btn_Look = $("#Look");
+            btn_Look.on("click", Look);
+            //放弃
+            btn_Giveup = $("#Giveup");
+            btn_Giveup.on("click", Giveup);
+            //跟
+            btn_ChipInFollow = $("#ChipInFollow");
+            btn_ChipInFollow.on("click", ChipInFollow);
+            //加倍
+            btn_ChipInDouble = $("#ChipInDouble");
+            btn_ChipInDouble.on("click", ChipInDouble);
+            //直封
+            btn_ChipInLimit = $("#ChipInLimit");
+            btn_ChipInLimit.on("click", ChipInLimit);
+            //自定义下注金额
+            btn_ChipIn = $("#ChipIn");
+            btn_ChipIn.on("click", ChipInShow);
+            //发牌
+            btn_Deal = $("#Deal");
+            btn_Deal.on("click", Deal);
+            //比牌
+            btn_Compare = $("#Compare");
+            btn_Compare.on("click", Compare);
+            //继续游戏
+            //btn_GoOn = $("#GoOn");
+            //btn_GoOn.on("click", GoOn);
+            btn_chipinEnter = $("#chipinEnter");
+            btn_chipinEnter.on("click", chipinEnter);
+            ShowStartBtn();
+
+            allSeatIco.hide();
+            allProgresss.hide();
+            c_layOut();
+
+            $(window).resize(function () {
+                c_layOut();
+                _gameFace.Fresh();
+            });
+            printOtherPoker = $("#printOtherPoker");
+            OthersPoker = $("#OthersPoker");
+            allSeatInfo.on("click", LookOthersPoker);
+
+            OthersPoker.on('hide.bs.modal', function () { 
+                _gameFace.Fresh();
+            })
+            //绑定事件end
+        })
+    </script>
+}

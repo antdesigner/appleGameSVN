@@ -43,9 +43,11 @@ namespace AntDesigner.NetCore.GameCity
             IsOpening = true;
 
         }
+       
     }
     public class GameCity:IGameCity
     {
+        static public bool IsColsed { get; set; }
         /// <summary>
         /// 游戏城Id
         /// </summary>

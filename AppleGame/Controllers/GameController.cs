@@ -20,74 +20,85 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Http.Authentication;
 using GameCitys.DomainService;
 using GameCitys.Tools;
+using Microsoft.Extensions.Logging;
+using AntDesigner.NetCore.GameCity;
 // For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
-namespace AntDesigner.GameCityBase.Controllers
-{
-    
+namespace AntDesigner.GameCityBase.Controllers {
+
     [Authorize]
-    public class GameController : MyController
-    {
-        
-        public GameController( IHttpContextAccessor httpContextAccessor,IPlayerService playerService) : base( httpContextAccessor, playerService)
-        {
-            
+    public class GameController : MyController {
+
+        public GameController(IHttpContextAccessor httpContextAccessor, IPlayerService playerService) : base(httpContextAccessor, playerService) {
+
+
         }
-        public IActionResult GameExplain()
-        {
+        public IActionResult GameExplain() {
             return View("gameExplain");
         }
         [AllowAnonymous]
-        public IActionResult Index(string state)
-        {
-            if (state !=null && state!="")
-            {
-               
+        public IActionResult Index(string state) {
+            if (state != null && state != "") {
+
                 Player player_ = _playerService.FindPlayerByName(ToolsSecret.DecryptOpenId(state));
-                if (player_ != null)
-                {
+                if (player_ != null) {
                     ViewBag.shareId = ToolsSecret.EncryptOpenId(player_.WeixinName);
                 }
             }
-            else
-            {
+            else {
                 ViewBag.shareId = ToolsSecret.EncryptOpenId(ManagePlayer.GetOnlyInstance().WeixinName);
             }
-          
+
             return View("Index");
 
         }
         [AllowAnonymous]
-        public  IActionResult LoginGame(string weixinName, string shareId,[FromServices]ILoginGame Ilogin)
-        {
-
-            // Ilogin.DaddPlayer = IstoreHouse.AddEntity<Player>; _playerService.AddPlayer
+        public IActionResult Robits() {
+            return View("robits");
+        }
+        [AllowAnonymous]
+        public IActionResult LoginGame(string weixinName, string shareId, [FromServices]ILoginGame Ilogin) {
             Ilogin.DaddPlayer = _playerService.AddPlayer;
-            //Ilogin.DgetPlayerByWeixianName = IstoreHouse.GetPlayerByName;
             Ilogin.DgetPlayerByWeixianName = _playerService.FindPlayerByName;
-
-            if (shareId == null || shareId == "")
-            {
+            if (shareId == null || shareId == "") {
                 shareId = ToolsSecret.EncryptOpenId(ManagePlayer.GetOnlyInstance().WeixinName);
             }
             Player player = Ilogin.Login(weixinName, ToolsSecret.DecryptOpenId(shareId));
-            if (player != null && base.player != null && base.player.WeixinName != player.WeixinName)
-            {
+            if (player != null && base.player != null && base.player.WeixinName != player.WeixinName) {
 
                 return View("Index");
             }
-            //IstoreHouse.SaveChanges();
             SavePlayerInfoInSession(player);
             base.LoadPlayerInfo();
             Sigin(player);
+            BuiderShareLink(player);
+            if (GameCity.IsColsed&&player.Id!= ManagePlayer.GetOnlyInstance().Id) {
+                return RedirectToAction("ShowNotice");
+            }
+            return RedirectToAction("RoomsList", "Rooms", new { Area = "Citys" });
+        }
+        [AllowAnonymous]
+        public IActionResult LoginMyGame(string weixinName, string checkK, string shareId, [FromServices]ILoginGame Ilogin) {
+            if (checkK != WxPayConfig.CheckK) {
+                return View("Index");
+            }
+            Ilogin.DaddPlayer = _playerService.AddPlayer;
+            Ilogin.DgetPlayerByWeixianName = _playerService.FindPlayerByName;
+            if (shareId == null || shareId == "") {
+                shareId = ToolsSecret.EncryptOpenId(ManagePlayer.GetOnlyInstance().WeixinName);
+            }
+            Player player = Ilogin.Login(weixinName, ToolsSecret.DecryptOpenId(shareId));
+            if (player != null && base.player != null && base.player.WeixinName != player.WeixinName) {
 
+                return View("Index");
+            }
+            SavePlayerInfoInSession(player);
+            base.LoadPlayerInfo();
+            Sigin(player);
             BuiderShareLink(player);
             return RedirectToAction("RoomsList", "Rooms", new { Area = "Citys" });
-
         }
-
-        private void BuiderShareLink(Player player)
-        {
+        private void BuiderShareLink(Player player) {
             StringBuilder url = new StringBuilder();
             url.Append(WxPayConfig.SiteName + "/Game/loginGame?weixinName=");
             url.Append(player.WeixinName);
@@ -100,105 +111,58 @@ namespace AntDesigner.GameCityBase.Controllers
             ViewBag.accesstoken = WxPayConfig._access_token.Access_token;
             ViewBag.jsToken = WxPayConfig._jsapi_ticket.Ticket;
         }
-
-        public IActionResult GetWeixinMessage()
-        {
-            if (httpContextAccessor.HttpContext.Request.Method.ToUpper() == "POST")
-            {
+        [AllowAnonymous]
+        public IActionResult GetWeixinMessage([FromServices]ILogger<GameController> logger) {
+            if (httpContextAccessor.HttpContext.Request.Method.ToUpper() == "POST") {
 
             }
-            else if (httpContextAccessor.HttpContext.Request.Method.ToUpper() == "GET")
-            {
+            else if (httpContextAccessor.HttpContext.Request.Method.ToUpper() == "GET") {
+                bool IsWeiXinServerRequest = IsWeixinSeverIp(logger);
+                if (!IsWeiXinServerRequest) {
+                    return Content("");
+                }
                 string signature = httpContextAccessor.HttpContext.Request.Query["signature"];
                 string timestamp = httpContextAccessor.HttpContext.Request.Query["timestamp"];
                 string nonce = httpContextAccessor.HttpContext.Request.Query["nonce"];
                 string echostr = httpContextAccessor.HttpContext.Request.Query["echostr"];
-                if (LoginByWeixin.CheckedSignature(timestamp, nonce, signature))
-                {
+                if (LoginByWeixin.CheckedSignature(timestamp, nonce, signature)) {
                     return Content(echostr);
                 }
             }
             return Content("");
         }
         [AllowAnonymous]
-        public IActionResult LoginByWeixin_(string code, string state, [FromServices]ILoginGame Ilogin)
-        {
+        public IActionResult LoginByWeixin_(string code, string state, [FromServices]ILoginGame Ilogin) {
 
             string weixinName_ = LoginByWeixin.GetOpenId(code);
             return RedirectToAction("loginGame", new { weixinName = weixinName_, shareId = state });
 
         }
-        public IActionResult LogGameAgain()
-        {
-            if (player != null)
-            {
+        public IActionResult LogGameAgain() {
+
+            if (player != null) {
                 return RedirectToAction("loginGame", new { weixinName = player.WeixinName, shareId = ToolsSecret.EncryptOpenId(player.IntroducerWeixinName) });
             }
 
             return View("Index");
         }
-        //[HttpPost]
-        //public IActionResult GetHitBoxs()
-        //{
-
-        //  StreamReader streamReader = new StreamReader(httpContextAccessor.HttpContext.Request.Body, Encoding.UTF8);
-        //  string stackeBoxsStr = streamReader.ReadToEnd();
-        // List<StakeBox> stakeBoxs= JsonConvert.DeserializeObject<List<StakeBox>>(stackeBoxsStr);
-
-        //    if (player.Account.Balance*10< stakeBoxs.Sum(p => p.Stake))
-        //    {
-        //        return null;
-        //    }
-
-        //    BoxsManager boxsManager = new BoxsManager();
-        //    Collection<Box> winningBoxs= boxsManager.WinningResult(stakeBoxs);
-        //    try
-        //    {
-        //        IstoreHouse.SaveChanges();
-        //    }
-        //    catch (DbUpdateConcurrencyException ex)
-        //    {
-        //        foreach (var entry in ex.Entries)
-        //        {
-        //            if (entry.Entity is Account)
-        //            {
-
-        //                decimal databaseValue = IstoreHouse.GetAccountAsNoTracking(player.Account.Id).Balance;
-        //                decimal currentValue = (decimal)entry.Property("balance").CurrentValue;
-        //                entry.Property("balance").CurrentValue = currentValue + ((decimal)entry.Property("balance").OriginalValue - databaseValue);
-        //                entry.Property("balance").OriginalValue = databaseValue;
-        //            }
-        //            else
-        //            {
-        //                throw new NotSupportedException(player.Account.Id + "账户变更冲突");
-        //            }
-        //        }
-        //        IstoreHouse.SaveChanges();
-        //    }
-        //    string hitSakeBoxsJsonarry = ToolsSerialize.SerializeObjectToJson(winningBoxs);
-        //    return Content(hitSakeBoxsJsonarry);
-        //}
-        private async void Sigin(Player player_)
-        {
+        private async void Sigin(Player player_) {
             ClaimsPrincipal userPrincipal = CreatePrincipal(player_);
             await httpContextAccessor.HttpContext.Authentication.SignInAsync("MyCookieMiddlewareInstance", userPrincipal,
-                new AuthenticationProperties
-                {
-                    ExpiresUtc = DateTime.UtcNow.AddMinutes(30),
+                new AuthenticationProperties {
+                    ExpiresUtc = DateTime.UtcNow.AddMinutes(360),
                     IsPersistent = false,
                     AllowRefresh = false
                 });
 
         }
-        private static ClaimsPrincipal CreatePrincipal(Player player_)
-        {
+        private static ClaimsPrincipal CreatePrincipal(Player player_) {
             List<Claim> claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, player_.WeixinName, ClaimValueTypes.String)
             };
             string role = "player";
-            if (player_.Id == ManagePlayer.GetOnlyInstance().Id)
-            {
+            if (player_.Id == ManagePlayer.GetOnlyInstance().Id) {
                 role = "manager";
             }
             claims.Add(new Claim(ClaimTypes.Role, role, ClaimValueTypes.String));
@@ -207,13 +171,15 @@ namespace AntDesigner.GameCityBase.Controllers
             var userPrincipal = new ClaimsPrincipal(userIdentity);
             return userPrincipal;
         }
-        private void SavePlayerInfoInSession(Player player)
-        {
+        private void SavePlayerInfoInSession(Player player) {
             session.SetInt32("playerId", player.Id);
             session.SetString("playerName", player.WeixinName);
-            session.SetInt32("playerAccountId",player.Account.Id);
+            session.SetInt32("playerAccountId", player.Account.Id);
+        }
+        public IActionResult ShowNotice([FromServices]INoticeService noticeService) {
+            ViewBag.notice = noticeService.GetNotices(1)[0];
+            return View("Notice");
         }
 
-       
     }
 }
