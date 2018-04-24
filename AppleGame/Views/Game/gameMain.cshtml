@@ -13,7 +13,6 @@
 
         #stakeBoxs, #boxs {
             margin: 0px auto;
-       
         }
 
         .box, .stakeBox {
@@ -179,12 +178,7 @@
 </div>
 <div style="float:left;width:100%;opacity:0.6;color:red">
     <br />
-    <a href="/Notice/affiche/">公告:</a>
-    @if (ViewBag.notice != null)
-    {
-        @ViewBag.notice.content<br />
-    }  @* <br /><a href="/Message/messages/" >玩家消息</a>*@
-
+    <br />
 </div>
 <div id="panelStart">
     <button type="button" class="btn btn-warning btn-lg btn-block text-center" id="start" value="启 动 游 戏">
@@ -241,7 +235,7 @@
             disableStake();
             $.ajax(
                 {
-                    url: "/Game/getHitBoxs/",
+                    url: "/Game/GetHitBoxs",
                     type: "POST",
                     dataType: "json",
                     contentType: 'charset=UTF-8',
@@ -251,15 +245,15 @@
                         var prize = 0;
                         $.each(boxs, function (index) {
                             n++;
-                            prize = prize + parseInt(boxs[index].prize);
+                            prize = prize + parseInt(boxs[index].Prize);
                         });
                         if (n == 1) {
-                            if (boxs[0].name == "KingBig" || boxs[0].name == "KingSmall") {
+                            if (boxs[0].Name == "KingBig" || boxs[0].Name == "KingSmall") {
                                 boxsColorChangeRuning("yellow", 200);
-                                setTimeout(function () { clearInterval(boxsDefaultRuningTimer); boxsRuning("AppleBig1", boxs[0].name, prize); }, 4000)
+                                setTimeout(function () { clearInterval(boxsDefaultRuningTimer); boxsRuning("AppleBig1", boxs[0].Name, prize); }, 4000)
                             }
                             else {
-                                boxsRuning("AppleBig1", boxs[0].name, prize)
+                                boxsRuning("AppleBig1", boxs[0].Name, prize)
                             }
 
                         } else if (n > 1) {
@@ -456,7 +450,7 @@
 
         function setLayout(long) { //页面布局
 
-            $("#boxs").width(long * 7+2);
+            $("#boxs").width(long * 7 + 2);
             $(".box").height(long).width(long);
 
             boxsPanel.removeClass("leftBox");
@@ -580,7 +574,7 @@
             wx.onMenuShareTimeline({
                 title: '苹果机小游戏',
                 link: '@(Html.Raw(WxPayConfig.SiteName))/Game/Index/?state=@(Html.Raw(ViewBag.shareId))',
-                imgUrl:'@(Html.Raw(WxPayConfig.SiteName))/images/AppleBig4.png',
+                imgUrl:'@(Html.Raw(WxPayConfig.SiteName))/images/AppleBig.png',
                 success: function () {
                 },
                 cancel: function () {

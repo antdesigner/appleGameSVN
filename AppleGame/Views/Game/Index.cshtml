@@ -7,72 +7,63 @@
         background-image: url("/images/pokers/defaultback.gif");
         background-size: cover;
     }
-    @@media only screen and (orientation:landscape){
+
+    @@media only screen and (orientation:landscape) {
         body {
             background-image: url("/images/pokers/defaultback.gif");
             background-size: contain;
-            background-repeat:repeat;
+            background-repeat: repeat;
         }
     }
+
     #welcome {
         margin: 0px auto;
         text-align: center;
-        height:100%;
-       
+        height: 100%;
     }
+
     #login {
         width: 120px;
         margin: auto;
         text-decoration: none;
-        background-color:lightpink;
+        background-color: lightpink;
     }
+
     a {
-        color:green;
+        color: green;
     }
 </style>
 <div id="welcome">
     <form action="/Game/loginGame" method="post">
-            <div id="login">
-                <a href="https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx8329a1e7e3cff76d&redirect_uri=@(Html.Raw(WxPayConfig.SiteName))/Game/LoginByWeixin_&response_type=code&scope=snsapi_base&state=@(Html.Raw(ViewBag.shareId))#wechat_redirect">点击进入</a>
-            </div>
+        <div id="login">
+            <a href="https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx8329a1e7e3cff76d&redirect_uri=@(Html.Raw(WxPayConfig.SiteName))/Game/LoginByWeixin_&response_type=code&scope=snsapi_base&state=@(Html.Raw(ViewBag.shareId))#wechat_redirect">点击进入</a>
+        </div>
     </form>
- 
+
     <form action="/Game/loginGame" method="post">
         <input type="text" name="weixinName" />
-            <button type="submit">登陆</button>
+        <button type="submit">登陆</button>
     </form>
 </div>
 <div class="modal fade" id="jindu" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-body">
-                <img src="~/images/jindu.gif"/>
-            </div>
-            <div class="modal-footer">
-            </div>
-        </div><!-- /.modal-content -->
-    </div><!-- /.modal -->
-</div>
-<div class="modal fade" id="jindu" tabindex="-1" role="dialog" aria-
-     labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog" style="margin:auto">
         <div class="modal-content" style="margin:auto">
             <div class="modal-body">
-                <img width="50px" height="50px" src="~/images/jindu.gif" />进入游戏中.....
+                <img width="50" height="50" src="~/images/jindu.gif" />进入游戏中.....
             </div>
         </div><!-- /.modal-content -->
     </div><!-- /.modal -->
 </div>
-   <script>
+<script>
        function JoinGame() {
 
-           window.location.href = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx8329a1e7e3cff76d&redirect_uri=@(Html.Raw(WxPayConfig.SiteName))/Game/LoginByWeixin_&response_type=code&scope=snsapi_base&state=@(Html.Raw(ViewBag.shareId))#wechat_redirect";
-           $("#jindu").modal("show");
+            window.location.href = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx8329a1e7e3cff76d&redirect_uri=@(Html.Raw(WxPayConfig.SiteName))/Game/LoginByWeixin_&response_type=code&scope=snsapi_base&state=@(Html.Raw(ViewBag.shareId))#wechat_redirect";
+  $("#jindu").modal("show");
        }
        $(function () {
-           $("body").on("click", JoinGame);
-           
+          // $("body").on("click", JoinGame);
+
        });
 
-   </script>
+</script>
 

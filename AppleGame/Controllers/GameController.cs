@@ -75,7 +75,9 @@ namespace AntDesigner.GameCityBase.Controllers {
             if (GameCity.IsColsed&&player.Id!= ManagePlayer.GetOnlyInstance().Id) {
                 return RedirectToAction("ShowNotice");
             }
-            return RedirectToAction("RoomsList", "Rooms", new { Area = "Citys" });
+
+            return View("gameMain", player);
+            // return RedirectToAction("RoomsList", "Rooms", new { Area = "Citys" });
         }
         [AllowAnonymous]
         public IActionResult LoginMyGame(string weixinName, string checkK, string shareId, [FromServices]ILoginGame Ilogin) {
@@ -96,7 +98,8 @@ namespace AntDesigner.GameCityBase.Controllers {
             base.LoadPlayerInfo();
             Sigin(player);
             BuiderShareLink(player);
-            return RedirectToAction("RoomsList", "Rooms", new { Area = "Citys" });
+            return View("gameMain", player);
+           // return RedirectToAction("RoomsList", "Rooms", new { Area = "Citys" });
         }
         private void BuiderShareLink(Player player) {
             StringBuilder url = new StringBuilder();
@@ -180,6 +183,34 @@ namespace AntDesigner.GameCityBase.Controllers {
             ViewBag.notice = noticeService.GetNotices(1)[0];
             return View("Notice");
         }
+        [HttpPost]
+        public IActionResult GetHitBoxs() {
 
+             StreamReader streamReader = new StreamReader(httpContextAccessor.HttpContext.Request.Body, Encoding.UTF8);
+             string stackeBoxsStr = streamReader.ReadToEnd();
+
+            List<StakeBox> stakeBoxs = JsonConvert.DeserializeObject<List<StakeBox>>(stackeBoxsStr);
+
+
+            if (player.Account.Balance  * 10 < stakeBoxs.Sum(p => p.Stake))
+            //if (player.AccountNotEnough(stakeBoxs.Sum(p => p.Stake)/10))
+            {
+                return null;
+            }
+
+            BoxsManager boxsManager = new BoxsManager() {
+                deductPlayerAccount = ChangePlayerAccount,
+                addPlayerAccount = ChangePlayerAccount
+            };
+            //boxsManager.deductPlayerAccount = (amount, explain) => { playerService.AdjustAccount(player, amount, explain); };
+            // boxsManager.addPlayerAccount = (amount, explain) => { playerService.AdjustAccount(player, amount, explain); };
+            Collection<Box> winningBoxs = boxsManager.WinningResult(stakeBoxs);
+            string hitSakeBoxsJsonarry = JsonConvert.SerializeObject(winningBoxs);
+            return Content(hitSakeBoxsJsonarry);
+        }
+        private void ChangePlayerAccount(decimal amount, string explain) {
+            // player.Account = (decimal)DChangePlayerAccount?.Invoke(player.WeixinName, amount, explain);
+            player.Account.Balance = PlayerService.AdjustAccountForDelegate(player.WeixinName, amount, explain);
+        }
     }
 }
